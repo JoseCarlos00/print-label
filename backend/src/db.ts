@@ -41,6 +41,16 @@ export function initializeDatabase() {
         create_on TEXT NOT NULL,
         expires_on TEXT NOT NULL
       );
+
+      CREATE TABLE IF NOT EXISTS printer_profiles (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        label TEXT NOT NULL,
+        ip TEXT NOT NULL,
+        width_mm REAL NOT NULL,
+        height_mm REAL NOT NULL,
+        dpi INTEGER NOT NULL
+      );
     `);
 	} catch (error) {
 		console.error(`[DB] Error inicializando base de datos: ${error}`);

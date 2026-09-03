@@ -73,12 +73,13 @@ export type LabelElement = TextElement | BarcodeElement | QrElement;
  * mm -> dots al generar el ZPL.
  */
 export interface PrinterProfile {
-  id: string;
-  name: string;
-  widthMm: number;
-  heightMm: number;
-  dpi: number; // típicamente 203 o 300 en impresoras Zebra
-  ip: string;
+	id: string;
+	name: string;
+	label: string;
+	widthMm: number;
+	heightMm: number;
+	dpi: number; // típicamente 203 o 300 en impresoras Zebra
+	ip: string;
 }
 
 export type StateTemplate = 'pending' | 'approved' | 'rejected';
