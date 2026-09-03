@@ -4,7 +4,7 @@
 
 Es un editor visual (WYSIWYG) para diseñar etiquetas que se imprimen en impresoras
 Zebra (inicialmente 4"x4", con soporte planeado para 70x32mm). El usuario coloca,
-mueve, edita y elimina elementos —texto, códigos de barras, códigos QR— dentro de
+mueve, edita y elimina elements —texto, códigos de barras, códigos QR— dentro de
 un área que representa físicamente el tamaño de la etiqueta.
 
 Al momento de imprimir, el diseño **no se manda al navegador para imprimir**: se
@@ -19,31 +19,31 @@ causaba depender del motor de impresión del navegador.
 - Diseña la etiqueta.
 - Puede **imprimir directo**, sin guardar nada.
 - Puede **"Guardar como plantilla"**: debe escribir un nombre para la plantilla y
-  su propio nombre (`solicitadoPor`). Esto **no se guarda directo**: se envía a
-  un área de **staging** con estado `"pendiente"`.
+  su propio nombre (`byRequest`). Esto **no se guarda directo**: se envía a
+  un área de **staging** con state `"pending"`.
 
 ### Admin (usuario único, con login)
 - Inicia sesión con usuario/contraseña fijos (definidos en `.env`, no hay tabla
   de usuarios ni roles).
 - Ve el mismo editor, pero con un **indicador visual de "modo admin"**.
-- Al guardar, la plantilla se guarda **directo como `"aprobada"`** (no pasa por
+- Al guardar, la plantilla se guarda **directo como `"approved"`** (no pasa por
   staging).
-- Tiene acceso a un **panel de staging**: lista de plantillas `"pendiente"`, cada
+- Tiene acceso a un **panel de staging**: lista de plantillas `"pending"`, cada
   una con el nombre de quien la solicitó.
-- Puede **aprobar** (pasa a `"aprobada"`) o **rechazar** (pasa a `"rechazada"`,
-  se conserva como historial, no se borra) cada plantilla pendiente.
+- Puede **aprobar** (pasa a `"approved"`) o **rechazar** (pasa a `"rejected"`,
+  se conserva como historial, no se borra) cada plantilla pending.
 
 ## 3. Modelo de datos (vive en `shared/types.ts`)
 
-- **`ElementoEtiqueta`**: unión discriminada (`texto` | `barcode` | `qr`), cada
+- **`LabelElement`**: unión discriminada (`texto` | `barcode` | `qr`), cada
   uno con posición en **milímetros** (nunca píxeles) y rotación restringida a
   `0 | 90 | 180 | 270` (límite real de ZPL, no hay rotación libre en impresión).
-- **`PerfilImpresora`**: ancho/alto en mm, DPI (203 o 300 típico en Zebra), IP.
-- **`Plantilla`**: `elementos[]`, `perfilId`, `publica` (visible en galería
-  general o no), `estado` (`pendiente | aprobada | rechazada`), `solicitadoPor`
+- **`PrinterProfile`**: ancho/alto en mm, DPI (203 o 300 típico en Zebra), IP.
+- **`Template`**: `elements[]`, `profileId`, `public` (visible en galería
+  general o no), `state` (`pending | approved | rejected`), `byRequest`
   (solo aplica si vino de staging).
-- **`CrearPlantillaInput`**: lo que viaja al crear una plantilla. El backend
-  decide el `estado` según la ruta/autenticación — **nunca lo decide el cliente**.
+- **`CreateTemplateInput`**: lo que viaja al crear una plantilla. El backend
+  decide el `state` según la ruta/autenticación — **nunca lo decide el cliente**.
 
 ## 4. Comunicación frontend ↔ backend
 
@@ -59,14 +59,14 @@ backend.
 | POST | `/api/auth/login` | público | Verifica credenciales, crea sesión |
 | POST | `/api/auth/logout` | público | Cierra sesión |
 | GET | `/api/auth/me` | público | Indica si hay sesión de admin activa |
-| POST | `/api/templates/staging` | público | Crea plantilla `pendiente` |
-| POST | `/api/templates` | admin | Crea plantilla `aprobada` directo |
-| GET | `/api/templates` | público | Lista plantillas `aprobada` + `publica` |
-| GET | `/api/templates/todas` | admin | Lista todas las `aprobada` (incl. no públicas) |
+| POST | `/api/templates/staging` | público | Crea plantilla `pending` |
+| POST | `/api/templates` | admin | Crea plantilla `approved` directo |
+| GET | `/api/templates` | público | Lista plantillas `approved` + `public` |
+| GET | `/api/templates/all` | admin | Lista todas las `approved` (incl. no públicas) |
 | GET | `/api/templates/:id` | público/admin | Detalle de una plantilla |
-| GET | `/api/staging` | admin | Lista plantillas `pendiente` |
-| POST | `/api/staging/:id/aprobar` | admin | Cambia a `aprobada` |
-| POST | `/api/staging/:id/rechazar` | admin | Cambia a `rechazada` |
+| GET | `/api/staging` | admin | Lista plantillas `pending` |
+| POST | `/api/staging/:id/approve` | admin | Cambia a `approved` |
+| POST | `/api/staging/:id/reject` | admin | Cambia a `rejected` |
 | POST | `/api/print` | público/admin | Genera ZPL y lo envía a la impresora por IP |
 
 ## 5. Cómo se guarda la sesión del admin
@@ -108,16 +108,16 @@ sesión) y evita la complejidad de firmar/verificar tokens.
 - **SQLite** vía `better-sqlite3`, un solo archivo de base de datos.
 - El archivo vive en `backend/data/`, **fuera** de `dist/`, para sobrevivir a
   los redespliegues (donde se reemplaza `dist/` completo).
-- Tablas: `plantillas` (o `templates`) y `sesiones` (o `sessions`).
+- Tablas: `templates` y  `sessions`.
 
 ## 8. Generación e impresión ZPL
 
-- Una función pura vive en `shared`: recibe `ElementoEtiqueta[]` +
-  `PerfilImpresora`, devuelve un `string` con el ZPL completo (`^XA ... ^XZ`).
+- Una función pura vive en `shared`: recibe `LabelElement[]` +
+  `PrinterProfile`, devuelve un `string` con el ZPL completo (`^XA ... ^XZ`).
 - Cada elemento se convierte a su comando ZPL correspondiente (`^A` texto, `^BC`
   barcode, `^BQ` QR), con posición convertida de mm a dots según el DPI del
   perfil (`dots = mm * (dpi / 25.4)`).
-- El backend recibe `{ elementos, perfilId }` en `POST /api/print`, genera el
+- El backend recibe `{ elements, profileId }` en `POST /api/print`, genera el
   ZPL, abre un socket TCP a la IP del perfil, y lo envía crudo — la impresora
   lo interpreta directo, sin pasar por el navegador.
 
