@@ -1,7 +1,6 @@
 import dotenv from 'dotenv';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { Bcrypt } from './utils/Bcrypt.js'
 
 dotenv.config();
 
@@ -23,10 +22,14 @@ export const config = {
 	DB_FILENAME: getOptionalEnvVar('DB_FILENAME', 'label-printer.db'),
 
 	// Credenciales del único usuario admin. Sin valores por defecto a propósito:
-	// el servidor debe fallar al arrancar si no están configuradas, en vez de
-	// arrancar con credenciales adivinables.
+	// el servidor debe fallar al arrancar si no están configuradas.
+	// Se comparan con timingSafeEqual (ver utils/credentials.ts), no con hash:
+	// es un solo usuario fijo en red interna, no expuesta a internet (spec §6).
 	ADMIN_USER: getRequiredEnvVar('ADMIN_USER'),
-	ADMIN_PASSWORD_HASH: Bcrypt.hashPassword(getRequiredEnvVar('ADMIN_PASSWORD')),
+	ADMIN_PASSWORD: getRequiredEnvVar('ADMIN_PASSWORD'),
+
+	SESSION_COOKIE_NAME: 'session_token',
+	SESSION_DURATION_MS: 7 * 24 * 60 * 60 * 1000, // 7 días
 };
 
 const __filename = fileURLToPath(import.meta.url);
