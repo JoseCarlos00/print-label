@@ -1,12 +1,15 @@
 import express from 'express';
 import http from 'http';
 import path from 'path';
+import cookieParser from 'cookie-parser';
 
 import { config, __dirname } from './src/config.js'; 
 import { initializeDatabase } from './src/db.js'
 
 initializeDatabase()
 
+// Import Middlewares
+import { attachAdminStatus } from './src/middleware/auth.middleware.js';
 
 // Import Routes
 import authApiRoutes from './src/api/auth.route.js';
@@ -24,6 +27,8 @@ function configureApp(): express.Application {
   const app = express();
 
   app.use(express.json());
+  app.use(cookieParser());
+	app.use(attachAdminStatus);
   app.use(express.static(frontendPath));
 
   return app;
