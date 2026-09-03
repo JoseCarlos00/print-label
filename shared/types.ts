@@ -81,15 +81,35 @@ export interface PrinterProfile {
   ip: string;
 }
 
+export type StateTemplate = 'pending' | 'approved' | 'rejected';
+
 /**
  * Una plantilla guardada: el diseño completo listo para reabrir en
  * el editor o para reimprimir.
  */
 export interface Template {
-  id: string;
-  name: string;
-  profileId: string;
-  elements: LabelElement[];
-  createOn: string; // ISO 8601
-  updateOn: string; // ISO 8601
+	id: string;
+	name: string;
+	profileId: string;
+	elements: LabelElement[];
+	state: StateTemplate;
+	public: boolean; 
+	byRequest?: string;
+	createOn: string; // ISO 8601
+	updateOn: string; // ISO 8601
 }
+
+
+/**
+ * Payload para crear una plantilla, ya sea vía staging (usuario libre)
+ * o directo (admin). El backend decide el "estado" según la ruta/auth,
+ * no el cliente.
+ */
+export interface CreateTemplateInput {
+	name: string;
+	profileId: string;
+	elements: LabelElement[];
+	public: boolean;
+	byRequest?: string;
+}
+ 
