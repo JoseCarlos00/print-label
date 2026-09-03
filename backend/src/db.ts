@@ -24,25 +24,24 @@ export function initializeDatabase() {
 
 	try {
 		db.exec(`
-      CREATE TABLE IF NOT EXISTS plantillas (
+      CREATE TABLE IF NOT EXISTS templates (
         id TEXT PRIMARY KEY,
-        NAME TEXT NOT NULL,
+        name TEXT NOT NULL,
         profile_id TEXT NOT NULL,
         elements TEXT NOT NULL,
         public INTEGER NOT NULL DEFAULT 0,
-        state TEXT NOT NULL DEFAULT 'pendiente',
+        state TEXT NOT NULL DEFAULT 'pending',
         by_request TEXT,
         create_on TEXT NOT NULL,
         update_on TEXT NOT NULL
       );
 
-      CREATE TABLE IF NOT EXISTS sesiones (
+      CREATE TABLE IF NOT EXISTS sessions (
         token TEXT PRIMARY KEY,
         create_on TEXT NOT NULL,
         expires_on TEXT NOT NULL
       );
-    `,
-		);
+    `);
 	} catch (error) {
 		console.error(`[DB] Error inicializando base de datos: ${error}`);
 		throw error;

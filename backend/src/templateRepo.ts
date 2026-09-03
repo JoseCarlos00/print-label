@@ -45,7 +45,7 @@ export function createTemplate(input: CreateTemplateInput, state: StateTemplate)
 	};
 
 	db.prepare(
-		`INSERT INTO plantillas
+		`INSERT INTO templates
       (id, name, perfil_id, elements, public, state, by_request, create_on, update_on)
      VALUES
       (@id, @name, @profileId, @elements, @public, @state, @byRequest, @createOn, @updateOn)`,

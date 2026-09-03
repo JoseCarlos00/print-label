@@ -43,11 +43,11 @@ export interface BarcodeElement extends BaseElement {
 }
 
 export type QrErrorCorrection = "L" | "M" | "Q" | "H";
-export type LabelPosition = "arriba" | "abajo";
+export type LabelPosition = "above" | "below";
 
 export interface QrElement extends BaseElement {
-  tipo: "qr";
-  contenido: string;
+  type: "qr";
+  content: string;
   size: number; // factor de magnificación ZPL (entero positivo)
   errorCorrection?: QrErrorCorrection; // por defecto "M" si no se especifica
 
@@ -57,7 +57,7 @@ export interface QrElement extends BaseElement {
    * QR usando el mismo contenido.
    */
   showLabel: boolean;
-  labelPosition?: LabelPosition; // por defecto "abajo" si mostrarLabel es true
+  labelPosition?: LabelPosition; // por defecto "below" si showLabel es true
   labelFontSize?: number; // mm, valor por defecto razonable si no se especifica
 }
 
