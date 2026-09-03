@@ -6,8 +6,10 @@ import { config, __dirname } from './src/config.js';
 import { initializeDatabase } from './src/db.js'
 
 initializeDatabase()
+
+
 // Import Routes
-// import usersApiRoutes from './src/api/users.route.js';
+import authApiRoutes from './src/api/auth.route.js';
 
 
 // Definir la ruta de estáticos una sola vez para evitar inconsistencias
@@ -37,13 +39,12 @@ const app = configureApp();
 const server = http.createServer(app);
 
 
-
 // Routes
 app.use('/health', ((_, res) => {
   res.status(200).json({ status: 'ACTIVE' });
 }));
 
-// app.use('/api/admin/users', verifyToken, checkSuperAdminRole, usersApiRoutes);
+app.use('/api/auth', authApiRoutes);
 
 async function startServer() {
   try {

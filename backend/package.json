@@ -14,12 +14,14 @@
 	"author": "",
 	"license": "ISC",
 	"dependencies": {
+		"bcryptjs": "^3.0.3",
 		"better-sqlite3": "^12.11.1",
 		"dotenv": "^17.2.3",
 		"express": "^5.2.1",
 		"shared": "*"
 	},
 	"devDependencies": {
+		"@types/bcryptjs": "^2.4.6",
 		"@types/better-sqlite3": "^9.6.0",
 		"@types/express": "^5.0.6",
 		"@types/node": "^26.4.1",
