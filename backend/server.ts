@@ -3,8 +3,9 @@ import http from 'http';
 import path from 'path';
 
 import { config, __dirname } from './src/config.js'; 
+import { initializeDatabase } from './src/db.js'
 
-
+initializeDatabase()
 // Import Routes
 // import usersApiRoutes from './src/api/users.route.js';
 
