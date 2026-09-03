@@ -3,24 +3,27 @@
 	"version": "1.0.0",
 	"description": "",
 	"main": "dist/server.js",
+	"type": "module",
 	"scripts": {
+		"typecheck": "tsc",
+		"build": "npm run typecheck && node esbuild.config.js",
 		"start": "cross-env NODE_ENV=production node dist/server.js",
-		"dev": "cross-env NODE_ENV=development node --loader ts-node-dev/esm server.ts"
+		"dev": "cross-env NODE_ENV=development tsx watch server.ts"
 	},
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
-	"type": "module",
 	"dependencies": {
-		"shared": "*",
-		"express": "^5.2.1"
+		"express": "^5.2.1",
+		"dotenv": "^17.2.3",
+		"shared": "*"
 	},
 	"devDependencies": {
 		"@types/express": "^5.0.6",
 		"@types/node": "^26.4.1",
 		"cross-env": "^10.1.0",
-		"dotenv": "^17.2.3",
-		"ts-node-dev": "^2.0.0",
+		"esbuild": "^0.24.0",
+		"tsx": "^4.19.0",
 		"typescript": "^7.0.2"
 	}
 }
