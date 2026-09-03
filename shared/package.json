@@ -1,13 +1,12 @@
 {
 	"name": "shared",
 	"version": "1.0.0",
-	"description": "",
-	"main": "index.js",
-	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
-	},
-	"keywords": [],
-	"author": "",
-	"license": "ISC",
-	"type": "module"
+	"private": true,
+	"description": "Tipos compartidos entre frontend y backend (sin paso de build, TS fuente directo)",
+	"type": "module",
+	"main": "./types.ts",
+	"types": "./types.ts",
+	"exports": {
+		".": "./types.ts"
+	}
 }

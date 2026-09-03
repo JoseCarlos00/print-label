@@ -12,6 +12,7 @@
 	"license": "ISC",
 	"type": "module",
 	"dependencies": {
+		"shared": "*",
 		"express": "^5.2.1"
 	},
 	"devDependencies": {
