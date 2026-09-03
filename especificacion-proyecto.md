@@ -68,6 +68,7 @@ backend.
 | POST | `/api/staging/:id/approve` | admin | Cambia a `approved` |
 | POST | `/api/staging/:id/reject` | admin | Cambia a `rejected` |
 | POST | `/api/print` | público/admin | Genera ZPL y lo envía a la impresora por IP |
+| GET | `/api/printers` | público | Lista de impresoras para imprimir |
 
 ## 5. Cómo se guarda la sesión del admin
 

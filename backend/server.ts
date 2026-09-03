@@ -7,14 +7,17 @@ import { config, __dirname } from './src/config.js';
 import { initializeDatabase } from './src/db.js';
 import { syncPrinterProfiles } from './src/printerProfileRepo.js';
 
-initializeDatabase();
-syncPrinterProfiles();
 
 // Import Middlewares
 import { attachAdminStatus } from './src/middleware/auth.middleware.js';
 
 // Import Routes
 import authApiRoutes from './src/api/auth.route.js';
+
+import printerApiRoutes from './src/api/printer.route.js';
+
+initializeDatabase();
+syncPrinterProfiles();
 
 // Definir la ruta de estáticos una sola vez para evitar inconsistencias
 // const relativePath = config.NODE_ENV === 'production' ? '../..' : '..';
@@ -50,6 +53,7 @@ app.use('/health', (_, res) => {
 });
 
 app.use('/api/auth', authApiRoutes);
+app.use('/api/printers', printerApiRoutes);
 
 async function startServer() {
 	try {
