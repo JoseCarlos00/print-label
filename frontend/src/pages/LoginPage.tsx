@@ -26,23 +26,23 @@ export function LoginPage() {
 			onSubmit={handleSubmit}
 			className='mx-auto mt-20 max-w-sm space-y-4 p-6'
 		>
-			<h1 className='text-2xl font-bold text-amber-900 dark:text-amber-100'>Login admin</h1>
+			<h1 className='text-2xl font-bold'>Login admin</h1>
 			<input
-				className='w-full rounded border p-2'
+				className='w-full rounded-md border border-app-border bg-app-surface p-2 text-app-text'
 				placeholder='Usuario'
 				value={username}
 				onChange={(e) => setUsername(e.target.value)}
 			/>
 			<input
-				className='w-full rounded border p-2'
+				className='w-full rounded-md border border-app-border bg-app-surface p-2 text-app-text'
 				type='password'
 				placeholder='Contraseña'
 				value={password}
 				onChange={(e) => setPassword(e.target.value)}
 			/>
-			{error && <p className='text-red-600 text-sm'>{error}</p>}
+			{error && <p className='text-sm text-red-400'>{error}</p>}
 			<button
-				className='w-full rounded bg-amber-900 p-2 text-white'
+				className='w-full rounded-md bg-app-accent p-2 font-medium text-app-accent-contrast'
 				type='submit'
 			>
 				Entrar
