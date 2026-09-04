@@ -6,6 +6,7 @@ import type {
 	QrErrorCorrection,
 	Rotation,
 	Symbology,
+	TextAlign,
 	TextElement,
 } from './types.js';
 
@@ -63,6 +64,16 @@ function escapeZplField(content: string): string {
 // Texto
 // ──────────────────────────────────────────────────────────────────────────
 
+/**
+ * Tope de líneas fijo para ^FB cuando el texto usa wrapWidth. No es
+ * configurable desde el modelo de datos a propósito — es una salvaguarda
+ * interna para que un texto excesivamente largo no desborde la etiqueta
+ * verticalmente sin que nadie se dé cuenta hasta imprimir.
+ */
+const MAX_WRAP_LINES = 10;
+
+const TEXT_ALIGN_DEFAULT: TextAlign = 'L';
+
 function buildTextCommand(el: TextElement, dpi: number): string {
 	const xDots = mmToDots(el.x, dpi);
 	const yDots = mmToDots(el.y, dpi);
@@ -71,11 +82,21 @@ function buildTextCommand(el: TextElement, dpi: number): string {
 	const orientation = ROTATION_MAP[el.rotation];
 	const content = escapeZplField(el.content);
 
-	return [
-		`^FO${xDots},${yDots}`,
-		`^A0${orientation},${heightDots},${widthDots}`,
-		`^FH^FD${content}^FS`,
-	].join('\n');
+	const commands = [`^FO${xDots},${yDots}`];
+
+	// ^FB (field block): activa texto multilínea con ancho fijo. Solo se
+	// incluye si el elemento define wrapWidth — comportamiento por default
+	// sigue siendo una sola línea, sin cambios respecto a la versión anterior.
+	if (el.wrapWidth !== undefined) {
+		const wrapWidthDots = mmToDots(el.wrapWidth, dpi);
+		const lineSpacingDots = mmToDots(el.lineSpacing ?? 0, dpi);
+		const textAlign = el.textAlign ?? TEXT_ALIGN_DEFAULT;
+		commands.push(`^FB${wrapWidthDots},${MAX_WRAP_LINES},${lineSpacingDots},${textAlign},0`);
+	}
+
+	commands.push(`^A0${orientation},${heightDots},${widthDots}`, `^FH^FD${content}^FS`);
+
+	return commands.join('\n');
 }
 
 // ──────────────────────────────────────────────────────────────────────────
