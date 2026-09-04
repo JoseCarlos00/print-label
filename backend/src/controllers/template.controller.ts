@@ -69,7 +69,14 @@ export const listAll = (_req: Request, res: Response) => {
 
 // GET /api/templates/:id
 export const getOne = (req: Request, res: Response) => {
-	const template = getById(req.params.id?.toString() ?? '');
+	const { id } = req.params;
+
+	if (typeof id !== 'string' || id.length === 0) {
+		return res.status(400).json({ message: 'Falta el id de la plantilla' });
+	}
+
+
+	const template = getById(id);
 
 	if (!template) {
 		return res.status(404).json({ message: 'Plantilla no encontrada' });

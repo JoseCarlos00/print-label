@@ -8,7 +8,14 @@ export const listStaging = (_req: Request, res: Response) => {
 
 // POST /api/staging/:id/aprobar (admin)
 export const approve = (req: Request, res: Response) => {
-	const existing = getById(req.params.id?.toString() ?? '');
+	const { id } = req.params;
+
+	if (typeof id !== 'string' || id.length === 0) {
+		return res.status(400).json({ message: 'Falta el id de la plantilla' });
+	}
+
+
+	const existing = getById(id);
 
 	if (!existing) {
 		return res.status(404).json({ message: 'Plantilla no encontrada' });
@@ -18,15 +25,22 @@ export const approve = (req: Request, res: Response) => {
 		return res.status(409).json({ message: 'La plantilla no está pendiente de revisión' });
 	}
 
-	const template = updateState(req.params.id?.toString() ?? '', 'approved');
-	console.info(`Plantilla aprobada: ${req.params.id}`);
+	const template = updateState(id, 'approved');
+	console.info(`Plantilla aprobada: ${id}`);
 
 	res.json(template);
 };
 
 // POST /api/staging/:id/rechazar (admin)
 export const reject = (req: Request, res: Response) => {
-	const existing = getById(req.params.id?.toString() ?? '');
+	const { id } = req.params;
+
+	if (typeof id !== 'string' || id.length === 0) {
+		return res.status(400).json({ message: 'Falta el id de la plantilla' });
+	}
+
+
+	const existing = getById(id);
 
 	if (!existing) {
 		return res.status(404).json({ message: 'Plantilla no encontrada' });
@@ -36,7 +50,8 @@ export const reject = (req: Request, res: Response) => {
 		return res.status(409).json({ message: 'La plantilla no está pendiente de revisión' });
 	}
 
-	const template = updateState(req.params.id?.toString() ?? '', 'rejected');
-	console.info(`Plantilla rechazada: ${req.params.id}`);
+	const template = updateState(id, 'rejected');
+	console.info(`Plantilla rechazada: ${id}`);
+	
 	res.json(template);
 };
