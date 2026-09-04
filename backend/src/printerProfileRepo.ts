@@ -32,11 +32,12 @@ function rowToProfile(row: PrinterProfileRow): PrinterProfile {
  */
 export function syncPrinterProfiles(): void {
 	const upsert = db.prepare(`
-    INSERT INTO printer_profiles (id, name, label, ip, width_mm, height_mm, dpi)
-    VALUES (@id, @name, @ip, @widthMm, @heightMm, @dpi)
+    INSERT INTO printer_profiles 
+			(id, name, label, ip, width_mm, height_mm, dpi)
+    VALUES (@id, @name, @label, @ip, @widthMm, @heightMm, @dpi)
     ON CONFLICT(id) DO UPDATE SET
       name = excluded.name,
-			label = exclude.label
+			label = excluded.label,
       width_mm = excluded.width_mm,
       height_mm = excluded.height_mm,
       dpi = excluded.dpi
