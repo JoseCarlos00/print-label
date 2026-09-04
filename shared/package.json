@@ -7,6 +7,7 @@
 	"main": "./types.ts",
 	"types": "./types.ts",
 	"exports": {
-		".": "./types.ts"
+		".": "./types.ts",
+		"./zpl": "./zpl.ts"
 	}
 }
