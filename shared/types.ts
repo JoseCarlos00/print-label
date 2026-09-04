@@ -21,14 +21,9 @@ interface BaseElement {
 }
 
 export interface TextElement extends BaseElement {
-  type: "texto";
+  type: "text";
   content: string;
   fontSize: number; // mm de alto de carácter
-  /**
-   * ZPL no tiene negrita real: se simula aumentando el ancho del
-   * carácter respecto al alto. El conversor a ZPL decide el ratio,
-   * aquí solo se expresa la intención del usuario.
-   */
   bold: boolean;
 }
 
@@ -50,15 +45,6 @@ export interface QrElement extends BaseElement {
   content: string;
   size: number; // factor de magnificación ZPL (entero positivo)
   errorCorrection?: QrErrorCorrection; // por defecto "M" si no se especifica
-
-  /**
-   * El "label" no es parte del comando QR en ZPL: se modela como un
-   * texto independiente vinculado, que el conversor emite además del
-   * QR usando el mismo contenido.
-   */
-  showLabel: boolean;
-  labelPosition?: LabelPosition; // por defecto "below" si showLabel es true
-  labelFontSize?: number; // mm, valor por defecto razonable si no se especifica
 }
 
 /**

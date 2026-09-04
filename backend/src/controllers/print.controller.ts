@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import type { LabelElement } from 'shared';
-import { generateZpl } from 'shared/zpl';
+import { generateZpl, ZplValidationError } from 'shared/zpl';
 import { getPrinterProfileById } from '../printerProfileRepo.js';
 import { sendToPrinter } from '../services/printerService.js';
 
@@ -12,7 +12,7 @@ interface PrintRequestBody {
 function isValidBody(body: unknown): body is PrintRequestBody {
 	if (!body || typeof body !== 'object') return false;
 	const input = body as Partial<PrintRequestBody>;
-  
+
 	return (
 		Array.isArray(input.elements) &&
 		input.elements.length > 0 &&
@@ -33,15 +33,31 @@ export const print = async (req: Request, res: Response) => {
 		return res.status(404).json({ message: 'Perfil de impresora no encontrado' });
 	}
 
+	let zpl: string;
+
 	try {
-		const zpl = generateZpl(req.body.elements, profile);
+		zpl = generateZpl(req.body.elements, profile);
+
+	} catch (error) {
+
+		if (error instanceof ZplValidationError) {
+			console.warn(`ZPL inválido (elemento ${error.elementId ?? 'desconocido'}): ${error.message}`);
+			return res.status(400).json({ message: error.message });
+		}
+
+		console.error(`Error inesperado generando ZPL: ${error}`);
+		return res.status(500).json({ message: 'Error interno del servidor' });
+	}
+
+	try {
 		await sendToPrinter(profile.ip, zpl);
 
 		console.info(`Etiqueta enviada a impresora ${profile.name} (${profile.ip})`);
 		res.status(200).json({ message: 'Etiqueta enviada a la impresora' });
+		
 	} catch (error) {
 		console.error(`Error enviando ZPL a ${profile.ip}: ${error}`);
-    
+
 		res.status(502).json({
 			message: `No se pudo conectar con la impresora "${profile.name}" (${profile.ip}). Verifica que esté encendida y en red.`,
 		});
