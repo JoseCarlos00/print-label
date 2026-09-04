@@ -12,6 +12,7 @@ interface RowTemplate {
 	public: number;
 	state: StateTemplate;
 	by_request: string | null;
+	position_locked: number;
 	create_on: string;
 	update_on: string;
 }
@@ -24,7 +25,8 @@ function rowToTemplate(fila: RowTemplate): Template {
 		elements: JSON.parse(fila.elements),
 		public: Boolean(fila.public),
 		state: fila.state,
-		byRequest: fila.by_request ?? '',
+		byRequest: fila.by_request!,
+		positionLocked: Boolean(fila.position_locked),
 		createOn: fila.create_on,
 		updateOn: fila.update_on,
 	};
@@ -40,16 +42,17 @@ export function createTemplate(input: CreateTemplateInput, state: StateTemplate)
 		elements: input.elements,
 		public: input.public,
 		state,
-		byRequest: state === 'pending' ? input.byRequest ?? '' : '',
+		byRequest: state === 'pending' ? input.byRequest! : '',
+		positionLocked: input.positionLocked ?? false,
 		createOn: now,
 		updateOn: now,
 	};
 
 	db.prepare(
 		`INSERT INTO templates
-      (id, name, profile_id, elements, public, state, by_request, create_on, update_on)
+      (id, name, profile_id, elements, public, state, by_request, position_locked, create_on, update_on)
      VALUES
-      (@id, @name, @profileId, @elements, @public, @state, @byRequest, @createOn, @updateOn)`,
+      (@id, @name, @profileId, @elements, @public, @state, @byRequest, @positionLocked, @createOn, @updateOn)`,
 	).run({
 		id: template.id,
 		name: template.name,
@@ -58,6 +61,7 @@ export function createTemplate(input: CreateTemplateInput, state: StateTemplate)
 		public: template.public ? 1 : 0,
 		state: template.state,
 		byRequest: template.byRequest ?? '',
+		positionLocked: template.positionLocked ? 1 : 0,
 		createOn: template.createOn,
 		updateOn: template.updateOn,
 	});

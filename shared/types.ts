@@ -20,11 +20,16 @@ interface BaseElement {
   rotation: Rotation;
 }
 
+export type TextAlign = "L" | "C" | "R" | "J"; // izquierda, centro, derecha, justificado — valores nativos de ^FB
+
 export interface TextElement extends BaseElement {
-  type: "text";
-  content: string;
-  fontSize: number; // mm de alto de carácter
-  bold: boolean;
+	type: 'text';
+	content: string;
+	fontSize: number; // mm de alto de carácter
+	bold: boolean;
+	wrapWidth?: number; // mm; si está presente, activa ^FB con este ancho (texto multilínea)
+	textAlign?: TextAlign; // default "L" si wrapWidth está presente pero textAlign no
+	lineSpacing?: number; // mm extra entre líneas; default 0
 }
 
 export type Symbology = "code128" | "ean13" | "code39" | "upc";
@@ -80,8 +85,9 @@ export interface Template {
 	profileId: string;
 	elements: LabelElement[];
 	state: StateTemplate;
-	public: boolean; 
+	public: boolean;
 	byRequest?: string;
+	positionLocked: boolean; // true = el frontend no permite mover elementos (x,y fijos); el contenido sí se puede editar
 	createOn: string; // ISO 8601
 	updateOn: string; // ISO 8601
 }
@@ -98,5 +104,6 @@ export interface CreateTemplateInput {
 	elements: LabelElement[];
 	public: boolean;
 	byRequest?: string;
+	positionLocked?: boolean; // opcional, default false si no se envía
 }
  

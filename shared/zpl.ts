@@ -233,6 +233,7 @@ export function generateZpl(elements: LabelElement[], profile: PrinterProfile): 
 		'^CI28', // UTF-8: necesario para acentos y ñ en textos/QRs en español
 		`^PW${widthDots}`,
 		`^LL${heightDots}`,
+		'^LH0,0',
 		...commands,
 		'^XZ',
 	].join('\n');

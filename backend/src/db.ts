@@ -32,6 +32,7 @@ export function initializeDatabase() {
         public INTEGER NOT NULL DEFAULT 0,
         state TEXT NOT NULL DEFAULT 'pending',
         by_request TEXT,
+        position_locked INTEGER NOT NULL DEFAULT 0,
         create_on TEXT NOT NULL,
         update_on TEXT NOT NULL
       );
