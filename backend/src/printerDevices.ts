@@ -40,7 +40,7 @@ export const printerDevices: PrinterDevice[] = [
 	{ name: 'Empaque16', ip: '192.168.15.226', label: 'LabelPrinter226', labelSize: '4x4' },
 	{ name: 'Empaque17', ip: '192.168.15.232', label: 'LabelPrinter232', labelSize: '4x4' },
 	{ name: 'Empaque18', ip: '192.168.15.224', label: 'LabelPrinter224', labelSize: '4x4' },
-	{ name: 'Empaque19', ip: '192.168.15.233', label: 'LabelPrinter228', labelSize: '4x4' },
+	{ name: 'Empaque19', ip: '192.168.15.228', label: 'LabelPrinter228', labelSize: '4x4' },
 	{ name: 'Etiquetado01', ip: '192.168.15.227', label: 'LabelPrinter227', labelSize: '4x4' },
 	{ name: 'Etiquetado02', ip: '192.168.15.231', label: 'LabelPrinter231', labelSize: '4x4' },
 	{ name: 'Etiquetado03', ip: '192.168.15.229', label: 'LabelPrinter229', labelSize: '4x4' },

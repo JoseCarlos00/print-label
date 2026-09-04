@@ -31,7 +31,8 @@ function rowToTemplate(fila: RowTemplate): Template {
 }
 
 export function createTemplate(input: CreateTemplateInput, state: StateTemplate): Template {
-	const ahora = new Date().toISOString();
+	const now = new Date().toISOString();
+
 	const template: Template = {
 		id: randomUUID(),
 		name: input.name,
@@ -40,13 +41,13 @@ export function createTemplate(input: CreateTemplateInput, state: StateTemplate)
 		public: input.public,
 		state,
 		byRequest: state === 'pending' ? input.byRequest ?? '' : '',
-		createOn: ahora,
-		updateOn: ahora,
+		createOn: now,
+		updateOn: now,
 	};
 
 	db.prepare(
 		`INSERT INTO templates
-      (id, name, perfil_id, elements, public, state, by_request, create_on, update_on)
+      (id, name, profile_id, elements, public, state, by_request, create_on, update_on)
      VALUES
       (@id, @name, @profileId, @elements, @public, @state, @byRequest, @createOn, @updateOn)`,
 	).run({
@@ -91,7 +92,8 @@ export function getById(id: string): Template | undefined {
 }
 
 export function updateState(id: string, state: StateTemplate): Template | undefined {
-	const ahora = new Date().toISOString();
-	db.prepare(`UPDATE templates SET state = ?, update_on = ? WHERE id = ?`).run(state, ahora, id);
+	const now = new Date().toISOString();
+
+	db.prepare(`UPDATE templates SET state = ?, update_on = ? WHERE id = ?`).run(state, now, id);
 	return getById(id);
 }

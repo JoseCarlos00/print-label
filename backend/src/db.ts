@@ -57,3 +57,12 @@ export function initializeDatabase() {
 		throw error;
 	}
 }
+
+export function closeDatabase(): void {
+	try {
+		db.close();
+		console.log('Base de datos SQLite cerrada correctamente.');
+	} catch (error) {
+		console.error(`Error cerrando la base de datos: ${error}`);
+	}
+}
