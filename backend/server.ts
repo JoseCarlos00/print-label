@@ -13,8 +13,10 @@ import { attachAdminStatus } from './src/middleware/auth.middleware.js';
 
 // Import Routes
 import authApiRoutes from './src/api/auth.route.js';
-
 import printerApiRoutes from './src/api/printer.route.js';
+import printApiRoutes from './src/api/print.route.js';
+import templatesApiRoutes from './src/api/templates.route.js';
+import stagingApiRoutes from './src/api/staging.route.js';
 
 initializeDatabase();
 syncPrinterProfiles();
@@ -53,6 +55,9 @@ app.use('/health', (_, res) => {
 });
 
 app.use('/api/auth', authApiRoutes);
+app.use('/api/templates', templatesApiRoutes);
+app.use('/api/staging', stagingApiRoutes);
+app.use('/api/print', printApiRoutes);
 app.use('/api/printers', printerApiRoutes);
 
 async function startServer() {
