@@ -1,12 +1,12 @@
 import { Router } from 'express';
-import { attachAdminStatus } from '../middleware/auth.middleware.js';
+import { requireAdmin } from '../middleware/auth.middleware.js';
 
 const router = Router();
 
 /* /api/staging */
-router.get('/', attachAdminStatus, ()=> {});
+router.get('/', requireAdmin, () => {});
 
-router.post('/:id/approve', attachAdminStatus, () => {});
-router.post('//:id/reject', attachAdminStatus, () => {});
+router.post('/:id/approve', requireAdmin, () => {});
+router.post('//:id/reject', requireAdmin, () => {});
 
 export default router;

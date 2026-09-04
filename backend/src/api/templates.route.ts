@@ -1,11 +1,11 @@
 import { Router } from 'express';
-import { attachAdminStatus } from '../middleware/auth.middleware.js';
+import { requireAdmin } from '../middleware/auth.middleware.js';
 
 const router = Router();
 
 /* /api/templates */
 router.get('/', ()=> {});
-router.get('/all', attachAdminStatus, ()=> {});
+router.get('/all', requireAdmin, () => {});
 router.get('/:id', ()=> {});
 
 router.post('/staging', () =>  {});
