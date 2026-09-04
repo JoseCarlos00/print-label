@@ -1,14 +1,19 @@
 import { Router } from 'express';
 import { requireAdmin } from '../middleware/auth.middleware.js';
+import { createApproved, createStaging, getOne, listAll, listPublic } from '../controllers/template.controller.js';
+
 
 const router = Router();
 
 /* /api/templates */
-router.get('/', ()=> {});
-router.get('/all', requireAdmin, () => {});
-router.get('/:id', ()=> {});
+router.get('/all', requireAdmin, listAll);
 
-router.post('/staging', () =>  {});
-router.post('/', ()=> {});
+router.post('/staging', createStaging);
+router.post('/', requireAdmin, createApproved);
+
+router.get('/', listPublic);
+router.get('/:id', getOne);
+
+
 
 export default router;

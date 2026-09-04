@@ -103,7 +103,7 @@ export interface Template {
 
 /**
  * Payload para crear una plantilla, ya sea vía staging (usuario libre)
- * o directo (admin). El backend decide el "estado" según la ruta/auth,
+ * o directo (admin). El backend decide el "state" según la ruta/auth,
  * no el cliente.
  */
 export interface CreateTemplateInput {
