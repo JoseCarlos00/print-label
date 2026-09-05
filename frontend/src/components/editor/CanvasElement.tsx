@@ -1,7 +1,9 @@
 import { useRef, type PointerEvent } from 'react';
-import type { LabelElement } from 'shared';
+import type { LabelElement, TextAlign } from 'shared';
 import { useEditorStore } from '../../store/useEditorStore';
 import { mmToPx, pxToMm } from '../../utils/scale';
+import type { CSSProperties } from 'react';
+
 
 interface CanvasElementProps {
 	element: LabelElement;
@@ -9,6 +11,13 @@ interface CanvasElementProps {
 	canvasWidthMm: number;
 	canvasHeightMm: number;
 }
+
+const TEXT_ALIGN_CSS: Record<TextAlign, CSSProperties['textAlign']> = {
+	L: 'left',
+	C: 'center',
+	R: 'right',
+	J: 'justify',
+};
 
 export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeightMm }: CanvasElementProps) {
 	const positionLocked = useEditorStore((s) => s.positionLocked);
@@ -27,9 +36,10 @@ export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeight
 	};
 
 	const handlePointerDown = (e: PointerEvent<HTMLDivElement>) => {
+		e.stopPropagation();
+
 		if ((e.target as HTMLElement).closest('[data-element-toolbar]')) return;
 
-		e.stopPropagation();
 		selectElement(element.id);
 		if (!draggable) return;
 
@@ -116,15 +126,43 @@ export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeight
 // el preview real vía Labelary.
 function ElementPreview({ element }: { element: LabelElement }) {
 	switch (element.type) {
-		case 'text':
+		case 'text': {
+
+			const baseStyle: CSSProperties = {
+				fontSize: mmToPx(element.fontSize),
+				fontWeight: element.bold ? '800' : 'inherit',
+				color: 'black',
+				fontStretch: element.bold ? 'initial' : 'semi-condensed',
+			};
+
+			if (element.wrapWidth === undefined) {
+				return (
+					<span
+						style={baseStyle}
+						className='whitespace-nowrap'
+					>
+						{element.content || 'Texto'}
+					</span>
+				);
+			}
+
 			return (
 				<span
-					style={{ fontSize: mmToPx(element.fontSize), fontWeight: element.bold ? '800' : 'inherit', fontStretch: element.bold ? 'initial' : 'semi-condensed' }}
+					style={{
+						...baseStyle,
+						display: 'block',
+						width: mmToPx(element.wrapWidth),
+						whiteSpace: 'normal',
+						overflowWrap: 'break-word',
+						textAlign: TEXT_ALIGN_CSS[element.textAlign ?? 'L'],
+						lineHeight: element.lineSpacing ? `${element.fontSize + element.lineSpacing}mm` : 'normal',
+					}}
 					className='whitespace-nowrap text-black'
 				>
 					{element.content || 'Texto'}
 				</span>
 			);
+		}
 		case 'barcode':
 			return (
 				<div
