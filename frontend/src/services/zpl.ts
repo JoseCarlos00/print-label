@@ -1,14 +1,30 @@
 import { generateZpl } from 'shared/zpl';
+import type { PrinterProfile } from 'shared'
+import { api, ApiError } from '../api/client';
+
+export async function generateCodeZpl(elements: [], idPrint: string, preview: HTMLImageElement) {
+	try {
+		const response = await api.get(`/printers/${idPrint}`);
+
+		const printerProfile: PrinterProfile = await response.json();
+
+		const zpl: string = generateZpl(elements, printerProfile);
+
+		const image = await renderZpl(zpl, printerProfile);
+
+		preview.src = image;
+	} catch (err) {
+		console.error(err instanceof ApiError ? err.message : `Error al generar ZPL`);
+	}
+}
 
 
-// const zpl = generateZpl(html);
 
-// const image = await renderZpl(zpl);
 
-// preview.src = image;
+export async function renderZpl(zpl: string, printer: PrinterProfile) {
+	const sizeLabel = () => `${(printer.widthMm / 25.4).toFixed(2)}x${(printer.heightMm / 25.4).toFixed(2)}`;
 
-export async function renderZpl(zpl) {
-	const response = await fetch('https://api.labelary.com/v1/printers/8dpmm/labels/4x6/0/', {
+	const response = await fetch(`https://api.labelary.com/v1/printers/8dpmm/labels/${sizeLabel}/0/`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/x-www-form-urlencoded',
@@ -24,10 +40,3 @@ export async function renderZpl(zpl) {
 
 	return URL.createObjectURL(blob);
 }
-
-
-// previewButton.addEventListener('click', async () => {
-// 	const zpl = generateZpl();
-
-// 	previewImage.src = await renderZpl(zpl);
-// });
