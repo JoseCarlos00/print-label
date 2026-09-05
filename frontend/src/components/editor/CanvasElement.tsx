@@ -62,7 +62,7 @@ export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeight
 				transform: `rotate(${element.rotation}deg)`,
 				cursor: draggable ? 'move' : 'default',
 			}}
-			className={`select-none ${isSelected ? 'outline outline-2 outline-app-accent' : ''}`}
+			className={`select-none ${isSelected ? 'outline-2 outline-app-accent' : ''}`}
 		>
 			<ElementPreview element={element} />
 
@@ -114,7 +114,7 @@ function ElementPreview({ element }: { element: LabelElement }) {
 		case 'text':
 			return (
 				<span
-					style={{ fontSize: mmToPx(element.fontSize), fontWeight: element.bold ? 'bold' : 'normal' }}
+					style={{ fontSize: mmToPx(element.fontSize), fontWeight: element.bold ? '800' : 'inherit;', fontStretch: element.bold ? 'initial' : 'semi-condensed' }}
 					className='whitespace-nowrap text-black'
 				>
 					{element.content || 'Texto'}
