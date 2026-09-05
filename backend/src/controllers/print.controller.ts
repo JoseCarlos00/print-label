@@ -50,7 +50,7 @@ export const print = async (req: Request, res: Response) => {
 	}
 
 	try {
-		await sendToPrinter(profile.ip, zpl);
+		// await sendToPrinter(profile.ip, zpl);
 
 		console.info(`Etiqueta enviada a impresora ${profile.name} (${profile.ip})`);
 		res.status(200).json({ message: 'Etiqueta enviada a la impresora', zpl: zpl });
