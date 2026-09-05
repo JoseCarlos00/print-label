@@ -11,6 +11,8 @@ const BUTTONS: Buttons[] = [
 	{ type: 'qr', label: 'Código QR' },
 ];
 
+// *TODO: Agregar un FOCUS al input "Contenido" para editar facilmente
+
 export function Toolbar() {
 	const addElement = useEditorStore((s) => s.addElement);
 	const positionLocked = useEditorStore((s) => s.positionLocked);

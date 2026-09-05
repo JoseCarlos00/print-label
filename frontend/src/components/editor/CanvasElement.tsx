@@ -18,36 +18,37 @@ export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeight
 	const duplicateElement = useEditorStore((s) => s.duplicateElement);
 	const removeElement = useEditorStore((s) => s.removeElement);
 
-	const dragOffset = useRef<{ dx: number; dy: number } | null>(null);
+	const dragOffsetMm = useRef<{ dx: number; dy: number } | null>(null);
 	const draggable = !positionLocked;
 
-	const handlePointerDown = (e: PointerEvent<HTMLDivElement>) => {
-		e.stopPropagation();
+	const cursorToMm = (e: PointerEvent<HTMLDivElement>) => {
+		const canvasRect = e.currentTarget.parentElement!.getBoundingClientRect();
+		return { x: pxToMm(e.clientX - canvasRect.left), y: pxToMm(e.clientY - canvasRect.top) };
+	};
 
+	const handlePointerDown = (e: PointerEvent<HTMLDivElement>) => {
+		if ((e.target as HTMLElement).closest('[data-element-toolbar]')) return;
+
+		e.stopPropagation();
 		selectElement(element.id);
 		if (!draggable) return;
 
 		e.currentTarget.setPointerCapture(e.pointerId);
-
-		const rect = e.currentTarget.getBoundingClientRect();
-		dragOffset.current = { dx: e.clientX - rect.left, dy: e.clientY - rect.top };
+		const cursor = cursorToMm(e);
+		dragOffsetMm.current = { dx: cursor.x - element.x, dy: cursor.y - element.y };
 	};
 
 	const handlePointerMove = (e: PointerEvent<HTMLDivElement>) => {
-		if (!draggable || !dragOffset.current) return;
+		if (!draggable || !dragOffsetMm.current) return;
 
-		const canvasRect = e.currentTarget.parentElement!.getBoundingClientRect();
-		const xPx = e.clientX - canvasRect.left - dragOffset.current.dx;
-		const yPx = e.clientY - canvasRect.top - dragOffset.current.dy;
-
-		const xMm = Math.max(0, Math.min(pxToMm(xPx), canvasWidthMm));
-		const yMm = Math.max(0, Math.min(pxToMm(yPx), canvasHeightMm));
-
+		const cursor = cursorToMm(e);
+		const xMm = Math.max(0, Math.min(cursor.x - dragOffsetMm.current.dx, canvasWidthMm));
+		const yMm = Math.max(0, Math.min(cursor.y - dragOffsetMm.current.dy, canvasHeightMm));
 		updateElement(element.id, { x: xMm, y: yMm });
 	};
 
 	const handlePointerUp = () => {
-		dragOffset.current = null;
+		dragOffsetMm.current = null;
 	};
 
 	return (
@@ -60,6 +61,7 @@ export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeight
 				left: mmToPx(element.x),
 				top: mmToPx(element.y),
 				transform: `rotate(${element.rotation}deg)`,
+				transformOrigin: 'top left',
 				cursor: draggable ? 'move' : 'default',
 			}}
 			className={`select-none ${isSelected ? 'outline-2 outline-app-accent' : ''}`}
@@ -67,7 +69,10 @@ export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeight
 			<ElementPreview element={element} />
 
 			{isSelected && !positionLocked && (
-				<div className='absolute -top-8 left-0 flex gap-1 rounded-md bg-app-surface p-1 shadow'>
+				<div
+					data-element-toolbar
+					className='absolute -top-8 left-0 flex gap-1 rounded-md bg-app-surface p-1 shadow'
+				>
 					<button
 						title='Rotar'
 						onClick={(e) => {
@@ -78,7 +83,7 @@ export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeight
 					>
 						⟳
 					</button>
-          
+
 					<button
 						title='Duplicar'
 						onClick={(e) => {
@@ -114,7 +119,7 @@ function ElementPreview({ element }: { element: LabelElement }) {
 		case 'text':
 			return (
 				<span
-					style={{ fontSize: mmToPx(element.fontSize), fontWeight: element.bold ? '800' : 'inherit;', fontStretch: element.bold ? 'initial' : 'semi-condensed' }}
+					style={{ fontSize: mmToPx(element.fontSize), fontWeight: element.bold ? '800' : 'inherit', fontStretch: element.bold ? 'initial' : 'semi-condensed' }}
 					className='whitespace-nowrap text-black'
 				>
 					{element.content || 'Texto'}
