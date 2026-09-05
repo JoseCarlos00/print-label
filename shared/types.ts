@@ -14,10 +14,17 @@ export type Rotation = 0 | 90 | 180 | 270;
  * Campos comunes a cualquier elemento colocado en el área de impresión.
  */
 interface BaseElement {
-  id: string;
-  x: number; // mm, desde la esquina superior izquierda del área
-  y: number; // mm, desde la esquina superior izquierda del área
-  rotation: Rotation;
+	id: string;
+	x: number; // mm, desde la esquina superior izquierda del área
+	y: number; // mm, desde la esquina superior izquierda del área
+	rotation: Rotation;
+	/**
+	 * Congela el elemento por completo (ni siquiera "content" es editable).
+	 * Solo tiene efecto cuando la plantilla que lo contiene tiene
+	 * `positionLocked: true`. Se define desde el modal "Guardar plantilla",
+	 * no durante el diseño libre. Default: false.
+	 */
+	locked?: boolean;
 }
 
 export type TextAlign = "L" | "C" | "R" | "J"; // izquierda, centro, derecha, justificado — valores nativos de ^FB
