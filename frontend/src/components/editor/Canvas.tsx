@@ -15,7 +15,7 @@ export function Canvas() {
 			<div
 				onPointerDown={() => selectElement(null)}
 				style={{ width: mmToPx(profile.widthMm), height: mmToPx(profile.heightMm) }}
-				className='relative border border-app-border bg-white'
+				className='relative border border-app-border bg-white zebra-font-emulated'
 			>
 				{elements.map((el) => (
 					<CanvasElement

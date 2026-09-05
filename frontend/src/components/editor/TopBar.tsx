@@ -28,7 +28,9 @@ export function TopBar({ profiles }: TopBarProps) {
 		setPrintSuccess(false);
 
 		try {
-			await api.post('/print', { elements, profileId: profile.id });
+			const res = await api.post<{message: string, zpl: string}>('/print', { elements, profileId: profile.id });
+			// * Debug
+			console.log(res.zpl)
 			
 			setPrintSuccess(true);
 		} catch (err) {
