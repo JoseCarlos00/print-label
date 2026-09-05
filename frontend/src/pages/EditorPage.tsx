@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { usePrinterProfiles } from '../hooks/usePrinterProfiles';
@@ -17,7 +17,7 @@ export function EditorPage() {
 	const { profiles, loading: loadingProfiles, error: profilesError } = usePrinterProfiles();
 	const { template, loading: loadingTemplate, error: templateError } = useTemplate(id);
 
-	const [profileWarning, setProfileWarning] = useState<string | null>(null);
+	const [fallbackProfileId, setFallbackProfileId] = useState<string>('');
 
 	const profile = useEditorStore((s) => s.profile);
 	const templateId = useEditorStore((s) => s.templateId);
@@ -30,46 +30,79 @@ export function EditorPage() {
 	useEffect(() => {
 		if (templateId !== (id ?? null)) {
 			resetEditor();
-			setProfileWarning(null);
+			setFallbackProfileId('');
 		}
 	}, [id, templateId, resetEditor]);
 
-	// Caso: cargar una plantilla existente
-	useEffect(() => {
-		if (!id || !template || profiles.length === 0 || profile) return;
+	const matchingProfile = useMemo(
+		() => (template ? profiles.find((p) => p.id === template.profileId) : undefined),
+		[template, profiles],
+	);
 
-		const matchingProfile = profiles.find((p) => p.id === template.profileId);
-		if (matchingProfile) {
-			loadTemplate(template, matchingProfile);
-		} else {
-			// La impresora original ya no existe en el catálogo: caemos a la
-			// primera disponible y avisamos, en vez de dejar el editor bloqueado.
-			loadTemplate(template, profiles[0]!);
-			setProfileWarning(
-				'La impresora original de esta plantilla ya no está disponible. Se seleccionó otra por defecto.',
-			);
-		}
-	}, [id, template, profiles, profile, loadTemplate]);
+	const needsProfileSelection = Boolean(id && template && profiles.length > 0 && !matchingProfile && !profile);
+
+	// Caso: plantilla existente cuya impresora SÍ está disponible -> carga directa
+	useEffect(() => {
+		if (!id || !template || !matchingProfile || profile) return;
+		loadTemplate(template, matchingProfile);
+	}, [id, template, matchingProfile, profile, loadTemplate]);
 
 	// Caso: editor en blanco -> perfil guardado en localStorage, o el primero
 	useEffect(() => {
 		if (id || loadingProfiles || profiles.length === 0 || profile) return;
-
 		const savedId = getSavedPrinterId();
 		const defaultProfile = profiles.find((p) => p.id === savedId) ?? profiles[0];
 		setProfile(defaultProfile!);
 	}, [id, loadingProfiles, profiles, profile, setProfile]);
 
+	const handleConfirmFallbackProfile = () => {
+		const chosen = profiles.find((p) => p.id === fallbackProfileId);
+		if (chosen && template) loadTemplate(template, chosen);
+	};
+
 	if (loadingProfiles || (id && loadingTemplate)) {
 		return <p className='p-6 text-sm text-app-text-muted'>Cargando editor...</p>;
 	}
 
-	if (profilesError) {
-		return <p className='p-6 text-sm text-red-400'>{profilesError}</p>;
-	}
+	if (profilesError) return <p className='p-6 text-sm text-red-400'>{profilesError}</p>;
+	if (id && templateError) return <p className='p-6 text-sm text-red-400'>{templateError}</p>;
 
-	if (id && templateError) {
-		return <p className='p-6 text-sm text-red-400'>{templateError}</p>;
+	if (needsProfileSelection) {
+		return (
+			<div className='mx-auto mt-20 max-w-sm space-y-4 p-6'>
+				<p className='text-sm text-amber-300'>
+					La impresora original de esta plantilla ya no está disponible. Elegí una impresora para continuar editando "
+					{template!.name}".
+				</p>
+				<select
+					className='w-full rounded-md border border-app-border bg-app-surface p-2 text-app-text'
+					value={fallbackProfileId}
+					onChange={(e) => setFallbackProfileId(e.target.value)}
+				>
+					<option
+						value=''
+						disabled
+					>
+						Selecciona una impresora
+					</option>
+					{profiles.map((p) => (
+						<option
+							key={p.id}
+							value={p.id}
+						>
+							{p.name} ({p.ip})
+						</option>
+					))}
+				</select>
+				<button
+					disabled={!fallbackProfileId}
+					onClick={handleConfirmFallbackProfile}
+					className='rounded-md bg-app-accent px-3 py-1.5 text-sm font-medium text-app-accent-contrast disabled:opacity-50'
+				>
+					Continuar
+				</button>
+			</div>
+		);
 	}
 
 	return (
@@ -78,11 +111,6 @@ export function EditorPage() {
 				<span className='mx-6 mt-4 inline-block w-fit rounded bg-amber-800 px-3 py-1 text-sm text-white'>
 					Modo admin
 				</span>
-			)}
-			{profileWarning && (
-				<p className='mx-6 mt-2 rounded-md border border-amber-800 bg-amber-950 p-2 text-sm text-amber-300'>
-					{profileWarning}
-				</p>
 			)}
 
 			<TopBar profiles={profiles} />

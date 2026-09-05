@@ -1,6 +1,9 @@
-import type { LabelElement, PrinterProfile, StateTemplate, Template } from 'shared';
+import type { BarcodeElement, LabelElement, PrinterProfile, QrElement, StateTemplate, Template, TextElement,
+} from 'shared';
 
 export type ElementType = LabelElement['type'];
+export type ElementPatch = Partial<TextElement> | Partial<BarcodeElement> | Partial<QrElement>;
+
 
 export interface EditorState {
 	/** null = etiqueta nueva, no viene de ninguna plantilla existente */
