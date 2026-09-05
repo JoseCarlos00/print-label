@@ -22,11 +22,14 @@ export function TopBar({ profiles }: TopBarProps) {
 
 	const handlePrint = async () => {
 		if (!profile) return;
+
 		setPrintState('printing');
 		setPrintError(null);
 		setPrintSuccess(false);
+
 		try {
 			await api.post('/print', { elements, profileId: profile.id });
+			
 			setPrintSuccess(true);
 		} catch (err) {
 			setPrintError(err instanceof ApiError ? err.message : 'Error al imprimir');
