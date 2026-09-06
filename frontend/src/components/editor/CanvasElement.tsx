@@ -1,4 +1,4 @@
-import { useRef, type PointerEvent } from 'react';
+import { useLayoutEffect, useRef, useState, type PointerEvent } from 'react';
 import type { LabelElement, TextAlign } from 'shared';
 import { useEditorStore } from '../../store/useEditorStore';
 import { mmToPx, pxToMm } from '../../utils/scale';
@@ -29,6 +29,9 @@ export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeight
 
 	const dragOffsetMm = useRef<{ dx: number; dy: number } | null>(null);
 	const draggable = !positionLocked;
+
+	const elementRef = useRef<HTMLDivElement>(null);
+	const [naturalSize, setNaturalSize] = useState({ width: 0, height: 0 });
 
 	const cursorToMm = (e: PointerEvent<HTMLDivElement>) => {
 		const canvasRect = e.currentTarget.parentElement!.getBoundingClientRect();
@@ -61,17 +64,43 @@ export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeight
 		dragOffsetMm.current = null;
 	};
 
+	// offsetWidth/offsetHeight ignoran `transform`, así que dan el tamaño
+	// SIN ROTAR del elemento aunque ya tenga rotate() aplicado. Lo necesitamos
+	// para compensar la posición a 90°/270°, donde ancho y alto se intercambian.
+	useLayoutEffect(() => {
+		const node = elementRef.current;
+		if (!node) return;
+
+		const observer = new ResizeObserver(() => {
+			setNaturalSize({ width: node.offsetWidth, height: node.offsetHeight });
+		});
+		observer.observe(node);
+		return () => observer.disconnect();
+	}, [element.type]);
+
+	// ...dragOffsetMm, cursorToMm, handlePointerDown/Move/Up SIN CAMBIOS
+	// (no dependen de la rotación visual, así que siguen funcionando igual)...
+
+	// A 90°/270° el bounding box visual intercambia ancho y alto. Rotando
+	// sobre el centro (default de CSS), a 0°/180° la caja no se mueve —
+	// pero a 90°/270° queda centrada en un punto distinto al esperado, así
+	// que corregimos left/top para que la esquina superior izquierda del
+	// elemento YA ROTADO caiga siempre en (x,y), igual que a 0°/180°.
+	const isSideways = element.rotation === 90 || element.rotation === 270;
+	const offsetXPx = isSideways ? (naturalSize.height - naturalSize.width) / 2 : 0;
+	const offsetYPx = isSideways ? (naturalSize.width - naturalSize.height) / 2 : 0;
+
 	return (
 		<div
+			ref={elementRef}
 			onPointerDown={handlePointerDown}
 			onPointerMove={handlePointerMove}
 			onPointerUp={handlePointerUp}
 			style={{
 				position: 'absolute',
-				left: mmToPx(element.x),
-				top: mmToPx(element.y),
+				left: mmToPx(element.x) + offsetXPx,
+				top: mmToPx(element.y) + offsetYPx,
 				transform: `rotate(${element.rotation}deg)`,
-				transformOrigin: 'top left',
 				cursor: draggable ? 'move' : 'default',
 			}}
 			className={`select-none ${isSelected ? 'outline-2 outline-app-accent' : ''}`}
@@ -133,6 +162,7 @@ function ElementPreview({ element }: { element: LabelElement }) {
 				fontWeight: element.bold ? '800' : 'inherit',
 				color: 'black',
 				fontStretch: element.bold ? 'initial' : 'semi-condensed',
+				letterSpacing: '0.035rem',
 			};
 
 			if (element.wrapWidth === undefined) {
