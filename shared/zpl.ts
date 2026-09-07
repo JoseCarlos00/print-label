@@ -10,6 +10,8 @@ import type {
 	TextElement,
 } from './types.js';
 
+import QRCode from 'qrcode/lib/core/qrcode.js';
+
 /**
  * Error de validación de contenido contra las reglas de un symbology de
  * código de barras específico (ej. EAN-13 exige 12-13 dígitos numéricos).
@@ -191,14 +193,29 @@ function buildBarcodeCommand(el: BarcodeElement, dpi: number): string {
 // QR
 // ──────────────────────────────────────────────────────────────────────────
 
+export function getQrModuleCount(content: string, errorCorrection: QrErrorCorrection = 'M'): number {
+	return QRCode.create(content, { errorCorrectionLevel: errorCorrection }).modules.size;
+}
+
+export function getQrSizeDots(element: QrElement): number {
+	const errorCorrection = element.errorCorrection ?? 'M';
+
+	const moduleCount = getQrModuleCount(element.content || ' ', errorCorrection);
+	
+	return moduleCount * element.size;
+}
+
+
 const QR_ERROR_CORRECTION_DEFAULT: QrErrorCorrection = 'M';
 
 function buildQrCommand(el: QrElement, dpi: number): string {
 	const xDots = mmToDots(el.x, dpi);
 	const yDots = mmToDots(el.y, dpi);
+
 	const orientation = ROTATION_MAP[el.rotation];
 	const errorCorrection = el.errorCorrection ?? QR_ERROR_CORRECTION_DEFAULT;
-	const content = escapeZplField(el.content);
+
+	const sizeDots = getQrSizeDots(el);
 
 	/* IMPORTANTE — NO cambiar ^FT por ^FO aquí sin volver a probar contra
 		impresora física. Validado empíricamente: con ^FO el QR se imprimía
@@ -212,8 +229,14 @@ function buildQrCommand(el: QrElement, dpi: number): string {
 		solo la posición x,y lo fue. Confirmar en hardware si usan rotación != 0.
 	*/
 
+	// ^FT usa como referencia la parte inferior del QR,
+	// mientras que el editor usa la esquina superior izquierda.
+	const qrY = yDots + sizeDots;
+
+	const content = escapeZplField(el.content);
+
 	return [
-		`^FT${xDots},${yDots}`,
+		`^FT${xDots},${qrY}`,
 		`^BQ${orientation},2,${el.size}`,
 
 		// Modo de entrada de datos fijo en "A" (automático): la impresora
