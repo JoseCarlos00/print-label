@@ -9,6 +9,7 @@ import { TopBar } from '../components/editor/TopBar';
 import { Toolbar } from '../components/editor/Toolbar';
 import { Canvas } from '../components/editor/Canvas';
 import { PropertiesPanel } from '../components/editor/PropertiesPanel';
+import { useEditorKeyboard } from '../hooks/useEditorKeyboard';
 
 export function EditorPage() {
 	const { id } = useParams<{ id: string }>();
@@ -24,6 +25,8 @@ export function EditorPage() {
 	const setProfile = useEditorStore((s) => s.setProfile);
 	const loadTemplate = useEditorStore((s) => s.loadTemplate);
 	const resetEditor = useEditorStore((s) => s.resetEditor);
+
+	useEditorKeyboard();
 
 	// Si cambia el :id (o pasamos de una plantilla a "nueva"), reseteamos
 	// el store antes de que los efectos de abajo vuelvan a poblarlo.
