@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import type { BarcodeElement, QrElement, Symbology, TextAlign, TextElement } from 'shared';
 import type { ElementPatch } from '../../store/editorStore.types';
 import { useEditorStore } from '../../store/useEditorStore';
@@ -18,6 +19,24 @@ export function PropertiesPanel() {
 	const element = useEditorStore((s) => s.elements.find((el) => el.id === s.selectedElementId));
 	const updateElement = useEditorStore((s) => s.updateElement);
 
+	const contentRef = useRef<HTMLTextAreaElement>(null);
+
+	// "Estructura" (posición, tamaño, estilo) se bloquea cuando la plantilla
+	// tiene positionLocked. Si además el elemento tiene locked=true, ni
+	// siquiera el contenido queda editable.
+	const structureDisabled = positionLocked;
+	const contentDisabled = positionLocked && Boolean(element?.locked);
+
+	useEffect(() => {
+		if (!selectedElementId || !element || contentDisabled) {
+			return;
+		}
+
+		contentRef.current?.focus();
+		contentRef.current?.select();
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [selectedElementId, contentDisabled]);
+
 	if (!selectedElementId || !element) {
 		return (
 			<div className='w-72 border-l border-app-border p-4'>
@@ -25,12 +44,6 @@ export function PropertiesPanel() {
 			</div>
 		);
 	}
-
-	// "Estructura" (posición, tamaño, estilo) se bloquea cuando la plantilla
-	// tiene positionLocked. Si además el elemento tiene locked=true, ni
-	// siquiera el contenido queda editable.
-	const structureDisabled = positionLocked;
-	const contentDisabled = positionLocked && Boolean(element.locked);
 
 	const update = (changes: ElementPatch) => updateElement(element.id, changes);
 
@@ -94,6 +107,7 @@ export function PropertiesPanel() {
 				<label className='block text-xs text-app-text-muted'>
 					Contenido
 					<textarea
+						ref={contentRef}
 						value={element.content}
 						onChange={(e) => update({ content: e.target.value })}
 						rows={2}
