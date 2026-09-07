@@ -1,9 +1,18 @@
 import type { LabelElement } from 'shared';
 import type { ElementType } from '../store/editorStore.types';
 
+import { v4 as uuidv4 } from 'uuid';
+
+
 export function createDefaultElement(type: ElementType, index: number): LabelElement {
 	// offset simple para que los elementos nuevos no queden todos apilados
-	const base = { id: crypto.randomUUID(), x: 10 + index * 3, y: 10 + index * 3, rotation: 0 as const, locked: false };
+	const base = {
+		id: uuidv4(),
+		x: 10 + index * 3,
+		y: 10 + index * 3,
+		rotation: 0 as const,
+		locked: false,
+	};
 
 	switch (type) {
 		case 'text':
