@@ -1,7 +1,6 @@
+import { v4 as uuidv4 } from 'uuid';
 import type { LabelElement } from 'shared';
 import type { ElementType } from '../store/editorStore.types';
-
-import { v4 as uuidv4 } from 'uuid';
 
 
 export function createDefaultElement(type: ElementType, index: number): LabelElement {

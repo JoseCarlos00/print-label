@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { v4 as uuidv4 } from 'uuid';
 import type { LabelElement, PrinterProfile, Rotation, Template } from 'shared';
 import { createDefaultElement } from '../utils/elementDefaults';
 import type { EditorState, EditorStore } from './editorStore.types';
@@ -65,7 +66,7 @@ export const useEditorStore = create<EditorStore>()((set, get) => ({
 
 		const copy: LabelElement = {
 			...original,
-			id: crypto.randomUUID(),
+			id: uuidv4(),
 			x: original.x + 5,
 			y: original.y + 5,
 			locked: false,
