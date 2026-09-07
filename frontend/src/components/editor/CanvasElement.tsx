@@ -4,12 +4,17 @@ import { useEditorStore } from '../../store/useEditorStore';
 import { mmToPx, pxToMm } from '../../utils/scale';
 import type { CSSProperties } from 'react';
 
+import { BarcodePreview, InvalidBarcodePreview } from './previews/BarcodePreview';
+import { QrPreview } from './previews/QrPreview';
+import { PreviewErrorBoundary } from './previews/PreviewErrorBoundary';
+
 
 interface CanvasElementProps {
 	element: LabelElement;
 	isSelected: boolean;
 	canvasWidthMm: number;
 	canvasHeightMm: number;
+	dpi: number;
 }
 
 const TEXT_ALIGN_CSS: Record<TextAlign, CSSProperties['textAlign']> = {
@@ -19,7 +24,7 @@ const TEXT_ALIGN_CSS: Record<TextAlign, CSSProperties['textAlign']> = {
 	J: 'justify',
 };
 
-export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeightMm }: CanvasElementProps) {
+export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeightMm, dpi }: CanvasElementProps) {
 	const positionLocked = useEditorStore((s) => s.positionLocked);
 	const selectElement = useEditorStore((s) => s.selectElement);
 	const updateElement = useEditorStore((s) => s.updateElement);
@@ -105,7 +110,10 @@ export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeight
 			}}
 			className={`select-none ${isSelected ? 'outline-2 outline-app-accent' : ''}`}
 		>
-			<ElementPreview element={element} />
+			<ElementPreview
+				element={element}
+				dpi={dpi}
+			/>
 
 			{isSelected && !positionLocked && (
 				<div
@@ -153,10 +161,9 @@ export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeight
 // Render aproximado — no es el ZPL real. Barcode/QR quedan como placeholders
 // hasta que integremos una librería de render (jsbarcode / qrcode.react) o
 // el preview real vía Labelary.
-function ElementPreview({ element }: { element: LabelElement }) {
+function ElementPreview({ element, dpi }: { element: LabelElement, dpi: number }) {
 	switch (element.type) {
 		case 'text': {
-
 			const baseStyle: CSSProperties = {
 				fontSize: mmToPx(element.fontSize),
 				fontWeight: element.bold ? '800' : 'inherit',
@@ -195,21 +202,25 @@ function ElementPreview({ element }: { element: LabelElement }) {
 		}
 		case 'barcode':
 			return (
-				<div
-					style={{ height: mmToPx(element.height) }}
-					className='flex items-center justify-center border border-dashed border-neutral-400 px-2 text-[10px] text-neutral-600'
+				<PreviewErrorBoundary
+					key={`${element.content}-${element.symbology}`}
+					fallback={<InvalidBarcodePreview symbology={element.symbology} />}
 				>
-					[{element.symbology}] {element.content}
-				</div>
+					<BarcodePreview element={element} />
+				</PreviewErrorBoundary>
 			);
+
 		case 'qr':
 			return (
-				<div
-					style={{ width: mmToPx(element.size * 5), height: mmToPx(element.size * 5) }}
-					className='flex items-center justify-center border border-dashed border-neutral-400 text-[10px] text-neutral-600'
+				<PreviewErrorBoundary
+					key={element.content}
+					fallback={<InvalidBarcodePreview symbology='code128' />}
 				>
-					QR
-				</div>
+					<QrPreview
+						element={element}
+						dpi={dpi}
+					/>
+				</PreviewErrorBoundary>
 			);
 	}
 }

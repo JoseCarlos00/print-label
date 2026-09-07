@@ -5,6 +5,13 @@ import { useEditorStore } from '../../store/useEditorStore';
 const SYMBOLOGIES: Symbology[] = ['code128', 'ean13', 'code39', 'upc'];
 const TEXT_ALIGNS: TextAlign[] = ['L', 'C', 'R', 'J'];
 
+const TEXT_ALIGN_CSS = {
+	L: 'Left',
+	C: 'Center',
+	R: 'Right',
+	J: 'Justify',
+};
+
 export function PropertiesPanel() {
 	const positionLocked = useEditorStore((s) => s.positionLocked);
 	const selectedElementId = useEditorStore((s) => s.selectedElementId);
@@ -170,7 +177,7 @@ function TextFields({
 								key={a}
 								value={a}
 							>
-								{a}
+								{TEXT_ALIGN_CSS[a]}
 							</option>
 						))}
 					</select>
