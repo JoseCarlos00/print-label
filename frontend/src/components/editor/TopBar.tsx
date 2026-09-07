@@ -3,6 +3,7 @@ import type { PrinterProfile } from 'shared';
 import { useAuth } from '../../context/AuthContext';
 import { useEditorStore } from '../../store/useEditorStore';
 import { api, ApiError } from '../../api/client';
+import type { ZplTarget } from 'shared/zpl'
 
 interface TopBarProps {
 	profiles: PrinterProfile[];
@@ -29,7 +30,13 @@ export function TopBar({ profiles }: TopBarProps) {
 
 		try {
 			console.log(elements)
-			const res = await api.post<{message: string, zpl: string}>('/print', { elements, profileId: profile.id });
+			const target: ZplTarget = 'print'
+
+			const res = await api.post<{ message: string; zpl: string }>('/print', {
+				elements,
+				profileId: profile.id,
+				target,
+			});
 			// * Debug
 			console.log(res.zpl)
 			

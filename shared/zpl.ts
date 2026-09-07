@@ -12,6 +12,8 @@ import type {
 
 import QRCode from 'qrcode/lib/core/qrcode.js';
 
+export type ZplTarget = 'print' | 'preview';
+
 /**
  * Error de validación de contenido contra las reglas de un symbology de
  * código de barras específico (ej. EAN-13 exige 12-13 dígitos numéricos).
@@ -194,6 +196,10 @@ function buildBarcodeCommand(el: BarcodeElement, dpi: number): string {
 // ──────────────────────────────────────────────────────────────────────────
 
 export function getQrModuleCount(content: string, errorCorrection: QrErrorCorrection = 'M'): number {
+	const result = QRCode.create(content, { errorCorrectionLevel: errorCorrection });
+	console.log(result.version); // 1, 2, 3, 4...
+	console.log(result.modules.size); // el moduleCount que ya usás
+
 	return QRCode.create(content, { errorCorrectionLevel: errorCorrection }).modules.size;
 }
 
@@ -201,14 +207,13 @@ export function getQrSizeDots(element: QrElement): number {
 	const errorCorrection = element.errorCorrection ?? 'M';
 
 	const moduleCount = getQrModuleCount(element.content || ' ', errorCorrection);
-	
+
 	return moduleCount * element.size;
 }
 
-
 const QR_ERROR_CORRECTION_DEFAULT: QrErrorCorrection = 'M';
 
-function buildQrCommand(el: QrElement, dpi: number): string {
+function buildQrCommand(el: QrElement, dpi: number, target: ZplTarget = 'print'): string {
 	const xDots = mmToDots(el.x, dpi);
 	const yDots = mmToDots(el.y, dpi);
 
@@ -216,6 +221,7 @@ function buildQrCommand(el: QrElement, dpi: number): string {
 	const errorCorrection = el.errorCorrection ?? QR_ERROR_CORRECTION_DEFAULT;
 
 	const sizeDots = getQrSizeDots(el);
+	const content = escapeZplField(el.content);
 
 	/* IMPORTANTE — NO cambiar ^FT por ^FO aquí sin volver a probar contra
 		impresora física. Validado empíricamente: con ^FO el QR se imprimía
@@ -229,20 +235,22 @@ function buildQrCommand(el: QrElement, dpi: number): string {
 		solo la posición x,y lo fue. Confirmar en hardware si usan rotación != 0.
 	*/
 
+	if (target === 'preview') {
+		// SOLO para preview vía Labelary. Confirmado empíricamente: Labelary
+		// no reproduce el offset de ^FT documentado abajo — con ^FO y el y,x
+		// tal cual (sin sumar sizeDots) el QR se ve alineado igual que en la
+		// impresora física con ^FT. Es una particularidad del simulador,
+		// NO cambiar el ZPL real (target 'print') basándose en esto.
+		return [`^FO${xDots},${yDots}`, `^BQ${orientation},2,${el.size}`, `^FH^FD${errorCorrection}A,${content}^FS`].join(
+			'\n',
+		);
+	}
+
 	// ^FT usa como referencia la parte inferior del QR,
 	// mientras que el editor usa la esquina superior izquierda.
 	const qrY = yDots + sizeDots;
 
-	const content = escapeZplField(el.content);
-
-	return [
-		`^FT${xDots},${qrY}`,
-		`^BQ${orientation},2,${el.size}`,
-
-		// Modo de entrada de datos fijo en "A" (automático): la impresora
-		// detecta el mejor submodo de codificación QR por contenido (email texto, números, etc.) sin que tengamos que declararlo nosotros.
-		`^FH^FD${errorCorrection}A,${content}^FS`,
-	].join('\n');
+	return [`^FT${xDots},${qrY}`, `^BQ${orientation},2,${el.size}`, `^FH^FD${errorCorrection}A,${content}^FS`].join('\n');
 }
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -257,7 +265,7 @@ function buildQrCommand(el: QrElement, dpi: number): string {
  * (ej. contenido de barcode que no cumple el formato del symbology).
  * El caller debe capturar ese error específico y devolver 400.
  */
-export function generateZpl(elements: LabelElement[], profile: PrinterProfile): string {
+export function generateZpl(elements: LabelElement[], profile: PrinterProfile, target: ZplTarget): string {
 	const widthDots = mmToDots(profile.widthMm, profile.dpi);
 	const heightDots = mmToDots(profile.heightMm, profile.dpi);
 
@@ -268,7 +276,7 @@ export function generateZpl(elements: LabelElement[], profile: PrinterProfile): 
 			case 'barcode':
 				return buildBarcodeCommand(el, profile.dpi);
 			case 'qr':
-				return buildQrCommand(el, profile.dpi);
+				return buildQrCommand(el, profile.dpi, target);
 		}
 	});
 
