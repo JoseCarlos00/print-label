@@ -196,10 +196,6 @@ function buildBarcodeCommand(el: BarcodeElement, dpi: number): string {
 // ──────────────────────────────────────────────────────────────────────────
 
 export function getQrModuleCount(content: string, errorCorrection: QrErrorCorrection = 'M'): number {
-	const result = QRCode.create(content, { errorCorrectionLevel: errorCorrection });
-	console.log(result.version); // 1, 2, 3, 4...
-	console.log(result.modules.size); // el moduleCount que ya usás
-
 	return QRCode.create(content, { errorCorrectionLevel: errorCorrection }).modules.size;
 }
 
