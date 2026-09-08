@@ -3,9 +3,6 @@ import type { PrinterProfile } from 'shared'
 export async function renderZpl(zpl: string, printer: PrinterProfile) {
 	const sizeLabel = () => `${(printer.widthMm / 25.4).toFixed(2)}x${(printer.heightMm / 25.4).toFixed(2)}`;
 
-	console.log(sizeLabel());
-	
-
 	const response = await fetch(`https://api.labelary.com/v1/printers/8dpmm/labels/${sizeLabel()}/0/`, {
 		method: 'POST',
 		headers: {
@@ -14,8 +11,6 @@ export async function renderZpl(zpl: string, printer: PrinterProfile) {
 		body: zpl,
 	});
 
-	console.log(response);
-	
 
 	if (!response.ok) {
 		throw new Error(await response.text());
