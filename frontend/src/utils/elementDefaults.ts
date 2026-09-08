@@ -19,6 +19,6 @@ export function createDefaultElement(type: ElementType, index: number): LabelEle
 		case 'barcode':
 			return { ...base, type: 'barcode', content: '123456789012', symbology: 'code128', height: 15, showText: true };
 		case 'qr':
-			return { ...base, type: 'qr', content: 'https://', size: 4 };
+			return { ...base, type: 'qr', content: 'https://', size: 40 };
 	}
 }

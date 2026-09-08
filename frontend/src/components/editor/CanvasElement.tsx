@@ -14,7 +14,6 @@ interface CanvasElementProps {
 	isSelected: boolean;
 	canvasWidthMm: number;
 	canvasHeightMm: number;
-	dpi: number;
 }
 
 const TEXT_ALIGN_CSS: Record<TextAlign, CSSProperties['textAlign']> = {
@@ -24,7 +23,7 @@ const TEXT_ALIGN_CSS: Record<TextAlign, CSSProperties['textAlign']> = {
 	J: 'justify',
 };
 
-export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeightMm, dpi }: CanvasElementProps) {
+export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeightMm }: CanvasElementProps) {
 	const positionLocked = useEditorStore((s) => s.positionLocked);
 	const selectElement = useEditorStore((s) => s.selectElement);
 	const updateElement = useEditorStore((s) => s.updateElement);
@@ -112,7 +111,6 @@ export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeight
 		>
 			<ElementPreview
 				element={element}
-				dpi={dpi}
 			/>
 
 			{isSelected && !positionLocked && (
@@ -161,7 +159,7 @@ export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeight
 // Render aproximado — no es el ZPL real. Barcode/QR quedan como placeholders
 // hasta que integremos una librería de render (jsbarcode / qrcode.react) o
 // el preview real vía Labelary.
-function ElementPreview({ element, dpi }: { element: LabelElement, dpi: number }) {
+function ElementPreview({ element }: { element: LabelElement }) {
 	switch (element.type) {
 		case 'text': {
 			const baseStyle: CSSProperties = {
@@ -218,7 +216,6 @@ function ElementPreview({ element, dpi }: { element: LabelElement, dpi: number }
 				>
 					<QrPreview
 						element={element}
-						dpi={dpi}
 					/>
 				</PreviewErrorBoundary>
 			);

@@ -35,7 +35,8 @@ export function SaveTemplateModal({ onClose, onSaved }: SaveTemplateModalProps) 
 	const [submitting, setSubmitting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
-
+	console.log({ loadedTemplateState, templateId, isUpdating });
+	
 	const canSubmit =
 		name.trim().length > 0 && Boolean(profile) && elements.length > 0 && (isAdmin || requestedBy.trim().length > 0);
 
@@ -68,7 +69,6 @@ export function SaveTemplateModal({ onClose, onSaved }: SaveTemplateModalProps) 
 					elements,
 					public: isPub,
 					positionLocked: isLocked,
-					requestedBy: 'ADMIN'
 				};
 
 				saved = await api.post<Template>('/templates', body);

@@ -24,7 +24,6 @@ export function Canvas() {
 						isSelected={el.id === selectedElementId}
 						canvasWidthMm={profile.widthMm}
 						canvasHeightMm={profile.heightMm}
-						dpi={profile.dpi}
 					/>
 				))}
 			</div>
