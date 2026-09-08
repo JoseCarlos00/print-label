@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import { usePrinterProfiles } from '../hooks/usePrinterProfiles';
 import { useTemplate } from '../hooks/useTemplate';
 import { useEditorStore } from '../store/useEditorStore';
@@ -10,10 +9,10 @@ import { Toolbar } from '../components/editor/Toolbar';
 import { Canvas } from '../components/editor/Canvas';
 import { PropertiesPanel } from '../components/editor/PropertiesPanel';
 import { useEditorKeyboard } from '../hooks/useEditorKeyboard';
+import { CanvasPreview } from '../components/editor/CanvasPreview'
 
 export function EditorPage() {
 	const { id } = useParams<{ id: string }>();
-	const { isAdmin } = useAuth();
 
 	const { profiles, loading: loadingProfiles, error: profilesError } = usePrinterProfiles();
 	const { template, loading: loadingTemplate, error: templateError } = useTemplate(id);
@@ -110,17 +109,12 @@ export function EditorPage() {
 
 	return (
 		<div className='flex h-full flex-col'>
-			{isAdmin && (
-				<span className='mx-6 mt-4 inline-block w-fit rounded bg-amber-800 px-3 py-1 text-sm text-white'>
-					Modo admin
-				</span>
-			)}
-
 			<TopBar profiles={profiles} />
 
 			<div className='flex flex-1 overflow-hidden'>
 				<Toolbar />
 				<Canvas />
+				<CanvasPreview />
 				<PropertiesPanel />
 			</div>
 		</div>
