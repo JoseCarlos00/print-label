@@ -5,6 +5,7 @@ import { NavBar } from './components/NavBar';
 import { EditorPage } from './pages/EditorPage';
 import { LoginPage } from './pages/LoginPage';
 import { StagingPage } from './pages/StagingPage';
+import { GalleryPage } from './pages/GalleryPage';
 
 function App() {
 	return (
@@ -16,6 +17,7 @@ function App() {
 						<Routes>
 							<Route path='/' element={<EditorPage />} />
 							<Route path='/editor/:id' element={<EditorPage />} />
+							<Route path='/galeria' element={<GalleryPage />} />
 							<Route path='/login' element={<LoginPage />} />
 							
 							<Route

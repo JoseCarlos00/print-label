@@ -19,12 +19,21 @@ export function NavBar() {
 				>
 					PrintLabel
 				</Link>
+
 				<Link
 					to='/'
 					className='text-sm text-app-text-muted hover:text-app-text'
 				>
 					Editor
 				</Link>
+
+				<Link
+					to='/galeria'
+					className='text-sm text-app-text-muted hover:text-app-text'
+				>
+					Galería
+				</Link>
+				
 				{isAdmin && (
 					<Link
 						to='/staging'
