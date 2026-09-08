@@ -19,7 +19,7 @@ causaba depender del motor de impresión del navegador.
 - Diseña la etiqueta.
 - Puede **imprimir directo**, sin guardar nada.
 - Puede **"Guardar como plantilla"**: debe escribir un nombre para la plantilla y
-  su propio nombre (`byRequest`). Esto **no se guarda directo**: se envía a
+  su propio nombre (`requestedBy`). Esto **no se guarda directo**: se envía a
   un área de **staging** con state `"pending"`.
 
 ### Admin (usuario único, con login)
@@ -40,7 +40,7 @@ causaba depender del motor de impresión del navegador.
   `0 | 90 | 180 | 270` (límite real de ZPL, no hay rotación libre en impresión).
 - **`PrinterProfile`**: ancho/alto en mm, DPI (203 o 300 típico en Zebra), IP.
 - **`Template`**: `elements[]`, `profileId`, `public` (visible en galería
-  general o no), `state` (`pending | approved | rejected`), `byRequest`
+  general o no), `state` (`pending | approved | rejected`), `requestedBy`
   (solo aplica si vino de staging).
 - **`CreateTemplateInput`**: lo que viaja al crear una plantilla. El backend
   decide el `state` según la ruta/autenticación — **nunca lo decide el cliente**.
