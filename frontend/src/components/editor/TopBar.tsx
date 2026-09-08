@@ -34,17 +34,14 @@ export function TopBar({ profiles }: TopBarProps) {
 		setPrintSuccess(false);
 
 		try {
-			console.log(elements)
 			const target: ZplTarget = 'print'
 
-			const res = await api.post<{ message: string; zpl: string }>('/print', {
+			await api.post('/print', {
 				elements,
 				profileId: profile.id,
 				target,
 			});
-			// * Debug
-			console.log(res.zpl)
-			
+
 			setPrintSuccess(true);
 		} catch (err) {
 			setPrintError(err instanceof ApiError ? err.message : 'Error al imprimir');

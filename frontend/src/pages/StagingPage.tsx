@@ -66,7 +66,7 @@ export function StagingPage() {
 							>
 								<div>
 									<p className='font-medium'>{template.name}</p>
-									<p className='text-sm text-app-text-muted'>Solicitado por: {template.byRequest || 'sin nombre'}</p>
+									<p className='text-sm text-app-text-muted'>Solicitado por: {template.requestedBy || 'sin nombre'}</p>
 								</div>
 								<div className='flex gap-2'>
 									<button

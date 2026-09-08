@@ -27,7 +27,7 @@ interface BaseElement {
 	locked?: boolean;
 }
 
-export type TextAlign = "L" | "C" | "R" | "J"; // izquierda, centro, derecha, justificado — valores nativos de ^FB
+export type TextAlign = 'L' | 'C' | 'R' | 'J'; // izquierda, centro, derecha, justificado — valores nativos de ^FB
 
 export interface TextElement extends BaseElement {
 	type: 'text';
@@ -39,24 +39,23 @@ export interface TextElement extends BaseElement {
 	lineSpacing?: number; // mm extra entre líneas; default 0
 }
 
-export type Symbology = "code128" | "ean13" | "code39" | "upc";
+export type Symbology = 'code128' | 'ean13' | 'code39' | 'upc';
 
 export interface BarcodeElement extends BaseElement {
-  type: "barcode";
-  content: string;
-  symbology: Symbology;
-  height: number; // mm
-  showText: boolean; // imprime el número legible debajo del código
+	type: 'barcode';
+	content: string;
+	symbology: Symbology;
+	height: number; // mm
+	showText: boolean; // imprime el número legible debajo del código
 }
 
-export type QrErrorCorrection = "L" | "M" | "Q" | "H";
-export type LabelPosition = "above" | "below";
+export type QrErrorCorrection = 'L' | 'M' | 'Q' | 'H';
 
 export interface QrElement extends BaseElement {
-  type: "qr";
-  content: string;
-  size: number; // factor de magnificación ZPL (entero positivo)
-  errorCorrection?: QrErrorCorrection; // por defecto "M" si no se especifica
+	type: 'qr';
+	content: string;
+	size: number; // factor de magnificación ZPL (entero positivo)
+	errorCorrection?: QrErrorCorrection; // por defecto "M" si no se especifica
 }
 
 /**
@@ -93,12 +92,11 @@ export interface Template {
 	elements: LabelElement[];
 	state: StateTemplate;
 	public: boolean;
-	byRequest?: string;
+	requestedBy?: string | null;
 	positionLocked: boolean; // true = el frontend no permite mover elementos (x,y fijos); el contenido sí se puede editar
 	createOn: string; // ISO 8601
 	updateOn: string; // ISO 8601
 }
-
 
 /**
  * Payload para crear una plantilla, ya sea vía staging (usuario libre)
@@ -110,7 +108,14 @@ export interface CreateTemplateInput {
 	profileId: string;
 	elements: LabelElement[];
 	public: boolean;
-	byRequest?: string;
+	requestedBy?: string;
 	positionLocked?: boolean; // opcional, default false si no se envía
 }
- 
+
+export interface UpdateTemplateInput {
+	name: string;
+	profileId: string;
+	elements: LabelElement[];
+	public: boolean;
+	positionLocked: boolean;
+}
