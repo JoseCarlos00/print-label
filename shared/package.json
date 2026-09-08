@@ -8,7 +8,7 @@
 	"types": "./types.ts",
 	"exports": {
 		".": "./types.ts",
-		"./zpl": "./zpl.ts"
+		"./zpl": "./zpl/index.ts"
 	},
 	"dependencies": {
 		"qrcode": "^1.5.4"
