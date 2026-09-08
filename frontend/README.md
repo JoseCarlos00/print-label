@@ -19,6 +19,6 @@ frontend/src/
 │       │   ├─ TextFields.tsx 
 │       │   ├─ BarcodeFields.tsx  
 │       │   └─ QrFields.tsx 
-│       └─ SaveTemplateModal.tsx  ← nombre, público, positionLocked, checkboxes de locked por elemento, byRequest
+│       └─ SaveTemplateModal.tsx  ← nombre, público, positionLocked, checkboxes de locked por elemento, requestedBy
 └─ pages/
     └─ EditorPage.tsx  ← orquesta todo: lee :id de la ruta, usa useTemplate + usePrinterProfiles, arma useEditorStore

@@ -1,16 +1,36 @@
 import type { Request, Response } from 'express';
-import type { CreateTemplateInput } from 'shared';
+import type { CreateTemplateInput, UpdateTemplateInput } from 'shared';
 import {
+	approveTemplate,
 	createTemplate,
 	getById,
 	listAllApproved,
 	listApprovedPublics,
+	rejectTemplate,
+	updateTemplate,
 } from '../templateRepo.js';
 
 function isValidInput(body: unknown): body is CreateTemplateInput {
 	if (!body || typeof body !== 'object') return false;
 
 	const input = body as Partial<CreateTemplateInput>;
+
+	return (
+		typeof input.name === 'string' &&
+		input.name.trim().length > 0 &&
+		typeof input.profileId === 'string' &&
+		input.profileId.trim().length > 0 &&
+		Array.isArray(input.elements) &&
+		input.elements.length > 0 &&
+		typeof input.public === 'boolean' &&
+		(input.positionLocked === undefined || typeof input.positionLocked === 'boolean')
+	);
+}
+
+function isValidUpdateInput(body: unknown): body is UpdateTemplateInput {
+	if (!body || typeof body !== 'object') return false;
+
+	const input = body as Partial<UpdateTemplateInput>;
 
 	return (
 		typeof input.name === 'string' &&
@@ -91,3 +111,100 @@ export const getOne = (req: Request, res: Response) => {
 
 	res.json(template);
 };
+
+export const update = (req: Request, res: Response) => {
+	const { id } = req.params;
+
+	if (typeof id !== 'string' || id.length === 0) {
+		return res.status(400).json({
+			message: 'Falta el id de la plantilla',
+		});
+	}
+
+	if (!isValidUpdateInput(req.body)) {
+		return res.status(400).json({
+			message: 'Datos de plantilla inválidos o incompletos',
+		});
+	}
+
+	try {
+		const template = updateTemplate(id, req.body);
+
+		if (!template) {
+			return res.status(404).json({
+				message: 'Plantilla no encontrada',
+			});
+		}
+
+		console.info(`Plantilla actualizada: ${template.id} - ${template.name}`);
+
+		return res.json(template);
+	} catch (error) {
+		console.error(`Error actualizando plantilla: ${error}`);
+
+		return res.status(500).json({
+			message: 'Error interno del servidor',
+		});
+	}
+};
+
+export const approve = (req: Request, res: Response) => {
+	const { id } = req.params;
+
+	if (typeof id !== 'string' || id.length === 0) {
+		return res.status(400).json({
+			message: 'Falta el id de la plantilla',
+		});
+	}
+
+	try {
+		const template = approveTemplate(id);
+
+		if (!template) {
+			return res.status(404).json({
+				message: 'Plantilla pendiente no encontrada',
+			});
+		}
+
+		console.info(`Plantilla aprobada: ${template.id} - ${template.name}`);
+
+		return res.json(template);
+	} catch (error) {
+		console.error(`Error aprobando plantilla: ${error}`);
+
+		return res.status(500).json({
+			message: 'Error interno del servidor',
+		});
+	}
+};
+
+export const reject = (req: Request, res: Response) => {
+	const { id } = req.params;
+
+	if (typeof id !== 'string' || id.length === 0) {
+		return res.status(400).json({
+			message: 'Falta el id de la plantilla',
+		});
+	}
+
+	try {
+		const template = rejectTemplate(id);
+
+		if (!template) {
+			return res.status(404).json({
+				message: 'Plantilla pendiente no encontrada',
+			});
+		}
+
+		console.info(`Plantilla rechazada: ${template.id} - ${template.name}`);
+
+		return res.json(template);
+	} catch (error) {
+		console.error(`Error rechazando plantilla: ${error}`);
+
+		return res.status(500).json({
+			message: 'Error interno del servidor',
+		});
+	}
+};
+
