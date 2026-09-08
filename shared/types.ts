@@ -54,7 +54,7 @@ export type QrErrorCorrection = 'L' | 'M' | 'Q' | 'H';
 export interface QrElement extends BaseElement {
 	type: 'qr';
 	content: string;
-	size: number; // factor de magnificación ZPL (entero positivo)
+	size: number; // tamaño deseado del QR en mm
 	errorCorrection?: QrErrorCorrection; // por defecto "M" si no se especifica
 }
 
