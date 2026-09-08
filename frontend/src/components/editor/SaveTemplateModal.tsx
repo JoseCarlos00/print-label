@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { CreateTemplateInput, Template } from 'shared';
+import type { CreateTemplateInput, Template, UpdateTemplateInput } from 'shared';
 import { useAuth } from '../../context/AuthContext';
 import { useEditorStore } from '../../store/useEditorStore';
 import { api, ApiError } from '../../api/client';
@@ -26,17 +26,18 @@ export function SaveTemplateModal({ onClose, onSaved }: SaveTemplateModalProps) 
 	// es 'approved'. Cualquier otro caso (admin desde cero, admin con una
 	// plantilla pending/rejected cargada, o cualquier usuario libre) crea
 	// una plantilla nueva — nunca se sobrescribe nada sin ser admin+approved.
-	const isUpdating = isAdmin && Boolean(templateId) && loadedTemplateState === 'approved';
+	const isUpdating = isAdmin && Boolean(templateId) //&& loadedTemplateState === 'approved';
 
 	const [name, setName] = useState(templateName);
 	const [isPub, setIsPub] = useState(isPublic);
 	const [isLocked, setIsLocked] = useState(positionLockedStore);
-	const [byRequest, setByRequest] = useState('');
+	const [requestedBy, setRequestedBy] = useState('');
 	const [submitting, setSubmitting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
+
 	const canSubmit =
-		name.trim().length > 0 && Boolean(profile) && elements.length > 0 && (isAdmin || byRequest.trim().length > 0);
+		name.trim().length > 0 && Boolean(profile) && elements.length > 0 && (isAdmin || requestedBy.trim().length > 0);
 
 	const handleSubmit = async () => {
 		if (!profile || !canSubmit) return;
@@ -44,32 +45,50 @@ export function SaveTemplateModal({ onClose, onSaved }: SaveTemplateModalProps) 
 		setSubmitting(true);
 		setError(null);
 
-		const body: CreateTemplateInput = {
-			name: name.trim(),
-			profileId: profile.id,
-			elements,
-			public: isPub,
-			positionLocked: isLocked,
-			...(isAdmin ? {} : { byRequest: byRequest.trim() }),
-		};
-
 		try {
 			let saved: Template;
 			let mode: 'created' | 'updated' | 'requested';
 
 			if (isUpdating) {
-				// TODO: PUT /api/templates/:id todavía no existe en el backend
-				// (queda pendiente) — esta llamada va a devolver 404 hasta que
-				// se implemente ahí. El frontend ya queda listo para ese día.
+				const body: UpdateTemplateInput = {
+					name: name.trim(),
+					profileId: profile.id,
+					elements,
+					public: isPub,
+					positionLocked: isLocked,
+				};
+
 				saved = await api.put<Template>(`/templates/${templateId}`, body);
+
 				mode = 'updated';
 			} else if (isAdmin) {
+				const body: CreateTemplateInput = {
+					name: name.trim(),
+					profileId: profile.id,
+					elements,
+					public: isPub,
+					positionLocked: isLocked,
+					requestedBy: 'ADMIN'
+				};
+
 				saved = await api.post<Template>('/templates', body);
+
 				mode = 'created';
 			} else {
+				const body: CreateTemplateInput = {
+					name: name.trim(),
+					profileId: profile.id,
+					elements,
+					public: isPub,
+					positionLocked: isLocked,
+					requestedBy: requestedBy.trim(),
+				};
+
 				saved = await api.post<Template>('/templates/staging', body);
+
 				mode = 'requested';
 			}
+
 
 			setTemplateMeta({ templateName: saved.name, isPublic: saved.public, positionLocked: saved.positionLocked });
 			onSaved(saved, mode);
@@ -145,8 +164,8 @@ export function SaveTemplateModal({ onClose, onSaved }: SaveTemplateModalProps) 
 					<label className='block text-sm text-app-text-muted'>
 						Tu nombre (para identificar la solicitud)
 						<input
-							value={byRequest}
-							onChange={(e) => setByRequest(e.target.value)}
+							value={requestedBy}
+							onChange={(e) => setRequestedBy(e.target.value)}
 							className='mt-1 w-full rounded-md border border-app-border bg-app-surface p-2 text-app-text'
 						/>
 					</label>
