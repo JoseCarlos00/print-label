@@ -7,8 +7,6 @@ import {
 	listAll,
 	listPublic,
 	update,
-	approve,
-	reject,
 } from '../controllers/template.controller.js';
 
 
@@ -25,7 +23,5 @@ router.get('/', listPublic);
 router.get('/:id', getOne);
 
 router.put('/:id', update);
-router.post('/:id/approve', requireAdmin, approve);
-router.post('/:id/reject', requireAdmin, reject);
 
 export default router;

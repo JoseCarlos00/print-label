@@ -1,12 +1,10 @@
 import type { Request, Response } from 'express';
 import type { CreateTemplateInput, UpdateTemplateInput } from 'shared';
 import {
-	approveTemplate,
 	createTemplate,
 	getById,
 	listAllApproved,
 	listApprovedPublics,
-	rejectTemplate,
 	updateTemplate,
 } from '../templateRepo.js';
 
@@ -147,64 +145,3 @@ export const update = (req: Request, res: Response) => {
 		});
 	}
 };
-
-export const approve = (req: Request, res: Response) => {
-	const { id } = req.params;
-
-	if (typeof id !== 'string' || id.length === 0) {
-		return res.status(400).json({
-			message: 'Falta el id de la plantilla',
-		});
-	}
-
-	try {
-		const template = approveTemplate(id);
-
-		if (!template) {
-			return res.status(404).json({
-				message: 'Plantilla pendiente no encontrada',
-			});
-		}
-
-		console.info(`Plantilla aprobada: ${template.id} - ${template.name}`);
-
-		return res.json(template);
-	} catch (error) {
-		console.error(`Error aprobando plantilla: ${error}`);
-
-		return res.status(500).json({
-			message: 'Error interno del servidor',
-		});
-	}
-};
-
-export const reject = (req: Request, res: Response) => {
-	const { id } = req.params;
-
-	if (typeof id !== 'string' || id.length === 0) {
-		return res.status(400).json({
-			message: 'Falta el id de la plantilla',
-		});
-	}
-
-	try {
-		const template = rejectTemplate(id);
-
-		if (!template) {
-			return res.status(404).json({
-				message: 'Plantilla pendiente no encontrada',
-			});
-		}
-
-		console.info(`Plantilla rechazada: ${template.id} - ${template.name}`);
-
-		return res.json(template);
-	} catch (error) {
-		console.error(`Error rechazando plantilla: ${error}`);
-
-		return res.status(500).json({
-			message: 'Error interno del servidor',
-		});
-	}
-};
-
