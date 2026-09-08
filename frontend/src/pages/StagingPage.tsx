@@ -24,7 +24,7 @@ export function StagingPage() {
 		loadPending();
 	}, []);
 
-	const handleAction = async (id: string, action: 'approved' | 'rejected') => {
+	const handleAction = async (id: string, action: 'approve' | 'reject') => {
 		setActionState((prev) => ({ ...prev, [id]: action === 'approve' ? 'approving' : 'rejecting' }));
 
 		try {
@@ -71,14 +71,14 @@ export function StagingPage() {
 								<div className='flex gap-2'>
 									<button
 										disabled={isBusy}
-										onClick={() => handleAction(template.id, 'approved')}
+										onClick={() => handleAction(template.id, 'approve')}
 										className='rounded-md bg-app-accent px-3 py-1.5 text-sm font-medium text-app-accent-contrast disabled:opacity-50'
 									>
 										{state === 'approving' ? 'Aprobando...' : 'Aprobar'}
 									</button>
 									<button
 										disabled={isBusy}
-										onClick={() => handleAction(template.id, 'rejected')}
+										onClick={() => handleAction(template.id, 'reject')}
 										className='rounded-md border border-app-border px-3 py-1.5 text-sm font-medium text-app-text disabled:opacity-50'
 									>
 										{state === 'rejecting' ? 'Rechazando...' : 'Rechazar'}

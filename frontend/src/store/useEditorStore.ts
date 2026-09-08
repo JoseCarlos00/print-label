@@ -28,7 +28,7 @@ const ROTATIONS: Rotation[] = [0, 90, 180, 270];
 const initialState: EditorState = {
 	templateId: null,
 	templateName: '',
-	isPublic: false,
+	isPublic: true,
 	positionLocked: false,
 	loadedTemplateState: null,
 	profile: null,
