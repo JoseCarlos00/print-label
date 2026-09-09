@@ -30,6 +30,7 @@ export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeight
 	const rotateElement = useEditorStore((s) => s.rotateElement);
 	const duplicateElement = useEditorStore((s) => s.duplicateElement);
 	const removeElement = useEditorStore((s) => s.removeElement);
+	const requestContentFocus = useEditorStore((s) => s.requestContentFocus);
 
 	const dragOffsetMm = useRef<{ dx: number; dy: number } | null>(null);
 	const draggable = !positionLocked;
@@ -68,6 +69,16 @@ export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeight
 		dragOffsetMm.current = null;
 	};
 
+	const handleDoubleClick = (e: PointerEvent<HTMLDivElement>) => {
+		e.stopPropagation();
+
+		if ((e.target as HTMLElement).closest('[data-element-toolbar]')) return;
+
+		selectElement(element.id);
+		requestContentFocus();
+	};
+
+
 	// offsetWidth/offsetHeight ignoran `transform`, así que dan el tamaño
 	// SIN ROTAR del elemento aunque ya tenga rotate() aplicado. Lo necesitamos
 	// para compensar la posición a 90°/270°, donde ancho y alto se intercambian.
@@ -100,6 +111,7 @@ export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeight
 			onPointerDown={handlePointerDown}
 			onPointerMove={handlePointerMove}
 			onPointerUp={handlePointerUp}
+			onDoubleClick={handleDoubleClick}
 			style={{
 				position: 'absolute',
 				left: mmToPx(element.x) + offsetXPx,

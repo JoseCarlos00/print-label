@@ -10,13 +10,18 @@ export interface EditorState {
 	templateId: string | null;
 	templateName: string;
 	isPublic: boolean;
+
 	/** viene de la plantilla cargada, o se define al guardar una nueva */
 	positionLocked: boolean;
+
 	/** state de la plantilla cargada (approved/pending/rejected); null si es nueva */
 	loadedTemplateState: StateTemplate | null;
+
 	profile: PrinterProfile | null;
 	elements: LabelElement[];
 	selectedElementId: string | null;
+
+	focusContentRequest: number; // Solicita focus en el input content
 }
 
 export interface EditorActions {
@@ -31,6 +36,7 @@ export interface EditorActions {
 	setTemplateMeta: (meta: Partial<Pick<EditorState, 'templateName' | 'isPublic' | 'positionLocked'>>) => void;
 	loadTemplate: (template: Template, profile: PrinterProfile) => void;
 	resetEditor: () => void;
+	requestContentFocus: () => void;
 }
 
 export type EditorStore = EditorState & EditorActions;

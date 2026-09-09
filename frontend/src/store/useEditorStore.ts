@@ -34,6 +34,7 @@ const initialState: EditorState = {
 	profile: null,
 	elements: [],
 	selectedElementId: null,
+	focusContentRequest: 0,
 };
 
 export const useEditorStore = create<EditorStore>()((set, get) => ({
@@ -103,6 +104,12 @@ export const useEditorStore = create<EditorStore>()((set, get) => ({
 			elements: template.elements,
 			selectedElementId: null,
 		}),
+
+	requestContentFocus: () => {
+		set((state) => ({
+			focusContentRequest: state.focusContentRequest + 1,
+		}));
+	},
 
 	resetEditor: () => set(initialState),
 }));

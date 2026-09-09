@@ -18,6 +18,8 @@ export function PropertiesPanel() {
 	const selectedElementId = useEditorStore((s) => s.selectedElementId);
 	const element = useEditorStore((s) => s.elements.find((el) => el.id === s.selectedElementId));
 	const updateElement = useEditorStore((s) => s.updateElement);
+	const focusContentRequest = useEditorStore((s) => s.focusContentRequest);
+
 
 	const contentRef = useRef<HTMLTextAreaElement>(null);
 
@@ -26,7 +28,7 @@ export function PropertiesPanel() {
 	// siquiera el contenido queda editable.
 	const structureDisabled = positionLocked;
 	const contentDisabled = positionLocked && Boolean(element?.locked);
-
+	
 	useEffect(() => {
 		if (!selectedElementId || !element || contentDisabled) {
 			return;
@@ -34,8 +36,20 @@ export function PropertiesPanel() {
 
 		contentRef.current?.focus();
 		contentRef.current?.select();
-	// eslint-disable-next-line react-hooks/exhaustive-deps
+
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [selectedElementId, contentDisabled]);
+
+	useEffect(() => {
+		if (!focusContentRequest || !element || contentDisabled) {
+			return;
+		}
+
+		contentRef.current?.focus();
+		contentRef.current?.select();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [focusContentRequest, contentDisabled]);
+	
 
 	if (!selectedElementId || !element) {
 		return (
