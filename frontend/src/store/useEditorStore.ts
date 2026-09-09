@@ -47,7 +47,11 @@ export const useEditorStore = create<EditorStore>()((set, get) => ({
 
 	addElement: (elementType) => {
 		const element = createDefaultElement(elementType, get().elements.length);
-		set((state) => ({ elements: [...state.elements, element], selectedElementId: element.id }));
+		set((state) => ({
+			elements: [...state.elements, element],
+			selectedElementId: element.id,
+			focusContentRequest: state.focusContentRequest + 1,
+		}));
 	},
 
 	updateElement: (id, changes) =>
@@ -72,7 +76,11 @@ export const useEditorStore = create<EditorStore>()((set, get) => ({
 			y: original.y + 5,
 			locked: false,
 		};
-		set((state) => ({ elements: [...state.elements, copy], selectedElementId: copy.id }));
+		set((state) => ({
+			elements: [...state.elements, copy],
+			selectedElementId: copy.id,
+			focusContentRequest: state.focusContentRequest + 1,
+		}));
 	},
 
 	rotateElement: (id) =>

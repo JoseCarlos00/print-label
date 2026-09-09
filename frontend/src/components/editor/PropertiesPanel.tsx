@@ -30,25 +30,16 @@ export function PropertiesPanel() {
 	const contentDisabled = positionLocked && Boolean(element?.locked);
 	
 	useEffect(() => {
-		if (!selectedElementId || !element || contentDisabled) {
+		if (!element || contentDisabled || !focusContentRequest) {
 			return;
 		}
 
 		contentRef.current?.focus();
 		contentRef.current?.select();
 
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [selectedElementId, contentDisabled]);
-
-	useEffect(() => {
-		if (!focusContentRequest || !element || contentDisabled) {
-			return;
-		}
-
-		contentRef.current?.focus();
-		contentRef.current?.select();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [focusContentRequest, contentDisabled]);
+
 	
 
 	if (!selectedElementId || !element) {
