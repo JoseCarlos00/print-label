@@ -17,24 +17,29 @@ function isTextInput(target: EventTarget | null) {
 export function useEditorKeyboard() {
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
-      
+				const state = useEditorStore.getState();
+
+				const {
+					selectedElementId,
+					positionLocked,
+					elements,
+					selectElement,
+					updateElement,
+					duplicateElement,
+					removeElement,
+					rotateElement,
+				} = state;
+
+			// Escape
+			if (e.key === 'Escape') {
+				selectElement(null);
+				return;
+			}
+
 			// No ejecutar shortcuts mientras el usuario escribe.
 			if (isTextInput(e.target)) {
 				return;
 			}
-
-			const state = useEditorStore.getState();
-
-			const {
-				selectedElementId,
-				positionLocked,
-				elements,
-				selectElement,
-				updateElement,
-				duplicateElement,
-				removeElement,
-				rotateElement,
-			} = state;
 
 			if (!selectedElementId) {
 				return;
@@ -43,12 +48,6 @@ export function useEditorKeyboard() {
 			const element = elements.find((el) => el.id === selectedElementId);
 
 			if (!element) {
-				return;
-			}
-
-			// Escape
-			if (e.key === 'Escape') {
-				selectElement(null);
 				return;
 			}
 
@@ -89,7 +88,7 @@ export function useEditorKeyboard() {
 						y: element.y - step,
 					});
 					break;
-
+					
 				case 'ArrowDown':
 					e.preventDefault();
 					updateElement(element.id, {
@@ -111,7 +110,7 @@ export function useEditorKeyboard() {
 					});
 					break;
 			}
-		};
+		};;
 
 		window.addEventListener('keydown', handleKeyDown);
 
