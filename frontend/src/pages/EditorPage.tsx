@@ -8,11 +8,24 @@ import { TopBar } from '../components/editor/TopBar';
 import { Toolbar } from '../components/editor/Toolbar';
 import { Canvas } from '../components/editor/Canvas';
 import { PropertiesPanel } from '../components/editor/PropertiesPanel';
-import { useEditorKeyboard } from '../hooks/useEditorKeyboard';
 import { CanvasPreview } from '../components/editor/preview/CanvasPreview'
 import { QuickTemplatesPanel } from '../components/editor/QuickTemplatesPanel'
 
-export function EditorPage() {
+
+// Wrapper que fuerza un remount COMPLETO de EditorPage cada vez que cambia
+// el :id de la ruta (incluido pasar de "sin id" a "con id" o viceversa).
+// Sin esto, al navegar entre rutas hermanas que renderizan el mismo
+// componente (`/` y `/editor/:id`), React reutiliza la instancia existente
+// en vez de montarla de nuevo — y como el store de Zustand vive afuera del
+// ciclo de vida de React, eso puede dejar una carrera entre el render viejo
+// y los efectos que todavía no corrieron. Forzar el remount con `key`
+// elimina esa clase entera de bugs de timing.
+export function EditorRoute() {
+	const { id } = useParams<{ id: string }>();
+	return <EditorPage key={id ?? 'new'} />;
+}
+
+function EditorPage() {
 	const { id } = useParams<{ id: string }>();
 
 	const { profiles, loading: loadingProfiles, error: profilesError } = usePrinterProfiles();
@@ -25,8 +38,6 @@ export function EditorPage() {
 	const setProfile = useEditorStore((s) => s.setProfile);
 	const loadTemplate = useEditorStore((s) => s.loadTemplate);
 	const resetEditor = useEditorStore((s) => s.resetEditor);
-
-	useEditorKeyboard();
 
 	// Si cambia el :id (o pasamos de una plantilla a "nueva"), reseteamos
 	// el store antes de que los efectos de abajo vuelvan a poblarlo.

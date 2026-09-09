@@ -36,6 +36,7 @@ const initialState: EditorState = {
 	selectedElementId: null,
 	focusContentRequest: 0,
 	clipboardElement: null,
+	isDirty: false,
 };
 
 export const useEditorStore = create<EditorStore>()((set, get) => ({
@@ -114,6 +115,8 @@ export const useEditorStore = create<EditorStore>()((set, get) => ({
 			selectedElementId: null,
 		}),
 
+	resetEditor: () => set(initialState),
+
 	requestContentFocus: () => {
 		set((state) => ({
 			focusContentRequest: state.focusContentRequest + 1,
@@ -150,5 +153,5 @@ export const useEditorStore = create<EditorStore>()((set, get) => ({
 		}));
 	},
 
-	resetEditor: () => set(initialState),
+	markSaved: () => set({ isDirty: false }),
 }));

@@ -24,6 +24,9 @@ export interface EditorState {
 	focusContentRequest: number; // Solicita focus en el input content
 
 	clipboardElement: LabelElement | null;
+
+	/** true si hay cambios hechos después del último load/reset/guardado exitoso */
+	isDirty: boolean;
 }
 
 export interface EditorActions {
@@ -41,6 +44,7 @@ export interface EditorActions {
 	requestContentFocus: () => void;
 	copyElement: (id: string) => void;
 	pasteElement: () => void;
+	markSaved: () => void;
 }
 
 export type EditorStore = EditorState & EditorActions;

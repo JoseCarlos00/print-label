@@ -1,20 +1,13 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useTemplates } from '../../hooks/useTemplates';
-import { useEditorStore } from '../../store/useEditorStore';
 
 const QUICK_LIMIT = 8;
 
 export function QuickTemplatesPanel() {
 	const navigate = useNavigate();
 	const { templates, loading, error } = useTemplates(false); // solo públicas + approved
-	const elements = useEditorStore((s) => s.elements);
 
 	const handleUse = (id: string) => {
-		// Navegar a /editor/:id resetea el store (ver EditorPage) — si hay
-		// un diseño sin guardar, confirmamos antes de perderlo.
-		if (elements.length > 0 && !window.confirm('Vas a perder el diseño actual sin guardar. ¿Continuar?')) {
-			return;
-		}
 		navigate(`/editor/${id}`);
 	};
 
