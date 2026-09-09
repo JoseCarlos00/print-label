@@ -22,6 +22,8 @@ export interface EditorState {
 	selectedElementId: string | null;
 
 	focusContentRequest: number; // Solicita focus en el input content
+
+	clipboardElement: LabelElement | null;
 }
 
 export interface EditorActions {
@@ -37,6 +39,8 @@ export interface EditorActions {
 	loadTemplate: (template: Template, profile: PrinterProfile) => void;
 	resetEditor: () => void;
 	requestContentFocus: () => void;
+	copyElement: (id: string) => void;
+	pasteElement: () => void;
 }
 
 export type EditorStore = EditorState & EditorActions;

@@ -17,18 +17,20 @@ function isTextInput(target: EventTarget | null) {
 export function useEditorKeyboard() {
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
-				const state = useEditorStore.getState();
+			const state = useEditorStore.getState();
 
-				const {
-					selectedElementId,
-					positionLocked,
-					elements,
-					selectElement,
-					updateElement,
-					duplicateElement,
-					removeElement,
-					rotateElement,
-				} = state;
+			const {
+				selectedElementId,
+				positionLocked,
+				elements,
+				selectElement,
+				updateElement,
+				duplicateElement,
+				removeElement,
+				rotateElement,
+				copyElement,
+				pasteElement,
+			} = state;
 
 			// Escape
 			if (e.key === 'Escape') {
@@ -78,6 +80,20 @@ export function useEditorKeyboard() {
 				return;
 			}
 
+			// Ctrl/Cmd + C
+			if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c') {
+				e.preventDefault();
+				copyElement(selectedElementId);
+				return;
+			}
+
+			// Ctrl/Cmd + V
+			if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') {
+				e.preventDefault();
+				pasteElement();
+				return;
+			}
+
 			// Movimiento
 			const step = e.shiftKey ? 1 : 0.1;
 
@@ -88,7 +104,7 @@ export function useEditorKeyboard() {
 						y: element.y - step,
 					});
 					break;
-					
+
 				case 'ArrowDown':
 					e.preventDefault();
 					updateElement(element.id, {
@@ -110,7 +126,7 @@ export function useEditorKeyboard() {
 					});
 					break;
 			}
-		};;
+		};;;
 
 		window.addEventListener('keydown', handleKeyDown);
 

@@ -35,6 +35,7 @@ const initialState: EditorState = {
 	elements: [],
 	selectedElementId: null,
 	focusContentRequest: 0,
+	clipboardElement: null,
 };
 
 export const useEditorStore = create<EditorStore>()((set, get) => ({
@@ -115,6 +116,36 @@ export const useEditorStore = create<EditorStore>()((set, get) => ({
 
 	requestContentFocus: () => {
 		set((state) => ({
+			focusContentRequest: state.focusContentRequest + 1,
+		}));
+	},
+
+	copyElement: (id) => {
+		const element = get().elements.find((el) => el.id === id);
+
+		if (!element) return;
+
+		set({
+			clipboardElement: structuredClone(element),
+		});
+	},
+
+	pasteElement: () => {
+		const clipboardElement = get().clipboardElement;
+
+		if (!clipboardElement) return;
+
+		const element = {
+			...structuredClone(clipboardElement),
+			id: uuidv4(),
+			x: clipboardElement.x + 5,
+			y: clipboardElement.y + 5,
+			locked: false,
+		};
+
+		set((state) => ({
+			elements: [...state.elements, element],
+			selectedElementId: element.id,
 			focusContentRequest: state.focusContentRequest + 1,
 		}));
 	},
