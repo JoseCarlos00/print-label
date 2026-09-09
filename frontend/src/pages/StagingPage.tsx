@@ -72,7 +72,7 @@ export function StagingPage() {
 									<button
 										disabled={isBusy}
 										onClick={() => handleAction(template.id, 'approve')}
-										className='rounded-md bg-app-accent px-3 py-1.5 text-sm font-medium text-app-accent-contrast disabled:opacity-50'
+										className='rounded-md bg-app-accent-500 px-3 py-1.5 text-sm font-medium text-app-accent-contrast disabled:opacity-50'
 									>
 										{state === 'approving' ? 'Aprobando...' : 'Aprobar'}
 									</button>

@@ -183,7 +183,7 @@ export function SaveTemplateModal({ onClose, onSaved }: SaveTemplateModalProps) 
 					<button
 						disabled={!canSubmit || submitting}
 						onClick={handleSubmit}
-						className='rounded-md bg-app-accent px-3 py-1.5 text-sm font-medium text-app-accent-contrast disabled:opacity-50'
+						className='rounded-md bg-app-accent-500 px-3 py-1.5 text-sm font-medium text-app-accent-contrast disabled:opacity-50'
 					>
 						{submitting ? 'Guardando...' : isUpdating ? 'Actualizar' : isAdmin ? 'Guardar' : 'Enviar solicitud'}
 					</button>

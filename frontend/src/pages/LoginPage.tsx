@@ -42,7 +42,7 @@ export function LoginPage() {
 			/>
 			{error && <p className='text-sm text-red-400'>{error}</p>}
 			<button
-				className='w-full rounded-md bg-app-accent p-2 font-medium text-app-accent-contrast'
+				className='w-full rounded-md bg-app-accent-500 p-2 font-medium text-app-accent-contrast'
 				type='submit'
 			>
 				Entrar

@@ -4,9 +4,17 @@
 	--color-app-bg: #262119;
 	--color-app-surface: #2f2921;
 	--color-app-border: #423a2c;
+
 	--color-app-text: #f4efe4;
 	--color-app-text-muted: #b3a690;
+
 	--color-app-accent: #f59e0b;
+
+	--color-app-accent-400: #fbbf24;
+	--color-app-accent-500: #f59e0b;
+	--color-app-accent-600: #d97706;
+	--color-app-accent-700: #b45309;
+	
 	--color-app-accent-contrast: #451a03;
 }
 

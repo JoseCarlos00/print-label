@@ -31,7 +31,7 @@ export function TemplateCard({ template, profile, onUse }: TemplateCardProps) {
 
 			<button
 				onClick={onUse}
-				className='mt-4 rounded-md bg-app-accent px-3 py-1.5 text-sm font-medium text-app-accent-contrast'
+				className='mt-4 rounded-md bg-app-accent-500 px-3 py-1.5 text-sm font-medium text-app-accent-contrast'
 			>
 				Usar esta plantilla
 			</button>

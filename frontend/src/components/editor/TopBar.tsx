@@ -90,7 +90,7 @@ export function TopBar({ profiles }: TopBarProps) {
 				<button
 					onClick={handlePrint}
 					disabled={printState === 'printing' || !profile || elements.length === 0}
-					className='rounded-md bg-app-accent px-3 py-1.5 text-sm font-medium text-app-accent-contrast disabled:opacity-50'
+					className='rounded-md bg-app-accent-500 px-3 py-1.5 text-sm font-medium text-app-accent-contrast disabled:opacity-50 cursor-pointer'
 				>
 					{printState === 'printing' ? 'Imprimiendo...' : 'Imprimir'}
 				</button>
@@ -98,7 +98,7 @@ export function TopBar({ profiles }: TopBarProps) {
 				<button
 					onClick={() => setSaveModalOpen(true)}
 					disabled={!profile || elements.length === 0}
-					className='rounded-md border border-app-border px-3 py-1.5 text-sm font-medium text-app-text disabled:opacity-50'
+					className='rounded-md border border-app-border px-3 py-1.5 text-sm font-medium text-app-text disabled:opacity-50 cursor-pointer'
 				>
 					{isUpdating ? 'Actualizar plantilla' : isAdmin ? 'Guardar plantilla' : 'Solicitar plantilla'}
 				</button>
