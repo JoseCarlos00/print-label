@@ -14,13 +14,12 @@ export function CanvasPreview() {
 	return (
 		<div className='flex min-w-0 flex-1 flex-col items-center justify-center gap-2 overflow-auto bg-app-bg p-8'>
 			<div className='flex items-center gap-2'>
-				<p className='text-xs font-medium uppercase text-app-text-muted'>Vista previa real (Labelary)</p>
 				<button
 					onClick={redraw}
 					disabled={loading || elements.length === 0}
 					className='rounded-md border border-app-border px-2 py-1 text-xs text-app-text hover:bg-app-surface disabled:opacity-50'
 				>
-					{loading ? 'Generando...' : 'Redraw'}
+					{loading ? 'Generando...' : 'Vista Previa'}
 				</button>
 				{isStale && !loading && <span className='text-xs text-amber-400'>Hay cambios sin reflejar</span>}
 			</div>

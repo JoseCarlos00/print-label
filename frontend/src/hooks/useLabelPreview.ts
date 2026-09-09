@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import type { LabelElement, PrinterProfile } from 'shared';
 import { generateZpl, ZplValidationError } from 'shared/zpl';
-import { renderZpl } from '../services/zpl';
+import { renderZplToImage } from '../services/labelary';
 
 interface UseLabelPreviewResult {
 	imageUrl: string | null;
@@ -34,19 +34,19 @@ export function useLabelPreview(elements: LabelElement[], profile: PrinterProfil
 		(async () => {
 			try {
       const zpl = generateZpl(elements, profile, 'preview');
-      console.log(zpl);
       
-				const nextUrl = await renderZpl(zpl, profile);
+				const nextUrl = await renderZplToImage(zpl, profile);
 
 				if (lastUrlRef.current) URL.revokeObjectURL(lastUrlRef.current);
 				lastUrlRef.current = nextUrl;
+				
 				setImageUrl(nextUrl);
 				setRenderedKey(currentKey);
 			} catch (err) {
 				setError(
 					err instanceof ZplValidationError
 						? err.message
-						: 'No se pudo generar la vista previa (revisá tu conexión a internet)',
+						: 'No se pudo generar la vista previa (revisa tu conexión a internet)',
 				);
 			} finally {
 				setLoading(false);
