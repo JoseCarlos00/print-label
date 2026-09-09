@@ -21,7 +21,7 @@ export function CanvasPreview() {
 					<button
 						onClick={redraw}
 						disabled={loading || elements.length === 0}
-						className='rounded-md border border-app-border bg-app-accent-500 px-2 py-1.5 text-xs text-app-accent-contrast hover:bg-app-text-muted font-medium disabled:opacity-50 cursor-pointer'
+						className='rounded-md border border-app-border bg-app-accent-500 px-2 py-1.5 text-xs text-app-accent-contrast active:bg-app-accent-700 hover:bg-app-accent-700 font-medium disabled:opacity-50 cursor-pointer'
 					>
 						{loading ? 'Generando...' : 'Vista Previa'}
 					</button>
@@ -29,7 +29,9 @@ export function CanvasPreview() {
 				</div>
 
 				{!imageUrl && !loading && !error && (
-					<p className='px-4 text-center text-sm text-app-text-muted'>Presiona "Redraw" para generar la vista previa</p>
+					<p className='px-4 text-center text-sm text-app-text-muted'>
+						Presiona "Vista Previa" para generar la vista previa
+					</p>
 				)}
 
 				{imageUrl && (
