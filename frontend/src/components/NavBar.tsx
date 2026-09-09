@@ -15,7 +15,7 @@ export function NavBar() {
 			<div className='flex items-center gap-6'>
 				<Link
 					to='/'
-					className='text-sm font-semibold text-app-text'
+					className='text-sm font-semibold text-app-text -rotate-12'
 				>
 					PrintLabel
 				</Link>
