@@ -6,19 +6,6 @@ import { mmToDots, ROTATION_MAP, type ZplTarget } from '../units.js';
 // ──────────────────────────────────────────────────────────────────────────
 // QR
 // ──────────────────────────────────────────────────────────────────────────
-
-export function getQrModuleCount(content: string, errorCorrection: QrErrorCorrection = 'M'): number {
-	return QRCode.create(content, { errorCorrectionLevel: errorCorrection }).modules.size;
-}
-
-export function getQrSizeDots(element: QrElement): number {
-	const errorCorrection = element.errorCorrection ?? 'M';
-
-	const moduleCount = getQrModuleCount(element.content || ' ', errorCorrection);
-
-	return moduleCount * element.size;
-}
-
 const QR_ERROR_CORRECTION_DEFAULT: QrErrorCorrection = 'M';
 
 
@@ -112,18 +99,18 @@ function bytesToHex(data: Uint8Array): string {
 	return result;
 }
 
-function buildGraphicCommand(bitmap: QrBitmap, xDots: number, yDots: number): string {
+function buildGraphicCommand(bitmap: QrBitmap, position: string): string {
 	const totalBytes = bitmap.data.length;
 	const hexData = bytesToHex(bitmap.data);
 
-	return [`^FO${xDots},${yDots}`, `^GFA,${totalBytes},${totalBytes},${bitmap.bytesPerRow},${hexData}`].join('\n');
+	return [`${position}`, `^GFA,${totalBytes},${totalBytes},${bitmap.bytesPerRow},${hexData}`].join('\n');
 }
 
 export function buildQrCommand(el: QrElement, dpi: number, target: ZplTarget = 'print'): string {
 	const xDots = mmToDots(el.x, dpi);
 	const yDots = mmToDots(el.y, dpi);
 
-	const orientation = ROTATION_MAP[el.rotation];
+	// const orientation = ROTATION_MAP[el.rotation];
 
 	const errorCorrection = el.errorCorrection ?? QR_ERROR_CORRECTION_DEFAULT;
 
@@ -138,21 +125,17 @@ export function buildQrCommand(el: QrElement, dpi: number, target: ZplTarget = '
 	 * Labelary se comporta mejor con ^FO.
 	 */
 	if (target === 'preview') {
-		return buildGraphicCommand(bitmap, xDots, yDots);
+		const positionPreview = `^FO${xDots},${yDots}`
+		return buildGraphicCommand(bitmap, positionPreview);
 	}
 
 	/*
 	 * Print:
-	 * Conservamos ^FT porque ya comprobaste físicamente
-	 * que corrige el desplazamiento que tenías con ^FO.
-	 *
-	 * Por ahora usamos la misma posición vertical que
-	 * estabas utilizando con ^BQ.
+	 * Conservamos ^FT porque físicamente
+	 * corrige el desplazamiento de ^FO.
 	 */
 	const qrY = yDots + bitmap.heightDots;
+	const positionPrint = `^FT${xDots},${qrY}`;
 
-	return [
-		`^FT${xDots},${qrY}`,
-		`^GFA,${bitmap.data.length},${bitmap.data.length},${bitmap.bytesPerRow},${bytesToHex(bitmap.data)}`,
-	].join('\n');
+	return buildGraphicCommand(bitmap, positionPrint);
 }
