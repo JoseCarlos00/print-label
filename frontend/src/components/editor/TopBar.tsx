@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { PrinterProfile, Template } from 'shared';
-import type { ZplTarget } from 'shared/zpl'
+import type { ZplTarget } from 'shared/zpl';
 import { useAuth } from '../../context/AuthContext';
 import { useEditorStore } from '../../store/useEditorStore';
 import { api, ApiError } from '../../api/client';
@@ -67,24 +67,11 @@ export function TopBar({ profiles }: TopBarProps) {
 
 			<div className='flex items-center gap-3'>
 				<label className='flex items-center gap-2 text-sm text-app-text-muted'>
-					Imprimiendo a:
-					<select
-						className='rounded-md border border-app-border bg-app-surface p-1 text-app-text'
-						value={profile?.id ?? ''}
-						onChange={(e) => {
-							const next = profiles.find((p) => p.id === e.target.value);
-							if (next) setProfile(next);
-						}}
-					>
-						{profiles.map((p) => (
-							<option
-								key={p.id}
-								value={p.id}
-							>
-								{p.name} ({p.ip})
-							</option>
-						))}
-					</select>
+					<PrinterSelect
+						profiles={profiles}
+						profile={profile}
+						setProfile={setProfile}
+					/>
 				</label>
 
 				<button
@@ -113,6 +100,73 @@ export function TopBar({ profiles }: TopBarProps) {
 					onClose={() => setSaveModalOpen(false)}
 					onSaved={handleSaved}
 				/>
+			)}
+		</div>
+	);
+}
+
+interface PrinterSelectProps {
+	profiles: PrinterProfile[];
+	profile: PrinterProfile | null;
+	setProfile: (profile: PrinterProfile) => void;
+}
+
+function PrinterSelect({ profiles, profile, setProfile }: PrinterSelectProps) {
+	const [open, setOpen] = useState(false);
+
+		const containerRef = useRef<HTMLDivElement>(null);
+
+		useEffect(() => {
+			const handleClickOutside = (e: MouseEvent) => {
+				if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+					setOpen(false);
+				}
+			};
+
+			document.addEventListener('mousedown', handleClickOutside);
+
+			return () => {
+				document.removeEventListener('mousedown', handleClickOutside);
+			};
+		}, []);
+
+	return (
+		<div
+			ref={containerRef}
+			className='relative'
+		>
+			<button
+				type='button'
+				onClick={() => setOpen((value) => !value)}
+				className='flex min-w-48 items-center justify-between gap-3 rounded-md border border-app-border bg-app-surface px-2 py-1 text-left text-app-text cursor-pointer'
+			>
+				<div className='min-w-0'>
+					<div className='truncate text-sm'>{profile?.name ?? 'Seleccionar impresora'}</div>
+
+					{profile?.ip && <div className='text-xs text-app-text-muted'>{profile.label}</div>}
+				</div>
+
+				<span className='text-xs text-app-text-muted'>▾</span>
+			</button>
+
+			{open && (
+				<div className='absolute left-0 top-full z-50 mt-1 max-h-120 w-full overflow-y-auto thin-scrollbar rounded-md border border-app-border bg-app-surface shadow-lg'>
+					{profiles.map((p) => (
+						<button
+							key={p.id}
+							type='button'
+							onClick={() => {
+								setProfile(p);
+								setOpen(false);
+							}}
+							className='w-full px-3 py-2 text-left hover:bg-app-border cursor-pointers'
+						>
+							<div className='text-sm text-app-text'>{p.name}</div>
+
+							<div className='text-xs text-app-text-muted'>{p.label}</div>
+						</button>
+					))}
+				</div>
 			)}
 		</div>
 	);
