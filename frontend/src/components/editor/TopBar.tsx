@@ -146,28 +146,46 @@ function PrinterSelect({ profiles, profile, setProfile }: PrinterSelectProps) {
 					{profile?.ip && <div className='text-xs text-app-text-muted'>{profile.label}</div>}
 				</div>
 
-				<span className='text-xs text-app-text-muted'>▾</span>
+				<span className='text-xs text-app-text-muted'>
+					<svg
+						className={`size-4 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+						xmlns='http://www.w3.org/2000/svg'
+						viewBox='0 0 320 512'
+					>
+						<path
+							fill='currentColor'
+							d='M140.3 376.8c12.6 10.2 31.1 9.5 42.8-2.2l128-128c9.2-9.2 11.9-22.9 6.9-34.9S301.4 192 288.5 192l-256 0c-12.9 0-24.6 7.8-29.6 19.8S.7 237.5 9.9 246.6l128 128 2.4 2.2z'
+						/>
+					</svg>
+				</span>
 			</button>
 
-			{open && (
-				<div className='absolute left-0 top-full z-50 mt-1 max-h-120 w-full overflow-y-auto thin-scrollbar rounded-md border border-app-border bg-app-surface shadow-lg'>
-					{profiles.map((p) => (
-						<button
-							key={p.id}
-							type='button'
-							onClick={() => {
-								setProfile(p);
-								setOpen(false);
-							}}
-							className='w-full px-3 py-2 text-left hover:bg-app-border cursor-pointers'
-						>
-							<div className='text-sm text-app-text'>{p.name}</div>
+			<div
+				className={`
+				absolute left-0 top-full z-50 mt-1 max-h-120 w-full
+				overflow-y-auto thin-scrollbar rounded-md border border-app-border 
+				bg-app-surface shadow-lg
+				transition-[opacity,transform,visibility]
+				duration-200 ease-out
+				${open ? 'visible translate-y-0 opacity-100' : 'invisible -translate-y-1 opacity-0 pointer-events-none'}
+			`}
+			>
+				{profiles.map((p) => (
+					<button
+						key={p.id}
+						type='button'
+						onClick={() => {
+							setProfile(p);
+							setOpen(false);
+						}}
+						className='w-full px-3 py-2 text-left hover:bg-app-border cursor-pointers'
+					>
+						<div className='text-sm text-app-text'>{p.name}</div>
 
-							<div className='text-xs text-app-text-muted'>{p.label}</div>
-						</button>
-					))}
-				</div>
-			)}
+						<div className='text-xs text-app-text-muted'>{p.label}</div>
+					</button>
+				))}
+			</div>
 		</div>
 	);
 }
