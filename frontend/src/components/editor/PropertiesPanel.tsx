@@ -166,6 +166,7 @@ function TextFields({
 					className='mt-1 w-full rounded-md border border-app-border bg-app-surface p-1 text-app-text'
 				/>
 			</label>
+
 			<label className='flex items-center gap-2 text-xs text-app-text-muted'>
 				<input
 					type='checkbox'
@@ -174,15 +175,19 @@ function TextFields({
 				/>
 				Negrita
 			</label>
+
 			<label className='block text-xs text-app-text-muted'>
 				Ancho de ajuste (mm, opcional)
+				
 				<input
 					type='number'
+					placeholder='100mm'
 					value={element.wrapWidth ?? ''}
 					onChange={(e) => onChange({ wrapWidth: e.target.value ? Number(e.target.value) : undefined })}
 					className='mt-1 w-full rounded-md border border-app-border bg-app-surface p-1 text-app-text'
 				/>
 			</label>
+
 			{element.wrapWidth !== undefined && (
 				<label className='block text-xs text-app-text-muted'>
 					Alineación

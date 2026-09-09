@@ -51,11 +51,20 @@ export interface BarcodeElement extends BaseElement {
 
 export type QrErrorCorrection = 'L' | 'M' | 'Q' | 'H';
 
+export interface QrLabel {
+	/** Si es undefined, se muestra element.content directo (mismo texto que codifica el QR) */
+	customText?: string;
+	fontSize: number; // mm
+	position: 'top' | 'bottom';
+	visible: boolean;
+}
+
 export interface QrElement extends BaseElement {
 	type: 'qr';
 	content: string;
 	size: number; // tamaño deseado del QR en mm
 	errorCorrection?: QrErrorCorrection; // por defecto "M" si no se especifica
+	label?: QrLabel;
 }
 
 /**
