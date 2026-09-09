@@ -16,20 +16,20 @@ export function Toolbar() {
 	const positionLocked = useEditorStore((s) => s.positionLocked);
 
 	return (
-		<div className='flex w-48 flex-col gap-2 border-r border-app-border p-4'>
-			<p className='text-xs font-medium uppercase text-app-text-muted'>Agregar elemento</p>
+		<div className='flex flex-wrap items-center gap-2 border-b border-app-border p-3'>
+			<p className='text-xs font-medium uppercase text-app-text-muted'>Agregar:</p>
 
 			{BUTTONS.map(({ type, label }) => (
 				<button
 					key={type}
 					disabled={positionLocked}
 					onClick={() => addElement(type)}
-					className='rounded-md border border-app-border px-3 py-2 text-left text-sm text-app-text hover:bg-app-surface disabled:opacity-50'
+					className='rounded-md border border-app-border px-3 py-2 text-left text-sm text-app-text hover:bg-app-surface disabled:opacity-50 cursor-pointer'
 				>
-					+ {label}
+					+ {label} 
 				</button>
 			))}
-      
+
 			{positionLocked && (
 				<p className='mt-2 text-xs text-app-text-muted'>
 					Esta plantilla tiene las posiciones bloqueadas: no se pueden agregar ni quitar elementos.

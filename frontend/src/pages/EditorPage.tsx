@@ -9,7 +9,8 @@ import { Toolbar } from '../components/editor/Toolbar';
 import { Canvas } from '../components/editor/Canvas';
 import { PropertiesPanel } from '../components/editor/PropertiesPanel';
 import { useEditorKeyboard } from '../hooks/useEditorKeyboard';
-import { CanvasPreview } from '../components/editor/CanvasPreview'
+import { CanvasPreview } from '../components/editor/preview/CanvasPreview'
+import { QuickTemplatesPanel } from '../components/editor/QuickTemplatesPanel'
 
 export function EditorPage() {
 	const { id } = useParams<{ id: string }>();
@@ -99,7 +100,7 @@ export function EditorPage() {
 				<button
 					disabled={!fallbackProfileId}
 					onClick={handleConfirmFallbackProfile}
-					className='rounded-md bg-app-accent px-3 py-1.5 text-sm font-medium text-app-accent-contrast disabled:opacity-50'
+					className='rounded-md bg-app-accent-500 px-3 py-1.5 text-sm font-medium text-app-accent-contrast disabled:opacity-50'
 				>
 					Continuar
 				</button>
@@ -110,9 +111,10 @@ export function EditorPage() {
 	return (
 		<div className='flex h-full flex-col'>
 			<TopBar profiles={profiles} />
+			<Toolbar />
 
 			<div className='flex flex-1 overflow-hidden'>
-				<Toolbar />
+				<QuickTemplatesPanel />
 				<Canvas />
 				<CanvasPreview />
 				<PropertiesPanel />
