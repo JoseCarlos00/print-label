@@ -29,7 +29,7 @@ export function CanvasPreview() {
 				className='relative flex items-center justify-center border border-app-border bg-white'
 			>
 				{!imageUrl && !loading && !error && (
-					<p className='px-4 text-center text-sm text-app-text-muted'>Presioná "Redraw" para generar la vista previa</p>
+					<p className='px-4 text-center text-sm text-app-text-muted'>Presiona "Redraw" para generar la vista previa</p>
 				)}
 
 				{imageUrl && (
