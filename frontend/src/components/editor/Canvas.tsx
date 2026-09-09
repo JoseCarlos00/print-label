@@ -26,7 +26,7 @@ export function Canvas() {
 						className='rounded-md border border-app-border bg-app-accent-500 px-2 py-1.5 text-xs text-app-accent-contrast active:bg-app-accent-700 hover:bg-app-accent-700 font-medium disabled:opacity-50 cursor-pointer'
 					>
 						<svg
-							className='size-4 inline m-0 mr-1 -mt-0.5'
+							className='size-4 inline m-0 mr-1 -mt-0.5 rotate-260'
 							xmlns='http://www.w3.org/2000/svg'
 							viewBox='0 0 512 512'
 						>
