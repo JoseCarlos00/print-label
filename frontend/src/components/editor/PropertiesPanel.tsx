@@ -53,7 +53,7 @@ export function PropertiesPanel() {
 	const update = (changes: ElementPatch) => updateElement(element.id, changes);
 
 	return (
-		<div className='w-50 space-y-4 overflow-y-auto border-l border-app-border p-4'>
+		<div className='w-50 space-y-4 overflow-y-auto border-l border-app-border p-4 thin-scrollbar'>
 			<p className='text-xs font-medium uppercase text-app-text-muted'>
 				{element.type === 'text' ? 'Texto' : element.type === 'barcode' ? 'Código de barras' : 'Código QR'}
 			</p>
