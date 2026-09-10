@@ -1,8 +1,9 @@
 import QRCode from 'qrcode/lib/core/qrcode.js';
 
 import type { QrElement, QrErrorCorrection, TextElement } from '../../types.js';
-import { mmToDots, type ZplTarget } from '../units.js';
+import { mmToDots} from '../units.js';
 import { buildTextCommand } from './text.js'
+import { buildGraphicCommand, type GraphicBitmap } from './graphic.js';
 
 // ──────────────────────────────────────────────────────────────────────────
 // QR
@@ -48,13 +49,6 @@ export function getQrModuleCount(content: string, errorCorrection: QrErrorCorrec
 	return QRCode.create(content, { errorCorrectionLevel: errorCorrection }).modules.size;
 }
 
-interface QrBitmap {
-	widthDots: number;
-	heightDots: number;
-	bytesPerRow: number;
-	data: Uint8Array;
-}
-
 function getQrMatrix(content: string, errorCorrection: QrErrorCorrection): boolean[][] {
 	const qr = QRCode.create(content || ' ', {
 		errorCorrectionLevel: errorCorrection,
@@ -78,7 +72,7 @@ function getQrMatrix(content: string, errorCorrection: QrErrorCorrection): boole
 	return matrix;
 }
 
-function createQrBitmap(matrix: boolean[][], requestedSizeDots: number): QrBitmap {
+function createQrBitmap(matrix: boolean[][], requestedSizeDots: number): GraphicBitmap {
 	const moduleCount = matrix.length;
 
 	/*
@@ -128,24 +122,7 @@ function createQrBitmap(matrix: boolean[][], requestedSizeDots: number): QrBitma
 	};
 }
 
-function bytesToHex(data: Uint8Array): string {
-	let result = '';
-
-	for (const byte of data) {
-		result += byte.toString(16).padStart(2, '0').toUpperCase();
-	}
-
-	return result;
-}
-
-function buildGraphicCommand(bitmap: QrBitmap, position: string): string {
-	const totalBytes = bitmap.data.length;
-	const hexData = bytesToHex(bitmap.data);
-
-	return [`${position}`, `^GFA,${totalBytes},${totalBytes},${bitmap.bytesPerRow},${hexData}`].join('\n');
-}
-
-export function buildQrCommand(el: QrElement, dpi: number, target: ZplTarget = 'print'): string {
+export function buildQrCommand(el: QrElement, dpi: number): string {
 	const xDots = mmToDots(el.x, dpi);
 	const yDots = mmToDots(el.y, dpi);
 
@@ -163,18 +140,7 @@ export function buildQrCommand(el: QrElement, dpi: number, target: ZplTarget = '
 	const qrHeightMm = bitmap.heightDots / (dpi / 25.4);
 	const labelCommand = buildQrLabelCommand(el, dpi, qrWidthMm, qrHeightMm);
 
-	/*
-	 * Preview:
-	 * Labelary se comporta mejor con ^FO.
-	 *
-	 * * Print:
-	 * Conservamos ^FT porque físicamente
-	 * corrige el desplazamiento de ^FO.
-	 */
-	const qrCommand =
-		target === 'preview'
-			? buildGraphicCommand(bitmap, `^FO${xDots},${yDots}`)
-			: buildGraphicCommand(bitmap, `^FT${xDots},${yDots + bitmap.heightDots}`);
+	const qrCommand = buildGraphicCommand(bitmap, `^FO${xDots},${yDots}`)
 
 	return labelCommand ? [qrCommand, labelCommand].join('\n') : qrCommand;
 }

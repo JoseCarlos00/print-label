@@ -1,13 +1,12 @@
 import type { Request, Response } from 'express';
 import type { LabelElement } from 'shared';
-import { generateZpl, ZplValidationError, type ZplTarget } from 'shared/zpl';
+import { generateZpl, ZplValidationError} from 'shared/zpl';
 import { getPrinterProfileById } from '../printerProfileRepo.js';
 import { sendToPrinter } from '../services/printerService.js';
 
 interface PrintRequestBody {
 	elements: LabelElement[];
 	profileId: string;
-	target: ZplTarget
 }
 
 function isValidBody(body: unknown): body is PrintRequestBody {
@@ -37,7 +36,7 @@ export const print = async (req: Request, res: Response) => {
 	let zpl: string;
 
 	try {
-		zpl = generateZpl(req.body.elements, profile, req.body.target);
+		zpl = generateZpl(req.body.elements, profile);
 
 	} catch (error) {
 

@@ -1,6 +1,6 @@
 import type { LabelElement, PrinterProfile } from '../types.js';
 
-import { mmToDots, type ZplTarget } from './units.js';
+import { mmToDots } from './units.js';
 
 import { buildTextCommand } from './renderers/text.js';
 import { buildBarcodeCommand } from './renderers/barcode.js';
@@ -19,7 +19,7 @@ import { buildQrCommand } from './renderers/qr.js';
  * (ej. contenido de barcode que no cumple el formato del symbology).
  * El caller debe capturar ese error específico y devolver 400.
  */
-export function generateZpl(elements: LabelElement[], profile: PrinterProfile, target: ZplTarget): string {
+export function generateZpl(elements: LabelElement[], profile: PrinterProfile): string {
 	const widthDots = mmToDots(profile.widthMm, profile.dpi);
 	const heightDots = mmToDots(profile.heightMm, profile.dpi);
 
@@ -30,7 +30,7 @@ export function generateZpl(elements: LabelElement[], profile: PrinterProfile, t
 			case 'barcode':
 				return buildBarcodeCommand(el, profile.dpi);
 			case 'qr':
-				return buildQrCommand(el, profile.dpi, target);
+				return buildQrCommand(el, profile.dpi);
 		}
 	});
 
@@ -46,7 +46,7 @@ export function generateZpl(elements: LabelElement[], profile: PrinterProfile, t
 }
 
 
-export { ZplValidationError, type ZplTarget } from './units.js';
+export { ZplValidationError } from './units.js';
 export { calculateCode128Sizing } from './barcode/code128.js';
 export { getQrModuleCount } from './renderers/qr.js'
 

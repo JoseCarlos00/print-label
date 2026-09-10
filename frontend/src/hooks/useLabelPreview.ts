@@ -33,7 +33,7 @@ export function useLabelPreview(elements: LabelElement[], profile: PrinterProfil
 
 		(async () => {
 			try {
-				const zpl = generateZpl(elements, profile, 'preview');
+				const zpl = generateZpl(elements, profile);
 
 				console.log({ zpl, elements });
 

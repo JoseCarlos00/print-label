@@ -1,7 +1,5 @@
 import type { Rotation } from '../types.js';
 
-export type ZplTarget = 'print' | 'preview';
-
 /** Convierte mm a dots según el DPI del perfil. ZPL trabaja en dots (spec §8). */
 export function mmToDots(mm: number, dpi: number): number {
 	return Math.round(mm * (dpi / 25.4));

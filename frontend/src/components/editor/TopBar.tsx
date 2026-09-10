@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import type { PrinterProfile, Template } from 'shared';
-import type { ZplTarget } from 'shared/zpl';
 import { useAuth } from '../../context/AuthContext';
 import { useEditorStore } from '../../store/useEditorStore';
 import { api, ApiError } from '../../api/client';
@@ -34,13 +33,12 @@ export function TopBar({ profiles }: TopBarProps) {
 		setPrintSuccess(false);
 
 		try {
-			const target: ZplTarget = 'print'
-
-			await api.post('/print', {
+			const res = await api.post('/print', {
 				elements,
 				profileId: profile.id,
-				target,
 			});
+
+			console.log(res)
 
 			setPrintSuccess(true);
 		} catch (err) {
