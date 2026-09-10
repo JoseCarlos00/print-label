@@ -1,6 +1,7 @@
 import type { BarcodeElement, Symbology } from '../../types.js';
 import { escapeZplField, mmToDots, ROTATION_MAP, ZplValidationError } from '../units.js'
-// import { calculateCode128Sizing} from "../barcode/code128.js";
+import { createCode128Bitmap } from '../barcode/code128.js';
+import { buildGraphicCommand } from './graphic.js';
 
 
 
@@ -60,8 +61,14 @@ export function buildBarcodeCommand(el: BarcodeElement, dpi: number): string {
 
 	const xDots = mmToDots(el.x, dpi);
 	const yDots = mmToDots(el.y, dpi);
-	const heightDots = mmToDots(el.height, dpi);
 
+	if (el.symbology === 'code128') {
+		const bitmap = createCode128Bitmap(el, dpi);
+
+		return buildGraphicCommand(bitmap, `^FO${xDots},${yDots}`);
+	}
+
+	const heightDots = mmToDots(el.height, dpi);
 	const orientation = ROTATION_MAP[el.rotation];
 	const printText = el.showText ? 'Y' : 'N';
 	const content = escapeZplField(el.content);
@@ -70,16 +77,6 @@ export function buildBarcodeCommand(el: BarcodeElement, dpi: number): string {
 	let moduleWidth: string;
 
 	switch (el.symbology) {
-		case 'code128': {
-			// const sizing = buildCode128Graphic(el, dpi);
-
-			moduleWidth = `^BY${10},3`;
-
-			barcodeCommand = `^BC${orientation},${heightDots},${printText},N,N,N`;
-
-			break;
-		}
-
 		case 'ean13':
 			moduleWidth = '^BY2,3';
 			barcodeCommand = `^BE${orientation},${heightDots},${printText},N`;
