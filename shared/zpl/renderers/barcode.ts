@@ -81,24 +81,26 @@ export function buildBarcodeCommand(el: BarcodeElement, dpi: number): string {
 	const content = escapeZplField(el.content);
 
 	let barcodeCommand: string;
-	let moduleWidth: string;
+	const moduleWidth = el.width ?? 2;
 
 	switch (el.symbology) {
 		case 'ean13':
-			moduleWidth = '^BY2,3';
 			barcodeCommand = `^BE${orientation},${heightDots},${printText},N`;
 			break;
 
 		case 'code39':
-			moduleWidth = '^BY2,3';
 			barcodeCommand = `^B3${orientation},N,${heightDots},${printText},N`;
 			break;
 
 		case 'upc':
-			moduleWidth = '^BY2,3';
 			barcodeCommand = `^BU${orientation},${heightDots},${printText},N,Y`;
 			break;
 	}
 
-	return [`^FO${xDots},${yDots}`, moduleWidth, barcodeCommand, `^FH^FD${content}^FS`].join('\n');
+	return [
+		`^FO${xDots},${yDots}`,
+		`^BY${moduleWidth},3`,
+		barcodeCommand,
+		`^FH^FD${content}^FS`
+	].join('\n');
 }
