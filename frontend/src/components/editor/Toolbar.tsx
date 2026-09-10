@@ -16,7 +16,7 @@ export function Toolbar() {
 	const positionLocked = useEditorStore((s) => s.positionLocked);
 
 	return (
-		<div className='flex flex-wrap items-center gap-2 border-b border-app-border p-3'>
+		<div className='flex flex-wrap items-center gap-2 border-b border-app-border p-2'>
 			<p className='text-xs font-medium uppercase text-app-text-muted'>Agregar:</p>
 
 			{BUTTONS.map(({ type, label }) => (
@@ -24,7 +24,7 @@ export function Toolbar() {
 					key={type}
 					disabled={positionLocked}
 					onClick={() => addElement(type)}
-					className='rounded-md border border-app-border px-3 py-2 text-left text-sm text-app-text hover:bg-app-surface disabled:opacity-50 cursor-pointer'
+					className='rounded-md border border-app-border px-2 py-1 text-left text-sm text-app-text hover:bg-app-surface disabled:opacity-50 cursor-pointer'
 				>
 					+ {label} 
 				</button>

@@ -62,10 +62,10 @@ export function TopBar({ profiles }: TopBarProps) {
 	const isUpdating = isAdmin && Boolean(templateId) && loadedTemplateState === 'approved';
 
 	return (
-		<div className='flex flex-wrap items-center justify-between gap-3 border-b border-app-border p-4'>
+		<div className='flex flex-wrap items-center justify-between gap-2 border-b border-app-border p-2'>
 			<h1 className='text-lg font-semibold'>{templateName || 'Nueva etiqueta'}</h1>
 
-			<div className='flex items-center gap-3'>
+			<div className='flex items-center gap-2'>
 				<label className='flex items-center gap-2 text-sm text-app-text-muted'>
 					<PrinterSelect
 						profiles={profiles}
@@ -138,12 +138,12 @@ function PrinterSelect({ profiles, profile, setProfile }: PrinterSelectProps) {
 			<button
 				type='button'
 				onClick={() => setOpen((value) => !value)}
-				className='flex min-w-48 items-center justify-between gap-3 rounded-md border border-app-border bg-app-surface px-2 py-1 text-left text-app-text cursor-pointer'
+				className='flex min-w-48 items-center justify-between gap-1 rounded-md border border-app-border bg-app-surface px-2 py-1 text-left text-app-text cursor-pointer'
 			>
 				<div className='min-w-0'>
 					<div className='truncate text-sm'>{profile?.name ?? 'Seleccionar impresora'}</div>
 
-					{profile?.ip && <div className='text-xs text-app-text-muted'>{profile.label}</div>}
+					{profile?.ip && <div className='text-[10px] text-app-text-muted'>{profile.label}</div>}
 				</div>
 
 				<span className='text-xs text-app-text-muted'>
@@ -178,11 +178,11 @@ function PrinterSelect({ profiles, profile, setProfile }: PrinterSelectProps) {
 							setProfile(p);
 							setOpen(false);
 						}}
-						className='w-full px-3 py-2 text-left hover:bg-app-border cursor-pointers'
+						className='w-full px-3 py-2 text-left hover:bg-app-border cursor-pointer'
 					>
 						<div className='text-sm text-app-text'>{p.name}</div>
 
-						<div className='text-xs text-app-text-muted'>{p.label}</div>
+						<div className='text-[10px] text-app-text-muted'>{p.label}</div>
 					</button>
 				))}
 			</div>
