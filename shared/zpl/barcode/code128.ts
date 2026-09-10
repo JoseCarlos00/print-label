@@ -1,8 +1,7 @@
 import Code128Generator from 'code-128-encoder';
-import type { BarcodeElement, TextElement } from '../../types.js';
-import { mmToDots } from '../units.js';
+import type { BarcodeElement } from '../../types.js';
+import { escapeZplField, mmToDots, ROTATION_MAP } from '../units.js';
 import type { GraphicBitmap } from '../renderers/graphic.js';
-import { buildTextCommand } from '../renderers/text.js';
 
 export interface Code128Encoded {
 	bars: string;
@@ -70,26 +69,50 @@ export function createCode128Bitmap(
 }
 
 export function buildCode128TextCommand(el: BarcodeElement, dpi: number): string | null {
-	if (!el.showText) {
-		return null;
+	if (!el.showText) return null;
+
+	const gap0 = 1;
+	const gap90 = 4;
+	const gap180 = 4;
+	const gap270 = 1;
+
+	let textX = el.x;
+	let textY = el.y;
+
+	const widthDots = mmToDots(el.width!, dpi);
+
+	switch (el.rotation) {
+		case 0:
+			textY = el.y + el.height + gap0;
+			break;
+
+		case 90:
+			textX = el.x - gap90;
+			textY = el.y;
+			break;
+
+		case 180:
+			textY = el.y - gap180;
+			break;
+
+		case 270:
+			textX = el.x + el.height + gap270;
+			textY = el.y;
+			break;
 	}
 
-	const widthMm = el.width ?? 2;
+	const xDots = mmToDots(textX, dpi);
+	const yDots = mmToDots(textY, dpi);
+	const heightDots = mmToDots(3, dpi);
+	const orientation = ROTATION_MAP[el.rotation];
+	const content = escapeZplField(el.content);
 
-	const syntheticText: TextElement = {
-		id: `${el.id}__text`,
-		x: el.x,
-		y: el.y + el.height + 1,
-		rotation: el.rotation,
-		type: 'text',
-		content: el.content,
-		fontSize: 3,
-		bold: false,
-		wrapWidth: widthMm,
-		textAlign: 'C',
-	};
-
-	return buildTextCommand(syntheticText, dpi);
+	return [
+		`^FO${xDots},${yDots}`,
+		`^FB${widthDots},1,0,C,0`,
+		`^A0${orientation},${heightDots},${heightDots}`,
+		`^FH^FD${content}^FS`,
+	].join('\n');
 }
 
 export function calculateCode128Sizing() {}
