@@ -33,15 +33,15 @@ export function useLabelPreview(elements: LabelElement[], profile: PrinterProfil
 
 		(async () => {
 			try {
-      const zpl = generateZpl(elements, profile, 'preview');
+				const zpl = generateZpl(elements, profile, 'preview');
 
-			console.log({ zpl, elements });
-      
+				console.log({ zpl, elements });
+
 				const nextUrl = await renderZplToImage(zpl, profile);
 
 				if (lastUrlRef.current) URL.revokeObjectURL(lastUrlRef.current);
 				lastUrlRef.current = nextUrl;
-				
+
 				setImageUrl(nextUrl);
 				setRenderedKey(currentKey);
 			} catch (err) {
