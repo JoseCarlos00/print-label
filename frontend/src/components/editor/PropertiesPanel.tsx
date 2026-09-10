@@ -280,6 +280,8 @@ function QrFields({ element, onChange }: { element: QrElement; onChange: (change
 		onChange({ label: { ...base, ...changes } });
 	};
 
+	const classOpacity = label?.visible ? '' : 'opacity-55';
+
 	return (
 		<>
 			<label className='block text-xs text-app-text-muted'>
@@ -302,53 +304,49 @@ function QrFields({ element, onChange }: { element: QrElement; onChange: (change
 				Mostrar etiqueta con el contenido
 			</label>
 
-			{label?.visible && (
-				<>
-					<label className='block text-xs text-app-text-muted'>
-						Posición
-						<select
-							value={label.position}
-							onChange={(e) => updateLabel({ position: e.target.value as 'top' | 'bottom' })}
-							className='mt-1 w-full rounded-md border border-app-border bg-app-surface p-1 text-app-text'
-						>
-							<option value='top'>Arriba</option>
-							<option value='bottom'>Abajo</option>
-						</select>
-					</label>
+			<label className={`block text-xs text-app-text-muted ${classOpacity}`}>
+				Posición
+				<select
+					value={label?.position}
+					onChange={(e) => updateLabel({ position: e.target.value as 'top' | 'bottom' })}
+					className={`mt-1 w-full rounded-md border border-app-border bg-app-surface p-1 text-app-text ${classOpacity}`}
+				>
+					<option value='top'>Arriba</option>
+					<option value='bottom'>Abajo</option>
+				</select>
+			</label>
 
-					<label className='block text-xs text-app-text-muted'>
-						Tamaño de fuente (mm)
-						<input
-							type='number'
-							value={label.fontSize}
-							onChange={(e) => updateLabel({ fontSize: Number(e.target.value) })}
-							className='mt-1 w-full rounded-md border border-app-border bg-app-surface p-1 text-app-text'
-						/>
-					</label>
+			<label className={`block text-xs text-app-text-muted ${classOpacity}`}>
+				Tamaño de fuente (mm)
+				<input
+					type='number'
+					value={label?.fontSize}
+					onChange={(e) => updateLabel({ fontSize: Number(e.target.value) })}
+					className={`mt-1 w-full rounded-md border border-app-border bg-app-surface p-1 text-app-text ${classOpacity}`}
+				/>
+			</label>
 
-					<label className='flex items-center gap-2 text-xs text-app-text-muted'>
-						<input
-							type='checkbox'
-							checked={label.customText !== undefined}
-							onChange={(e) =>
-								updateLabel({ customText: e.target.checked ? (label.customText ?? element.content) : undefined })
-							}
-						/>
-						Usar texto personalizado
-					</label>
+			<label className={`flex items-center gap-2 text-xs text-app-text-muted ${classOpacity}`}>
+				<input
+					className={classOpacity}
+					type='checkbox'
+					checked={label?.customText !== undefined}
+					onChange={(e) =>
+						updateLabel({ customText: e.target.checked ? (label?.customText ?? element.content) : undefined })
+					}
+				/>
+				Usar texto personalizado
+			</label>
 
-					{label.customText !== undefined && (
-						<label className='block text-xs text-app-text-muted'>
-							Texto de la etiqueta
-							<input
-								value={label.customText}
-								onChange={(e) => updateLabel({ customText: e.target.value })}
-								className='mt-1 w-full rounded-md border border-app-border bg-app-surface p-1 text-app-text'
-							/>
-						</label>
-					)}
-				</>
-			)}
+			<label className={`block text-xs text-app-text-muted ${classOpacity} ${label?.customText ? '' : 'opacity-55'}`}>
+				Texto de la etiqueta
+				<input
+					disabled={label?.visible}
+					value={label?.customText}
+					onChange={(e) => updateLabel({ customText: e.target.value })}
+					className={`mt-1 w-full rounded-md border border-app-border bg-app-surface p-1 text-app-text ${classOpacity}`}
+				/>
+			</label>
 		</>
 	);
 }
