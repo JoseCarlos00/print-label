@@ -1,5 +1,6 @@
 import type { BarcodeElement, Symbology } from '../../types.js';
 import { escapeZplField, mmToDots, ROTATION_MAP, ZplValidationError } from '../units.js'
+import { calculateCode128Sizing} from "../barcode/code128.js";
 
 // ──────────────────────────────────────────────────────────────────────────
 // Código de barras
@@ -58,30 +59,37 @@ export function buildBarcodeCommand(el: BarcodeElement, dpi: number): string {
 	const xDots = mmToDots(el.x, dpi);
 	const yDots = mmToDots(el.y, dpi);
 	const heightDots = mmToDots(el.height, dpi);
+
 	const orientation = ROTATION_MAP[el.rotation];
 	const printText = el.showText ? 'Y' : 'N';
 	const content = escapeZplField(el.content);
 
-	// ^BY: módulo angosto = 2 dots, ratio ancho/angosto = 3:1 (default fijo,
-	// pendiente de exponer en el modelo de datos si hace falta más adelante).
-	const moduleWidth = '^BY2,3';
-
 	let barcodeCommand: string;
+	let moduleWidth: string;
+
 	switch (el.symbology) {
-		case 'code128':
-			// ^BC: orientación, altura, línea interpretación, imprimir arriba, check digit, modo
+		case 'code128': {
+			const sizing = calculateCode128Sizing(el, dpi);
+
+			moduleWidth = `^BY${sizing.moduleWidthDots},3`;
+
 			barcodeCommand = `^BC${orientation},${heightDots},${printText},N,N,N`;
+
 			break;
+		}
+
 		case 'ean13':
-			// ^BE: orientación, altura, línea interpretación, imprimir arriba
+			moduleWidth = '^BY2,3';
 			barcodeCommand = `^BE${orientation},${heightDots},${printText},N`;
 			break;
+
 		case 'code39':
-			// ^B3: orientación, check digit, altura, línea interpretación, imprimir arriba
+			moduleWidth = '^BY2,3';
 			barcodeCommand = `^B3${orientation},N,${heightDots},${printText},N`;
 			break;
+
 		case 'upc':
-			// ^BU: orientación, altura, línea interpretación, imprimir arriba, check digit
+			moduleWidth = '^BY2,3';
 			barcodeCommand = `^BU${orientation},${heightDots},${printText},N,Y`;
 			break;
 	}
