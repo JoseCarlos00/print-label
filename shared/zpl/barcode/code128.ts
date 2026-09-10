@@ -1,4 +1,5 @@
 import type { BarcodeElement } from '../../types.js';
+import { mmToDots } from '../units.js'
 
 export interface Code128Sizing {
 	moduleCount: number;
@@ -30,7 +31,8 @@ export function getCode128ModuleCount(content: string): number {
 export function calculateCode128Sizing(el: Pick<BarcodeElement, 'content' | 'width'>, dpi: number): Code128Sizing {
 	const moduleCount = getCode128ModuleCount(el.content || ' ');
 
-	const targetWidthDots = el.width ?? 2 * (dpi / 25.4);
+	const targetWidthMm = el.width ?? 2;
+	const targetWidthDots = mmToDots(targetWidthMm, dpi);
 
 	let bestModuleWidthDots = 1;
 	let bestWidthDots = moduleCount;
