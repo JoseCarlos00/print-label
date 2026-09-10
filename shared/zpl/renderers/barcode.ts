@@ -1,6 +1,8 @@
 import type { BarcodeElement, Symbology } from '../../types.js';
 import { escapeZplField, mmToDots, ROTATION_MAP, ZplValidationError } from '../units.js'
-import { calculateCode128Sizing} from "../barcode/code128.js";
+// import { calculateCode128Sizing} from "../barcode/code128.js";
+
+
 
 // ──────────────────────────────────────────────────────────────────────────
 // Código de barras
@@ -69,9 +71,9 @@ export function buildBarcodeCommand(el: BarcodeElement, dpi: number): string {
 
 	switch (el.symbology) {
 		case 'code128': {
-			const sizing = calculateCode128Sizing(el, dpi);
+			// const sizing = buildCode128Graphic(el, dpi);
 
-			moduleWidth = `^BY${sizing.moduleWidthDots},3`;
+			moduleWidth = `^BY${10},3`;
 
 			barcodeCommand = `^BC${orientation},${heightDots},${printText},N,N,N`;
 

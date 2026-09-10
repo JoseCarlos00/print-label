@@ -1,63 +1,127 @@
+import Code128Generator from 'code-128-encoder';
 import type { BarcodeElement } from '../../types.js';
-import { mmToDots } from '../units.js'
+import { mmToDots } from '../units.js';
 
-export interface Code128Sizing {
+export interface Code128Encoded {
+	bars: string;
+	codes: number[];
 	moduleCount: number;
-	moduleWidthDots: number;
+}
+
+export interface Code128Graphic {
 	widthDots: number;
-	widthMm: number;
+	heightDots: number;
+	data: number[];
 }
 
-export function getCode128ModuleCount(content: string): number {
-	/*
-	 * Primera versión:
-	 * asumimos Code Set C cuando todo el contenido es numérico
-	 * y tiene cantidad par de dígitos.
-	 *
-	 * Esto coincide con nuestro primer caso de prueba.
-	 */
-	const isNumeric = /^\d+$/.test(content);
-	const usesCodeC = isNumeric && content.length % 2 === 0;
+/**
+ * Codifica el contenido utilizando el algoritmo real de Code 128.
+ *
+ * `bars` contiene un bit por módulo:
+ *   1 = barra negra
+ *   0 = espacio blanco
+ */
+export function encodeCode128(content: string): Code128Encoded {
+	const encoder = new Code128Generator();
 
-	const dataSymbols = usesCodeC ? content.length / 2 : content.length;
+	const bars = encoder.encode(content, {
+		output: 'bars',
+	});
 
-	/*
-	 * Start + data + checksum = cada uno 11 módulos
-	 * Stop = 13 módulos
-	 */
-	return (1 + dataSymbols + 1) * 11 + 13;
+	const codes = encoder.encode(content, {
+		output: 'codes',
+	});
+
+	return {
+		bars,
+		codes,
+		moduleCount: bars.length,
+	};
 }
 
-export function calculateCode128Sizing(el: Pick<BarcodeElement, 'content' | 'width'>, dpi: number): Code128Sizing {
-	const moduleCount = getCode128ModuleCount(el.content || ' ');
+/**
+ * Convierte los módulos del Code 128 a un bitmap de 1 bit,
+ * redimensionándolo horizontalmente al ancho solicitado.
+ */
+export function buildCode128Graphic(
+	el: Pick<BarcodeElement, 'content' | 'width' | 'height'>,
+	dpi: number,
+): Code128Graphic {
+	const encoded = encodeCode128(el.content);
 
-	const targetWidthMm = el.width ?? 2;
-	const targetWidthDots = mmToDots(targetWidthMm, dpi);
+	const widthDots = mmToDots(el.width ?? 2, dpi);
+	const heightDots = mmToDots(el.height, dpi);
 
-	let bestModuleWidthDots = 1;
-	let bestWidthDots = moduleCount;
-	let bestDifference = Infinity;
+	const data = new Array(widthDots * heightDots).fill(0);
 
 	/*
-	 * ^BY trabaja con valores enteros de dots.
+	 * Cada módulo debe ocupar una cantidad entera de dots.
 	 *
-	 * Probamos valores razonables.
+	 * En lugar de redondear individualmente cada módulo,
+	 * utilizamos límites acumulativos:
+	 *
+	 *   módulo 0 → [0, 2)
+	 *   módulo 1 → [2, 4)
+	 *   módulo 2 → [4, 6)
+	 *
+	 * Si el ancho no es divisible exactamente entre los módulos,
+	 * la distribución queda repartida a lo largo del código.
 	 */
-	for (let moduleWidthDots = 1; moduleWidthDots <= 10; moduleWidthDots++) {
-		const widthDots = moduleCount * moduleWidthDots;
-		const difference = Math.abs(widthDots - targetWidthDots);
+	for (let moduleIndex = 0; moduleIndex < encoded.bars.length; moduleIndex++) {
+		if (encoded.bars[moduleIndex] !== '1') {
+			continue;
+		}
 
-		if (difference < bestDifference) {
-			bestDifference = difference;
-			bestModuleWidthDots = moduleWidthDots;
-			bestWidthDots = widthDots;
+		const startX = Math.floor((moduleIndex * widthDots) / encoded.moduleCount);
+
+		const endX = Math.floor(((moduleIndex + 1) * widthDots) / encoded.moduleCount);
+
+		for (let y = 0; y < heightDots; y++) {
+			const rowOffset = y * widthDots;
+
+			for (let x = startX; x < endX; x++) {
+				data[rowOffset + x] = 1;
+			}
 		}
 	}
 
 	return {
-		moduleCount,
-		moduleWidthDots: bestModuleWidthDots,
-		widthDots: bestWidthDots,
-		widthMm: bestWidthDots / (dpi / 25.4),
+		widthDots,
+		heightDots,
+		data,
 	};
 }
+
+function createCode128Bitmap(bars: string, widthDots: number, heightDots: number): GraphicBitmap {
+	const bytesPerRow = Math.ceil(widthDots / 8);
+	const data = new Uint8Array(bytesPerRow * heightDots);
+
+	for (let moduleIndex = 0; moduleIndex < bars.length; moduleIndex++) {
+		if (bars[moduleIndex] !== '1') {
+			continue;
+		}
+
+		const startX = Math.floor((moduleIndex * widthDots) / bars.length);
+
+		const endX = Math.floor(((moduleIndex + 1) * widthDots) / bars.length);
+
+		for (let x = startX; x < endX; x++) {
+			const byteIndex = Math.floor(x / 8);
+			const bitIndex = 7 - (x % 8);
+
+			for (let y = 0; y < heightDots; y++) {
+				data[y * bytesPerRow + byteIndex] |= 1 << bitIndex;
+			}
+		}
+	}
+
+	return {
+		widthDots,
+		heightDots,
+		bytesPerRow,
+		data,
+	};
+}
+
+
+export function calculateCode128Sizing () {}
