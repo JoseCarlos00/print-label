@@ -30,7 +30,7 @@ export function CanvasPreview() {
 				</div>
 
 				{!imageUrl && !loading && !error && (
-					<p className='px-4 text-center text-sm text-app-text-muted'>
+					<p className='px-4 text-center text-sm text-app-accent-contrast'>
 						Presiona&ensp;
 						<PencilToSquare className='size-5 inline-block' />
 						&ensp;para generar la vista previa
