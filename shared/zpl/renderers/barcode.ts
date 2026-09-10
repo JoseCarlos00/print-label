@@ -1,6 +1,6 @@
 import type { BarcodeElement, Symbology } from '../../types.js';
 import { escapeZplField, mmToDots, ROTATION_MAP, ZplValidationError } from '../units.js'
-import { createCode128Bitmap } from '../barcode/code128.js';
+import { createCode128Bitmap, buildCode128TextCommand } from '../barcode/code128.js';
 import { buildGraphicCommand } from './graphic.js';
 
 
@@ -65,7 +65,11 @@ export function buildBarcodeCommand(el: BarcodeElement, dpi: number): string {
 	if (el.symbology === 'code128') {
 		const bitmap = createCode128Bitmap(el, dpi);
 
-		return buildGraphicCommand(bitmap, `^FO${xDots},${yDots}`);
+		const barcodeCommand = buildGraphicCommand(bitmap, `^FO${xDots},${yDots}`);
+		
+		const textCommand = buildCode128TextCommand(el, dpi);
+
+		return textCommand ? [barcodeCommand, textCommand].join('\n') : barcodeCommand;
 	}
 
 	const heightDots = mmToDots(el.height, dpi);

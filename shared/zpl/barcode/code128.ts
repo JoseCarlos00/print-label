@@ -1,7 +1,8 @@
 import Code128Generator from 'code-128-encoder';
-import type { BarcodeElement } from '../../types.js';
+import type { BarcodeElement, TextElement } from '../../types.js';
 import { mmToDots } from '../units.js';
 import type { GraphicBitmap } from '../renderers/graphic.js';
+import { buildTextCommand } from '../renderers/text.js';
 
 export interface Code128Encoded {
 	bars: string;
@@ -66,6 +67,29 @@ export function createCode128Bitmap(
 		bytesPerRow,
 		data,
 	};
+}
+
+export function buildCode128TextCommand(el: BarcodeElement, dpi: number): string | null {
+	if (!el.showText) {
+		return null;
+	}
+
+	const widthMm = el.width ?? 2;
+
+	const syntheticText: TextElement = {
+		id: `${el.id}__text`,
+		x: el.x,
+		y: el.y + el.height + 1,
+		rotation: el.rotation,
+		type: 'text',
+		content: el.content,
+		fontSize: 3,
+		bold: false,
+		wrapWidth: widthMm,
+		textAlign: 'C',
+	};
+
+	return buildTextCommand(syntheticText, dpi);
 }
 
 export function calculateCode128Sizing() {}
