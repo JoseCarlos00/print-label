@@ -8,7 +8,7 @@ import { TopBar } from '../components/editor/TopBar';
 import { Toolbar } from '../components/editor/Toolbar';
 import { Canvas } from '../components/editor/Canvas';
 import { PropertiesPanel } from '../components/editor/PropertiesPanel';
-import { CanvasPreview } from '../components/editor/preview/CanvasPreview'
+import { CanvasPreview } from '../components/editor/CanvasPreview'
 import { QuickTemplatesPanel } from '../components/editor/QuickTemplatesPanel'
 
 

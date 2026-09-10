@@ -30,7 +30,7 @@ export function getCode128ModuleCount(content: string): number {
 export function calculateCode128Sizing(el: Pick<BarcodeElement, 'content' | 'width'>, dpi: number): Code128Sizing {
 	const moduleCount = getCode128ModuleCount(el.content || ' ');
 
-	const targetWidthDots = el.width * (dpi / 25.4);
+	const targetWidthDots = el.width ?? 2 * (dpi / 25.4);
 
 	let bestModuleWidthDots = 1;
 	let bestWidthDots = moduleCount;

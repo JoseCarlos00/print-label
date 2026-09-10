@@ -1,6 +1,6 @@
-import { useEditorStore } from '../../../store/useEditorStore';
-import { mmToPx } from '../../../utils/scale';
-import { useLabelPreview } from '../../../hooks/useLabelPreview';
+import { useEditorStore } from '../../store/useEditorStore';
+import { mmToPx } from '../../utils/scale';
+import { useLabelPreview } from '../../hooks/useLabelPreview';
 
 
 export function CanvasPreview() {
@@ -12,10 +12,10 @@ export function CanvasPreview() {
 	if (!profile) return null;
 
 	return (
-		<div className='flex min-w-0 flex-1 flex-col items-center justify-center gap-2 overflow-auto bg-app-bg p-8'>
+		<div className='flex min-w-0 flex-1 flex-col items-center justify-center gap-2 bg-app-bg p-8 overflow-auto thin-scrollbar'>
 			<div
 				style={{ width: mmToPx(profile.widthMm), height: mmToPx(profile.heightMm) }}
-				className='relative flex items-center justify-center border border-app-border bg-white'
+				className='relative flex items-center justify-center border border-app-border bg-gray-300'
 			>
 				<div className='flex items-center gap-2 absolute -top-10 left-0'>
 					<button
