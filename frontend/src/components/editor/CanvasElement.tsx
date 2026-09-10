@@ -8,7 +8,6 @@ import { BarcodePreview, InvalidBarcodePreview } from './previews/BarcodePreview
 import { QrPreview } from './previews/QrPreview';
 import { PreviewErrorBoundary } from './previews/PreviewErrorBoundary';
 
-
 interface CanvasElementProps {
 	element: LabelElement;
 	isSelected: boolean;
@@ -204,7 +203,7 @@ function ElementPreview({ element }: { element: LabelElement }) {
 						textAlign: TEXT_ALIGN_CSS[element.textAlign ?? 'L'],
 						lineHeight: element.lineSpacing ? `${element.fontSize + element.lineSpacing}mm` : 'normal',
 					}}
-					className='whitespace-nowrap text-black'
+					className='whitespace-nowrap text-black multi-line'
 				>
 					{element.content || 'Texto'}
 				</span>
@@ -219,17 +218,37 @@ function ElementPreview({ element }: { element: LabelElement }) {
 					<BarcodePreview element={element} />
 				</PreviewErrorBoundary>
 			);
+		case 'qr': {
+			const label = element.label;
+			const labelText = label?.visible ? label.customText?.trim() || element.content : null;
 
-		case 'qr':
 			return (
-				<PreviewErrorBoundary
-					key={element.content}
-					fallback={<InvalidBarcodePreview symbology='code128' />}
-				>
-					<QrPreview
-						element={element}
-					/>
-				</PreviewErrorBoundary>
+				<div className='relative'>
+					{labelText && (
+						<span
+							style={{
+								position: 'absolute',
+								left: 0,
+								right: 0,
+								fontSize: mmToPx(label!.fontSize),
+								textAlign: 'center',
+								whiteSpace: 'nowrap',
+								...(label!.position === 'top' ? { bottom: '100%', marginBottom: 2 } : { top: '100%', marginTop: 2 }),
+							}}
+							className='text-black'
+						>
+							{labelText}
+						</span>
+					)}
+					
+					<PreviewErrorBoundary
+						key={element.content}
+						fallback={<InvalidBarcodePreview symbology='code128' />}
+					>
+						<QrPreview element={element} />
+					</PreviewErrorBoundary>
+				</div>
 			);
+		}
 	}
 }

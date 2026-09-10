@@ -48,4 +48,5 @@ export function generateZpl(elements: LabelElement[], profile: PrinterProfile, t
 
 export { ZplValidationError, type ZplTarget } from './units.js';
 export { calculateCode128Sizing } from './barcode/code128.js';
+export { getQrModuleCount } from './renderers/qr.js'
 
