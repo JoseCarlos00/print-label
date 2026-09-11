@@ -1,4 +1,4 @@
-import { parse } from 'opentype.js';
+import opentype from 'opentype.js';
 import type { Font } from 'opentype.js';
 
 const FONT_URL = new URL('./tt0003m_.ttf', import.meta.url).href;
@@ -10,8 +10,10 @@ export function loadSwiss721(): Promise<Font> {
 		fontPromise = (async () => {
 			const response = await fetch(FONT_URL);
 			const arrayBuffer = await response.arrayBuffer();
-			return parse(arrayBuffer);
+
+			return opentype.parse(arrayBuffer);
 		})();
 	}
+
 	return fontPromise;
 }
