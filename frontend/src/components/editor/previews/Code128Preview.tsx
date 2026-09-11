@@ -63,6 +63,8 @@ export function Code128Preview({ element }: { element: BarcodeElement }) {
 		top: `calc(100% + ${textGap}px)`,
 		overflow: 'hidden',
 		opacity: textOverflow ? 0.45 : 1,
+		fontStretch:'semi-condensed',
+		letterSpacing: '0.02rem',
 	};
 
 	useEffect(() => {
