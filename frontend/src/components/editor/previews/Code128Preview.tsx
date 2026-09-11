@@ -46,14 +46,45 @@ export function Code128Preview({ element }: { element: BarcodeElement }) {
 		ctx.putImageData(imageData, 0, 0);
 	}, [element, dpi]);
 
+	const textGap = mmToPx(1);
+	const textSize = mmToPx(3);
+
+
+	const textStyle: React.CSSProperties = {
+		position: 'absolute',
+		fontSize: `${textSize}px`,
+		lineHeight: 1,
+		whiteSpace: 'nowrap',
+		left: '50%',
+		transform: 'translateX(-50%)',
+		top: `calc(100% + ${textGap}px)`,
+	};
+
 	return (
-		<canvas
-			ref={canvasRef}
+		<div
 			style={{
+				position: 'relative',
 				width: mmToPx(element.width),
 				height: mmToPx(element.height),
-				display: 'block',
 			}}
-		/>
+		>
+			<canvas
+				ref={canvasRef}
+				style={{
+					width: '100%',
+					height: '100%',
+					display: 'block',
+				}}
+			/>
+
+			{element.showText && (
+				<span
+					className='text-black'
+					style={textStyle}
+				>
+					{element.content}
+				</span>
+			)}
+		</div>
 	);
 }
