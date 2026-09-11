@@ -1,7 +1,9 @@
 import Barcode from 'react-barcode';
 import type { BarcodeElement, Symbology } from 'shared';
 import { mmToPx } from '../../../utils/scale';
-import { Code128Preview } from './Code128Preview'
+import { Code128Preview } from './Code128Preview';
+import { BarcodeBitmapPreview } from './BarcodeBitmapPreview';
+import { createEan13Bitmap } from 'shared/zpl';
 
 const SYMBOLOGY_TO_FORMAT: Record<Symbology, string> = {
 	code128: 'CODE128',
@@ -10,15 +12,21 @@ const SYMBOLOGY_TO_FORMAT: Record<Symbology, string> = {
 	upc: 'UPC',
 };
 
-
 export function BarcodePreview({ element }: { element: BarcodeElement }) {
+	const moduleWidthPx = element.symbology === 'code128' ? 1.5 : element.width;
 
-
-	const moduleWidthPx = element.symbology === 'code128' ? 1.5 : (element.width);
-
-	 if (element.symbology === 'code128') {
+	switch (element.symbology) {
+		case 'code128':
 			return <Code128Preview element={element} />;
-		}
+
+		case 'ean13':
+			return (
+				<BarcodeBitmapPreview
+					element={element}
+					createBitmap={createEan13Bitmap}
+				/>
+			);
+	}
 
 	return (
 		<Barcode
