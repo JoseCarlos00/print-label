@@ -89,3 +89,33 @@ export function rotateBitmap(bitmap: GraphicBitmap, rotation: 0 | 90 | 180 | 270
 		data: targetData,
 	};
 }
+
+export function barsToBitmap(bars: string, widthDots: number, heightDots: number): GraphicBitmap {
+	const bytesPerRow = Math.ceil(widthDots / 8);
+	const data = new Uint8Array(bytesPerRow * heightDots);
+
+	for (let moduleIndex = 0; moduleIndex < bars.length; moduleIndex++) {
+		if (bars[moduleIndex] !== '1') continue;
+
+		const startX = Math.floor((moduleIndex * widthDots) / bars.length);
+
+		const endX = Math.floor(((moduleIndex + 1) * widthDots) / bars.length);
+
+		for (let x = startX; x < endX; x++) {
+			const byteIndex = Math.floor(x / 8);
+			const bitIndex = 7 - (x % 8);
+
+			for (let y = 0; y < heightDots; y++) {
+				const index = y * bytesPerRow + byteIndex;
+				data[index] |= 1 << bitIndex;
+			}
+		}
+	}
+
+	return {
+		widthDots,
+		heightDots,
+		bytesPerRow,
+		data,
+	};
+}

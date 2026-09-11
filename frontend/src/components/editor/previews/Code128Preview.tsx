@@ -1,14 +1,17 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { BarcodeElement } from 'shared';
 import { createCode128Bitmap } from 'shared/zpl';
 import { useEditorStore } from '../../../store/useEditorStore';
 import { mmToPx } from '../../../utils/scale';
 
 export function Code128Preview({ element }: { element: BarcodeElement }) {
+	const [textOverflow, setTextOverflow] = useState(false);
 	const canvasRef = useRef<HTMLCanvasElement>(null);
+	const textRef = useRef<HTMLSpanElement>(null);
 
 	const profile = useEditorStore((s) => s.profile);
 	const dpi = profile?.dpi ?? 203;
+
 
 	useEffect(() => {
 		const canvas = canvasRef.current;
@@ -49,16 +52,25 @@ export function Code128Preview({ element }: { element: BarcodeElement }) {
 	const textGap = mmToPx(1);
 	const textSize = mmToPx(3);
 
-
 	const textStyle: React.CSSProperties = {
 		position: 'absolute',
+		width: `${mmToPx(element.width)}px`,
 		fontSize: `${textSize}px`,
 		lineHeight: 1,
 		whiteSpace: 'nowrap',
 		left: '50%',
 		transform: 'translateX(-50%)',
 		top: `calc(100% + ${textGap}px)`,
+		overflow: 'hidden',
+		opacity: textOverflow ? 0.45 : 1,
 	};
+
+	useEffect(() => {
+		const text = textRef.current;
+		if (!text) return;
+
+		setTextOverflow(text.scrollWidth > text.clientWidth);
+	}, [element.content, element.width, textSize]);
 
 	return (
 		<div
@@ -79,10 +91,22 @@ export function Code128Preview({ element }: { element: BarcodeElement }) {
 
 			{element.showText && (
 				<span
+					ref={textRef}
 					className='text-black'
 					style={textStyle}
 				>
 					{element.content}
+
+					{textOverflow && (
+						<span
+							style={{
+								position: 'absolute',
+								inset: 0,
+								background: 'repeating-linear-gradient(135deg, transparent 0 4px, rgba(255,0,0,.35) 4px 6px)',
+								pointerEvents: 'none',
+							}}
+						/>
+					)}
 				</span>
 			)}
 		</div>

@@ -1,7 +1,7 @@
 import Code128Generator from 'code-128-encoder';
 import type { BarcodeElement } from '../../types.js';
 import { escapeZplField, mmToDots, ROTATION_MAP } from '../units.js';
-import type { GraphicBitmap } from '../renderers/graphic.js';
+import { barsToBitmap, type GraphicBitmap } from '../renderers/graphic.js';
 
 export interface Code128Encoded {
 	bars: string;
@@ -27,45 +27,14 @@ export function encodeCode128(content: string): Code128Encoded {
 	};
 }
 
-export function createCode128Bitmap(
-	el: Pick<BarcodeElement, 'content' | 'width' | 'height'>,
-	dpi: number,
-): GraphicBitmap {
-	const encoded = encodeCode128(el.content);
+export function createCode128Bitmap(el: Pick<BarcodeElement, 'content' | 'width' | 'height'>, dpi: number): GraphicBitmap {
+  const encoded = encodeCode128(el.content);
 
-	const widthDots = mmToDots(el.width, dpi);
-	const heightDots = mmToDots(el.height, dpi);
-
-	const bytesPerRow = Math.ceil(widthDots / 8);
-	const data = new Uint8Array(bytesPerRow * heightDots);
-
-	for (let moduleIndex = 0; moduleIndex < encoded.moduleCount; moduleIndex++) {
-		if (encoded.bars[moduleIndex] !== '1') {
-			continue;
-		}
-
-		const startX = Math.floor((moduleIndex * widthDots) / encoded.moduleCount);
-
-		const endX = Math.floor(((moduleIndex + 1) * widthDots) / encoded.moduleCount);
-
-		for (let x = startX; x < endX; x++) {
-			const byteIndex = Math.floor(x / 8);
-			const bitIndex = 7 - (x % 8);
-
-			for (let y = 0; y < heightDots; y++) {
-				const index = y * bytesPerRow + byteIndex;
-
-				data[index] |= 1 << bitIndex;
-			}
-		}
-	}
-
-	return {
-		widthDots,
-		heightDots,
-		bytesPerRow,
-		data,
-	};
+  return barsToBitmap(
+    encoded.bars,
+    mmToDots(el.width, dpi),
+    mmToDots(el.height, dpi),
+  );
 }
 
 export function buildCode128TextCommand(el: BarcodeElement, dpi: number): string | null {
