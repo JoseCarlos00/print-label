@@ -2,8 +2,7 @@ import type { BarcodeElement, Symbology } from '../../types.js';
 import { escapeZplField, mmToDots, ROTATION_MAP, ZplValidationError } from '../units.js'
 import { createCode128Bitmap, buildCode128TextCommand } from '../barcode/code128.js';
 import { buildGraphicCommand, rotateBitmap } from './graphic.js';
-
-
+import { createEan13Bitmap } from '../barcode/ean13.js'
 
 // ──────────────────────────────────────────────────────────────────────────
 // Código de barras
@@ -73,6 +72,12 @@ export function buildBarcodeCommand(el: BarcodeElement, dpi: number): string {
 		const textCommand = buildCode128TextCommand(el, dpi);
 
 		return textCommand ? [barcodeCommand, textCommand].join('\n') : barcodeCommand;
+	} else if (el.symbology === 'ean13') {
+		const bitmap = createEan13Bitmap(el, dpi);
+
+		const barcodeCommand = buildGraphicCommand(bitmap, `^FO${xDots},${yDots}`);
+
+		return barcodeCommand;
 	}
 
 	const heightDots = mmToDots(el.height, dpi);
@@ -84,10 +89,6 @@ export function buildBarcodeCommand(el: BarcodeElement, dpi: number): string {
 	const moduleWidth = el.width;
 
 	switch (el.symbology) {
-		case 'ean13':
-			barcodeCommand = `^BE${orientation},${heightDots},${printText},N`;
-			break;
-
 		case 'code39':
 			barcodeCommand = `^B3${orientation},N,${heightDots},${printText},N`;
 			break;

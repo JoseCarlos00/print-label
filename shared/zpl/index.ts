@@ -6,7 +6,6 @@ import { buildTextCommand } from './renderers/text.js';
 import { buildBarcodeCommand } from './renderers/barcode.js';
 import { buildQrCommand } from './renderers/qr.js';
 
-
 // ──────────────────────────────────────────────────────────────────────────
 // Generador principal
 // ──────────────────────────────────────────────────────────────────────────
@@ -45,7 +44,9 @@ export function generateZpl(elements: LabelElement[], profile: PrinterProfile): 
 	].join('\n');
 }
 
+export type { ZplValidationError } from './units.js';
+export type { GraphicBitmap } from './renderers/graphic.js';
+export { getQrModuleCount } from './renderers/qr.js';
 
-export { ZplValidationError } from './units.js';
-export { getQrModuleCount } from './renderers/qr.js'
 export { createCode128Bitmap } from './barcode/code128.js';
+export { createEan13Bitmap } from './barcode/ean13.js';
