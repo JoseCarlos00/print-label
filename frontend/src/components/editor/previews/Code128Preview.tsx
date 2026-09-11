@@ -58,9 +58,12 @@ export function Code128Preview({ element }: { element: BarcodeElement }) {
 		fontSize: `${textSize}px`,
 		lineHeight: 1,
 		whiteSpace: 'nowrap',
+		textAlign: 'center',
+
 		left: '50%',
 		transform: 'translateX(-50%)',
 		top: `calc(100% + ${textGap}px)`,
+		
 		overflow: 'hidden',
 		opacity: textOverflow ? 0.45 : 1,
 		fontStretch:'semi-condensed',

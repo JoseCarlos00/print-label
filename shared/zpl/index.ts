@@ -44,8 +44,9 @@ export function generateZpl(elements: LabelElement[], profile: PrinterProfile): 
 	].join('\n');
 }
 
-export type { ZplValidationError } from './units.js';
 export type { GraphicBitmap } from './renderers/graphic.js';
+
+export { ZplValidationError } from './units.js';
 export { getQrModuleCount } from './renderers/qr.js';
 
 export { createCode128Bitmap } from './barcode/code128.js';
