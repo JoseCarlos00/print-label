@@ -1,4 +1,4 @@
-import type { Glyph } from 'opentype.js';
+import type { BoundingBox, Glyph } from 'opentype.js';
 import type { GraphicBitmap } from '../renderers/graphic.js';
 
 interface Point {
@@ -9,7 +9,15 @@ interface Point {
 /**
  * Recibir un glifo de OpenType y convertirlo en píxeles dentro de un GraphicBitmap.
  */
-export function renderGlyph(glyph: Glyph, widthDots: number, heightDots: number): GraphicBitmap {
+export function renderGlyph(glyph: Glyph, fontSize: number, unitsPerEm: number): GraphicBitmap {
+	const scale = fontSize / unitsPerEm;
+
+	const bbox = glyph.getBoundingBox();
+
+	const widthDots = Math.ceil((bbox.x2 - bbox.x1) * scale);
+
+	const heightDots = Math.ceil((bbox.y2 - bbox.y1) * scale);
+
 	const bytesPerRow = Math.ceil(widthDots / 8);
 
 	const bitmap: GraphicBitmap = {
@@ -19,7 +27,7 @@ export function renderGlyph(glyph: Glyph, widthDots: number, heightDots: number)
 		data: new Uint8Array(bytesPerRow * heightDots),
 	};
 
-	const path = glyph.getPath(0, 0, 100);
+	const path = glyph.getPath(0, 0, fontSize);
 
 	const contours = pathToContours(path);
 
@@ -27,9 +35,9 @@ export function renderGlyph(glyph: Glyph, widthDots: number, heightDots: number)
 		return bitmap;
 	}
 
-	const normalized = normalizeContours(contours, widthDots, heightDots);
+	const transformed = transformContours(contours, bbox, scale);
 
-	fillContours(bitmap, normalized);
+	fillContours(bitmap, transformed);
 
 	return bitmap;
 }
@@ -56,34 +64,6 @@ function setPixel(bitmap: GraphicBitmap, x: number, y: number): void {
 	bitmap.data[byteIndex] |= 1 << bitIndex;
 }
 
-function normalizeContours(contours: Point[][], width: number, height: number): Point[][] {
-	let minX = Infinity;
-	let minY = Infinity;
-	let maxX = -Infinity;
-	let maxY = -Infinity;
-
-	for (const contour of contours) {
-		for (const point of contour) {
-			minX = Math.min(minX, point.x);
-			minY = Math.min(minY, point.y);
-			maxX = Math.max(maxX, point.x);
-			maxY = Math.max(maxY, point.y);
-		}
-	}
-
-	const sourceWidth = maxX - minX;
-	const sourceHeight = maxY - minY;
-
-	const scale = Math.min((width - 2) / sourceWidth, (height - 2) / sourceHeight);
-
-	return contours.map((contour) =>
-		contour.map((point) => ({
-			x: (point.x - minX) * scale + 1,
-
-			y: (point.y - minY) * scale + 1,
-		})),
-	);
-}
 
 function pathToContours(path: opentype.Path): Point[][] {
 	const contours: Point[][] = [];
@@ -195,3 +175,14 @@ function fillContours(bitmap: GraphicBitmap, contours: Point[][]): void {
 		}
 	}
 }
+
+function transformContours(contours: Point[][], bbox: BoundingBox, scale: number): Point[][] {
+	return contours.map((contour) =>
+		contour.map((point) => ({
+			x: (point.x - bbox.x1) * scale,
+
+			y: (point.y - bbox.y1) * scale,
+		})),
+	);
+}
+

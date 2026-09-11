@@ -24,3 +24,12 @@ export function loadSwiss721(): Promise<Font> {
 
 	return fontPromise;
 }
+
+
+export async function showNamesFamilyFonts() {
+	const font = await loadSwiss721();
+
+	console.log(font.names);
+	console.log('Units per EM:', font.unitsPerEm);
+	console.log('Glyphs:', font.glyphs.length);
+}
