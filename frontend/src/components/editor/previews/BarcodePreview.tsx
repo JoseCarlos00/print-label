@@ -1,8 +1,7 @@
 import Barcode from 'react-barcode';
 import type { BarcodeElement, Symbology } from 'shared';
 import { mmToPx } from '../../../utils/scale';
-import { calculateCode128Sizing } from 'shared/zpl';
-import { useEditorStore } from '../../../store/useEditorStore';
+import { Code128Preview } from './Code128Preview'
 
 const SYMBOLOGY_TO_FORMAT: Record<Symbology, string> = {
 	code128: 'CODE128',
@@ -11,16 +10,15 @@ const SYMBOLOGY_TO_FORMAT: Record<Symbology, string> = {
 	upc: 'UPC',
 };
 
-// text Test -> 123456789012
 
 export function BarcodePreview({ element }: { element: BarcodeElement }) {
-	const profile = useEditorStore((s) => s.profile);
 
-	const dpi = profile?.dpi ?? 203;
 
-	const sizing = element.symbology === 'code128' ? calculateCode128Sizing(element, dpi) : null;
+	const moduleWidthPx = element.symbology === 'code128' ? 1.5 : (element.width);
 
-	const moduleWidthPx = sizing ? mmToPx(sizing.moduleWidthDots / (dpi / 25.4)) : 1.5;
+	 if (element.symbology === 'code128') {
+			return <Code128Preview element={element} />;
+		}
 
 	return (
 		<Barcode

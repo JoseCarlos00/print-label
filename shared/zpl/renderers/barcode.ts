@@ -81,7 +81,7 @@ export function buildBarcodeCommand(el: BarcodeElement, dpi: number): string {
 	const content = escapeZplField(el.content);
 
 	let barcodeCommand: string;
-	const moduleWidth = el.width ?? 2;
+	const moduleWidth = el.width;
 
 	switch (el.symbology) {
 		case 'ean13':

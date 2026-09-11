@@ -33,7 +33,7 @@ export function createCode128Bitmap(
 ): GraphicBitmap {
 	const encoded = encodeCode128(el.content);
 
-	const widthDots = mmToDots(el.width ?? 2, dpi);
+	const widthDots = mmToDots(el.width, dpi);
 	const heightDots = mmToDots(el.height, dpi);
 
 	const bytesPerRow = Math.ceil(widthDots / 8);
@@ -79,7 +79,7 @@ export function buildCode128TextCommand(el: BarcodeElement, dpi: number): string
 	let textX = el.x;
 	let textY = el.y;
 
-	const widthDots = mmToDots(el.width!, dpi);
+	const widthDots = mmToDots(el.width, dpi);
 
 	switch (el.rotation) {
 		case 0:
@@ -114,5 +114,3 @@ export function buildCode128TextCommand(el: BarcodeElement, dpi: number): string
 		`^FH^FD${content}^FS`,
 	].join('\n');
 }
-
-export function calculateCode128Sizing() {}

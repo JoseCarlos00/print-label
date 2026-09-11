@@ -45,7 +45,7 @@ export interface BarcodeElement extends BaseElement {
 	type: 'barcode';
 	content: string;
 	symbology: Symbology;
-	width?: number; // mm
+	width: number; // mm
 	height: number; // mm
 	showText: boolean; // imprime el número legible debajo del código
 }
