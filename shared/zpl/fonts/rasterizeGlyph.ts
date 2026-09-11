@@ -10,24 +10,26 @@ interface Point {
  * Recibir un glifo de OpenType y convertirlo en píxeles dentro de un GraphicBitmap.
  */
 export function renderGlyph(glyph: Glyph, widthDots: number, heightDots: number): GraphicBitmap {
+	const bytesPerRow = Math.ceil(widthDots / 8);
+
 	const bitmap: GraphicBitmap = {
 		widthDots,
 		heightDots,
-		bytesPerRow: Math.ceil(widthDots / 8),
-		data: new Uint8Array(Math.ceil(widthDots / 8) * heightDots),
+		bytesPerRow,
+		data: new Uint8Array(bytesPerRow * heightDots),
 	};
 
 	const path = glyph.getPath(0, 0, 100);
 
-	const points = pathToPoints(path);
+	const contours = pathToContours(path);
 
-	if (points.length === 0) {
+	if (contours.length === 0) {
 		return bitmap;
 	}
 
-	const normalized = normalizePoints(points, widthDots, heightDots);
+	const normalized = normalizeContours(contours, widthDots, heightDots);
 
-	fillPolygon(bitmap, normalized);
+	fillContours(bitmap, normalized);
 
 	return bitmap;
 }
@@ -42,9 +44,51 @@ function quadraticBezier(p0: Point, p1: Point, p2: Point, t: number): Point {
 	};
 }
 
-function pathToPoints(path: opentype.Path): Point[] {
-	const points: Point[] = [];
+function setPixel(bitmap: GraphicBitmap, x: number, y: number): void {
+	if (x < 0 || x >= bitmap.widthDots || y < 0 || y >= bitmap.heightDots) {
+		return;
+	}
 
+	const byteIndex = y * bitmap.bytesPerRow + Math.floor(x / 8);
+
+	const bitIndex = 7 - (x % 8);
+
+	bitmap.data[byteIndex] |= 1 << bitIndex;
+}
+
+function normalizeContours(contours: Point[][], width: number, height: number): Point[][] {
+	let minX = Infinity;
+	let minY = Infinity;
+	let maxX = -Infinity;
+	let maxY = -Infinity;
+
+	for (const contour of contours) {
+		for (const point of contour) {
+			minX = Math.min(minX, point.x);
+			minY = Math.min(minY, point.y);
+			maxX = Math.max(maxX, point.x);
+			maxY = Math.max(maxY, point.y);
+		}
+	}
+
+	const sourceWidth = maxX - minX;
+	const sourceHeight = maxY - minY;
+
+	const scale = Math.min((width - 2) / sourceWidth, (height - 2) / sourceHeight);
+
+	return contours.map((contour) =>
+		contour.map((point) => ({
+			x: (point.x - minX) * scale + 1,
+
+			y: (point.y - minY) * scale + 1,
+		})),
+	);
+}
+
+function pathToContours(path: opentype.Path): Point[][] {
+	const contours: Point[][] = [];
+
+	let currentContour: Point[] | null = null;
 	let current: Point = {
 		x: 0,
 		y: 0,
@@ -53,28 +97,36 @@ function pathToPoints(path: opentype.Path): Point[] {
 	for (const command of path.commands) {
 		switch (command.type) {
 			case 'M':
+				currentContour = [];
+
+				contours.push(currentContour);
+
 				current = {
 					x: command.x,
 					y: command.y,
 				};
 
-				points.push(current);
+				currentContour.push(current);
 				break;
 
 			case 'L':
+				if (!currentContour) continue;
+
 				current = {
 					x: command.x,
 					y: command.y,
 				};
 
-				points.push(current);
+				currentContour.push(current);
 				break;
 
 			case 'Q':
+				if (!currentContour) continue;
+
 				for (let i = 1; i <= 20; i++) {
 					const t = i / 20;
 
-					points.push(
+					currentContour.push(
 						quadraticBezier(
 							current,
 							{
@@ -99,70 +151,35 @@ function pathToPoints(path: opentype.Path): Point[] {
 		}
 	}
 
-	return points;
+	return contours.filter((contour) => contour.length >= 3);
 }
 
-function normalizePoints(points: Point[], width: number, height: number): Point[] {
-	let minX = Infinity;
-	let minY = Infinity;
-	let maxX = -Infinity;
-	let maxY = -Infinity;
-
-	for (const point of points) {
-		minX = Math.min(minX, point.x);
-		minY = Math.min(minY, point.y);
-		maxX = Math.max(maxX, point.x);
-		maxY = Math.max(maxY, point.y);
-	}
-
-	const sourceWidth = maxX - minX;
-	const sourceHeight = maxY - minY;
-
-	const scale = Math.min((width - 2) / sourceWidth, (height - 2) / sourceHeight);
-
-	return points.map((point) => ({
-		x: (point.x - minX) * scale + 1,
-
-		y: (point.y - minY) * scale + 1,
-	}));
-}
-
-function setPixel(bitmap: GraphicBitmap, x: number, y: number): void {
-	if (x < 0 || x >= bitmap.widthDots || y < 0 || y >= bitmap.heightDots) {
-		return;
-	}
-
-	const byteIndex = y * bitmap.bytesPerRow + Math.floor(x / 8);
-
-	const bitIndex = 7 - (x % 8);
-
-	bitmap.data[byteIndex] |= 1 << bitIndex;
-}
-
-function fillPolygon(bitmap: GraphicBitmap, points: Point[]): void {
+function fillContours(bitmap: GraphicBitmap, contours: Point[][]): void {
 	for (let y = 0; y < bitmap.heightDots; y++) {
 		const intersections: number[] = [];
 
-		for (let i = 0; i < points.length; i++) {
-			const a = points[i];
-			const b = points[(i + 1) % points.length];
+		for (const points of contours) {
+			for (let i = 0; i < points.length; i++) {
+				const a = points[i];
+				const b = points[(i + 1) % points.length];
 
-			if (a.y === b.y) {
-				continue;
+				if (a.y === b.y) {
+					continue;
+				}
+
+				const minY = Math.min(a.y, b.y);
+				const maxY = Math.max(a.y, b.y);
+
+				if (y < minY || y >= maxY) {
+					continue;
+				}
+
+				const t = (y - a.y) / (b.y - a.y);
+
+				const x = a.x + t * (b.x - a.x);
+
+				intersections.push(x);
 			}
-
-			const minY = Math.min(a.y, b.y);
-			const maxY = Math.max(a.y, b.y);
-
-			if (y < minY || y >= maxY) {
-				continue;
-			}
-
-			const t = (y - a.y) / (b.y - a.y);
-
-			const x = a.x + t * (b.x - a.x);
-
-			intersections.push(x);
 		}
 
 		intersections.sort((a, b) => a - b);
