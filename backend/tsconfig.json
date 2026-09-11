@@ -6,6 +6,8 @@
 		"target": "esnext",
 		"types": ["node"],
 
+		"customConditions": ["node"],
+
 		// Este tsconfig solo se usa para validar tipos (tsc sin --noEmit),
 		// el bundle real de producción lo genera esbuild.config.js.
 		"noEmit": true,
