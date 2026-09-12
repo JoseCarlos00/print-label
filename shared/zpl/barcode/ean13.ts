@@ -31,7 +31,7 @@ export function encodeEan13(content: string): Ean13Encoded {
 }
 
 export function createEan13Bitmap(
-	el: Pick<BarcodeElement, 'content' | 'width' | 'height'>,
+	el: Pick<BarcodeElement, 'content' | 'width' | 'height' | 'showText'>,
 	dpi: number,
 	font: Font,
 ): GraphicBitmap {
@@ -41,6 +41,7 @@ export function createEan13Bitmap(
 	const heightDots = mmToDots(el.height, dpi);
 
 	const textHeightDots = mmToDots(3, dpi);
+
 	const barHeightDots = heightDots - textHeightDots;
 
 	if (barHeightDots <= 0) {
@@ -100,62 +101,64 @@ export function createEan13Bitmap(
 
 	// 2. Preparar texto
 
-	const fontSize = fontSizeMmToOpenType(font, 3, dpi);
+	if (el.showText) {
+		// 2. Preparar texto
 
-	const textY = barHeightDots;
+		const fontSize = fontSizeMmToOpenType(font, 3, dpi);
 
-	const firstDigit = encoded.content[0];
-	const leftDigits = encoded.content.slice(1, 7);
-	const rightDigits = encoded.content.slice(7, 13);
+		const textY = barHeightDots;
 
-	// Áreas de texto
+		const firstDigit = encoded.content[0];
+		const leftDigits = encoded.content.slice(1, 7);
+		const rightDigits = encoded.content.slice(7, 13);
 
-	const firstDigitAreaStart = 0;
-	const firstDigitAreaEnd = moduleX(0);
+		const firstDigitAreaStart = 0;
+		const firstDigitAreaEnd = moduleX(0);
 
-	const leftAreaStart = moduleX(3);
-	const leftAreaEnd = moduleX(45);
+		const leftAreaStart = moduleX(3);
+		const leftAreaEnd = moduleX(45);
 
-	const rightAreaStart = moduleX(50);
-	const rightAreaEnd = moduleX(92);
+		const rightAreaStart = moduleX(50);
+		const rightAreaEnd = moduleX(92);
 
-	// 3. Primer dígito
-	//
-	// Lo colocamos hacia la derecha de su área,
-	// justo antes de la primera guarda.
+		/**
+		 * Primer dígito
+		 * Lo colocamos hacia la derecha de su área,
+		 * justo antes de la primera guarda.
+		 */
+		const firstDigitGapDots = mmToDots(1, dpi);
 
-	const firstDigitGapDots = mmToDots(1, dpi);
+		const firstDigitBitmap = renderText(font, firstDigit, fontSize, firstDigitAreaEnd - firstDigitGapDots, 'R');
 
-	const firstDigitBitmap = renderText(font, firstDigit, fontSize, firstDigitAreaEnd - firstDigitGapDots, 'R');
+		drawBitmap(bitmap, firstDigitBitmap.bitmap, firstDigitAreaStart, textY);
 
-	drawBitmap(bitmap, firstDigitBitmap.bitmap, firstDigitAreaStart, textY);
+		/**
+		 * Cada dígito ocupa un "slot".
+		 * Al centrar cada dígito dentro de su slot,
+		 * conseguimos un efecto equivalente a space-around.
+		 */
 
-	// 4. Dígitos de cada mitad
-	//
-	// Cada dígito ocupa un "slot".
-	// Al centrar cada dígito dentro de su slot,
-	// conseguimos un efecto equivalente a space-around.
+		function drawSpacedDigits(text: string, areaStart: number, areaEnd: number): void {
+			const areaWidth = areaEnd - areaStart;
+			const slotWidth = areaWidth / text.length;
 
-	function drawSpacedDigits(text: string, areaStart: number, areaEnd: number): void {
-		const areaWidth = areaEnd - areaStart;
-		const slotWidth = areaWidth / text.length;
+			for (let i = 0; i < text.length; i++) {
+				const slotStart = Math.floor(areaStart + i * slotWidth);
 
-		for (let i = 0; i < text.length; i++) {
-			const slotStart = Math.floor(areaStart + i * slotWidth);
+				const slotEnd = Math.floor(areaStart + (i + 1) * slotWidth);
 
-			const slotEnd = Math.floor(areaStart + (i + 1) * slotWidth);
+				const currentSlotWidth = slotEnd - slotStart;
 
-			const currentSlotWidth = slotEnd - slotStart;
+				const digitBitmap = renderText(font, text[i], fontSize, currentSlotWidth, 'C');
 
-			const digitBitmap = renderText(font, text[i], fontSize, currentSlotWidth, 'C');
-
-			drawBitmap(bitmap, digitBitmap.bitmap, slotStart, textY);
+				drawBitmap(bitmap, digitBitmap.bitmap, slotStart, textY);
+			}
 		}
+
+		drawSpacedDigits(leftDigits, leftAreaStart, leftAreaEnd);
+
+		drawSpacedDigits(rightDigits, rightAreaStart, rightAreaEnd);
 	}
-
-	drawSpacedDigits(leftDigits, leftAreaStart, leftAreaEnd);
-
-	drawSpacedDigits(rightDigits, rightAreaStart, rightAreaEnd);
 
 	return bitmap;
 }
@@ -170,6 +173,6 @@ function calculateEan13CheckDigit(content: string): string {
 	}
 
 	const remainder = sum % 10;
-
+	
 	return String(remainder === 0 ? 0 : 10 - remainder);
 }
