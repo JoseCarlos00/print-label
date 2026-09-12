@@ -1,7 +1,10 @@
 import Code128Generator from 'code-128-encoder';
+import type {OutputMode} from 'code-128-encoder';
 import type { BarcodeElement } from '../../types.js';
-import { escapeZplField, mmToDots, ROTATION_MAP } from '../units.js';
-import { barsToBitmap, type GraphicBitmap } from '../renderers/graphic.js';
+import { barsToBitmap, drawBitmap, type GraphicBitmap } from '../renderers/graphic.js';
+import { fontSizeMmToOpenType, renderText } from '../fonts/rasterizeText.js';
+import type { Font } from 'opentype.js';
+import { mmToDots } from '../units.js';
 
 export interface Code128Encoded {
 	bars: string;
@@ -13,11 +16,11 @@ export function encodeCode128(content: string): Code128Encoded {
 	const encoder = new Code128Generator();
 
 	const bars = encoder.encode(content, {
-		output: 'bars',
+		output: 'bars' as OutputMode.BARS,
 	});
 
 	const codes = encoder.encode(content, {
-		output: 'codes',
+		output: 'codes' as OutputMode.CODES,
 	});
 
 	return {
@@ -27,59 +30,47 @@ export function encodeCode128(content: string): Code128Encoded {
 	};
 }
 
-export function createCode128Bitmap(el: Pick<BarcodeElement, 'content' | 'width' | 'height'>, dpi: number): GraphicBitmap {
-  const encoded = encodeCode128(el.content);
-
-  return barsToBitmap(
-    encoded.bars,
-    mmToDots(el.width, dpi),
-    mmToDots(el.height, dpi),
-  );
-}
-
-export function buildCode128TextCommand(el: BarcodeElement, dpi: number): string | null {
-	if (!el.showText) return null;
-
-	const gap0 = 1;
-	const gap90 = 4;
-	const gap180 = 4;
-	const gap270 = 1;
-
-	let textX = el.x;
-	let textY = el.y;
+export function createCode128Bitmap(
+	el: Pick<BarcodeElement, 'content' | 'width' | 'height' | 'showText'>,
+	dpi: number,
+	font: Font,
+): GraphicBitmap {
+	const encoded = encodeCode128(el.content);
 
 	const widthDots = mmToDots(el.width, dpi);
+	const heightDots = mmToDots(el.height, dpi);
 
-	switch (el.rotation) {
-		case 0:
-			textY = el.y + el.height + gap0;
-			break;
+	const textFontSize = 6;
 
-		case 90:
-			textX = el.x - gap90;
-			textY = el.y;
-			break;
+	const textHeightDots = mmToDots(textFontSize, dpi);
 
-		case 180:
-			textY = el.y - gap180;
-			break;
+	const barHeightDots = el.showText ? heightDots - textHeightDots : heightDots;
 
-		case 270:
-			textX = el.x + el.height + gap270;
-			textY = el.y;
-			break;
+	if (barHeightDots <= 0) {
+		throw new Error('Code 128 height is too small for barcode and text');
 	}
 
-	const xDots = mmToDots(textX, dpi);
-	const yDots = mmToDots(textY, dpi);
-	const heightDots = mmToDots(3, dpi);
-	const orientation = ROTATION_MAP[el.rotation];
-	const content = escapeZplField(el.content);
+	const bitmap: GraphicBitmap = {
+		widthDots,
+		heightDots,
+		bytesPerRow: Math.ceil(widthDots / 8),
+		data: new Uint8Array(Math.ceil(widthDots / 8) * heightDots),
+	};
 
-	return [
-		`^FO${xDots},${yDots}`,
-		`^FB${widthDots},1,0,C,0`,
-		`^A0${orientation},${heightDots},${heightDots}`,
-		`^FH^FD${content}^FS`,
-	].join('\n');
+	// 1. Barras
+
+	const barsBitmap = barsToBitmap(encoded.bars, widthDots, barHeightDots);
+
+	drawBitmap(bitmap, barsBitmap, 0, 0);
+
+	// 2. Texto
+	if (el.showText) {
+		const fontSize = fontSizeMmToOpenType(font, textFontSize, dpi);
+
+		const textBitmap = renderText(font, el.content, fontSize, widthDots, 'C');
+
+		drawBitmap(bitmap, textBitmap.bitmap, 0, barHeightDots);
+	}
+
+	return bitmap;
 }
