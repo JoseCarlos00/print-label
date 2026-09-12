@@ -1,4 +1,4 @@
-import type { Font } from 'opentype.js';
+import type { BoundingBox, Font } from 'opentype.js';
 import type { GraphicBitmap } from '../renderers/graphic.js';
 import { mmToDots } from '../units.js';
 import type { TextAlign } from '../../types.js';
@@ -39,7 +39,7 @@ export function renderText(
 	for (const char of text) {
 		const glyph = font.charToGlyph(char);
 
-		naturalWidth += glyph.advanceWidth * scale;
+		naturalWidth += glyph.advanceWidth! * scale;
 	}
 
 	const naturalWidthDots = Math.ceil(getTextWidth(font, text, scale));
@@ -86,7 +86,7 @@ export function renderText(
 			cursorX += kerning * scale;
 		}
 
-    // const glyphs = [...text].map((char) => font.charToGlyph(char));
+		// const glyphs = [...text].map((char) => font.charToGlyph(char));
 
 		const path = glyph.getPath(cursorX, baseline, fontSize);
 
@@ -94,7 +94,7 @@ export function renderText(
 
 		fillContours(bitmap, contours);
 
-		cursorX += glyph.advanceWidth * scale;
+		cursorX += glyph.advanceWidth! * scale;
 	}
 
 	const overflows = naturalWidthDots > widthDots;
@@ -259,8 +259,6 @@ export function fontSizeMmToOpenType(font: Font, fontSizeMm: number, dpi: number
 }
 
 export function openTypeFontSizeToMm(font: Font, fontSize: number, dpi: number): number {
-	console.log(font);
-	
 	const lineHeightDots = (fontSize * (font.ascender - font.descender)) / font.unitsPerEm;
 
 	return (lineHeightDots * 25.4) / dpi;
@@ -280,7 +278,7 @@ function getTextWidth(font: Font, text: string, scale: number): number {
 			width += kerning * scale;
 		}
 
-		width += glyph.advanceWidth * scale;
+		width += glyph.advanceWidth! * scale;
 	}
 
 	return width;

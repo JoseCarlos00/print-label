@@ -1,4 +1,4 @@
-import type { Rotation } from '../types.js';
+import type { BarcodeElement, Rotation } from '../types.js';
 
 /** Convierte mm a dots según el DPI del perfil. ZPL trabaja en dots (spec §8). */
 export function mmToDots(mm: number, dpi: number): number {
@@ -29,7 +29,6 @@ export const ROTATION_MAP: Record<Rotation, string> = {
 	270: 'B',
 };
 
-
 /**
  * Escapa el contenido de un campo ^FD para uso con ^FH activo.
  * ZPL interpreta '^' y '~' como prefijos de comando/control en CUALQUIER
@@ -43,4 +42,12 @@ export function escapeZplField(content: string): string {
 		const hex = char.charCodeAt(0).toString(16).toUpperCase().padStart(2, '0');
 		return `_${hex}`;
 	});
+}
+
+export function resolveBarcodeTextSize(el: Pick<BarcodeElement, 'height' | 'fontSize'>): number {
+	if (el.fontSize != null) {
+		return el.fontSize;
+	}
+
+	return Math.min(20, Math.max(2, el.height * 0.25));
 }

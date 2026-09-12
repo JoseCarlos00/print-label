@@ -48,6 +48,7 @@ export interface BarcodeElement extends BaseElement {
 	width: number; // mm
 	height: number; // mm
 	showText: boolean; // imprime el número legible debajo del código
+	fontSize?: number;
 }
 
 export type QrErrorCorrection = 'L' | 'M' | 'Q' | 'H';

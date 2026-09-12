@@ -1,7 +1,7 @@
 import { Ean13 } from '@ashaffah/barcodes';
 import type { BarcodeElement } from '../../types.js';
 import { drawBitmap, setPixel, type GraphicBitmap } from '../renderers/graphic.js';
-import { mmToDots } from '../units.js';
+import { mmToDots, resolveBarcodeTextSize } from '../units.js';
 import { fontSizeMmToOpenType, renderText } from '../fonts/rasterizeText.js'
 import { Font } from 'opentype.js'
 
@@ -40,7 +40,8 @@ export function createEan13Bitmap(
 	const widthDots = mmToDots(el.width, dpi);
 	const heightDots = mmToDots(el.height, dpi);
 
-	const textHeightDots = mmToDots(3, dpi);
+	const textSizeMm = resolveBarcodeTextSize(el);
+	const textHeightDots = mmToDots(textSizeMm, dpi);
 
 	const barHeightDots = heightDots - textHeightDots;
 
@@ -104,7 +105,7 @@ export function createEan13Bitmap(
 	if (el.showText) {
 		// 2. Preparar texto
 
-		const fontSize = fontSizeMmToOpenType(font, 3, dpi);
+		const fontSize = fontSizeMmToOpenType(font, textSizeMm, dpi);
 
 		const textY = barHeightDots;
 

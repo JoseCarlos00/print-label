@@ -4,7 +4,7 @@ import type { BarcodeElement } from '../../types.js';
 import { barsToBitmap, drawBitmap, type GraphicBitmap } from '../renderers/graphic.js';
 import { fontSizeMmToOpenType, renderText } from '../fonts/rasterizeText.js';
 import type { Font } from 'opentype.js';
-import { mmToDots } from '../units.js';
+import { mmToDots, resolveBarcodeTextSize } from '../units.js';
 
 export interface Code128Encoded {
 	bars: string;
@@ -40,9 +40,9 @@ export function createCode128Bitmap(
 	const widthDots = mmToDots(el.width, dpi);
 	const heightDots = mmToDots(el.height, dpi);
 
-	const textFontSize = 6;
+	const textSizeMm = resolveBarcodeTextSize(el);
 
-	const textHeightDots = mmToDots(textFontSize, dpi);
+	const textHeightDots = mmToDots(textSizeMm, dpi);
 
 	const barHeightDots = el.showText ? heightDots - textHeightDots : heightDots;
 
@@ -65,7 +65,7 @@ export function createCode128Bitmap(
 
 	// 2. Texto
 	if (el.showText) {
-		const fontSize = fontSizeMmToOpenType(font, textFontSize, dpi);
+		const fontSize = fontSizeMmToOpenType(font, textSizeMm, dpi);
 
 		const textBitmap = renderText(font, el.content, fontSize, widthDots, 'C');
 
