@@ -2,6 +2,8 @@ import { useCallback, useRef, useState } from 'react';
 import type { LabelElement, PrinterProfile } from 'shared';
 import { generateZpl, ZplValidationError } from 'shared/zpl';
 import { renderZplToImage } from '../services/labelary';
+import { loadSwiss721 } from 'shared/zpl/font';
+const font = await loadSwiss721();
 
 interface UseLabelPreviewResult {
 	imageUrl: string | null;
@@ -33,7 +35,7 @@ export function useLabelPreview(elements: LabelElement[], profile: PrinterProfil
 
 		(async () => {
 			try {
-				const zpl = generateZpl(elements, profile);
+				const zpl = generateZpl(elements, profile, font);
 
 				console.log({ zpl, elements });
 
