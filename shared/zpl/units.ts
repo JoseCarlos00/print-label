@@ -49,5 +49,5 @@ export function resolveBarcodeTextSize(el: Pick<BarcodeElement, 'height' | 'font
 		return el.fontSize;
 	}
 
-	return Math.min(20, Math.max(2, el.height * 0.25));
+	return Math.min(15, Math.max(2, el.height * 0.25));
 }
