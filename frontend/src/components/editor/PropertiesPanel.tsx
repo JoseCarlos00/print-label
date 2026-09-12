@@ -1,10 +1,10 @@
 import { useEffect, useRef } from 'react';
-import type { BarcodeElement, QrElement, QrLabel, Symbology, TextAlign, TextElement } from 'shared';
+import type { BarcodeElement, QrElement, QrLabel, Symbology, TextAlignZebra, TextElement } from 'shared';
 import type { ElementPatch } from '../../store/editorStore.types';
 import { useEditorStore } from '../../store/useEditorStore';
 
 const SYMBOLOGIES: Symbology[] = ['code128', 'ean13', 'code39', 'upc'];
-const TEXT_ALIGNS: TextAlign[] = ['L', 'C', 'R', 'J'];
+const TEXT_ALIGNS: TextAlignZebra[] = ['L', 'C', 'R', 'J'];
 
 const TEXT_ALIGN_CSS = {
 	L: 'Left',
@@ -195,7 +195,7 @@ function TextFields({
 					Alineación
 					<select
 						value={element.textAlign ?? 'L'}
-						onChange={(e) => onChange({ textAlign: e.target.value as TextAlign })}
+						onChange={(e) => onChange({ textAlign: e.target.value as TextAlignZebra })}
 						className='mt-1 w-full rounded-md border border-app-border bg-app-surface p-1 text-app-text'
 					>
 						{TEXT_ALIGNS.map((a) => (

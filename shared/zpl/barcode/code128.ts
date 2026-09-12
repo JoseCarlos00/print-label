@@ -58,7 +58,6 @@ export function createCode128Bitmap(
 	};
 
 	// 1. Barras
-
 	const barsBitmap = barsToBitmap(encoded.bars, widthDots, barHeightDots);
 
 	drawBitmap(bitmap, barsBitmap, 0, 0);
@@ -66,8 +65,7 @@ export function createCode128Bitmap(
 	// 2. Texto
 	if (el.showText) {
 		const fontSize = fontSizeMmToOpenType(font, textSizeMm, dpi);
-
-		const textBitmap = renderText(font, el.content, fontSize, widthDots, 'C');
+		const textBitmap = renderText(font, el.content, fontSize, widthDots, 'Center');
 
 		drawBitmap(bitmap, textBitmap.bitmap, 0, barHeightDots);
 	}

@@ -129,7 +129,7 @@ export function createEan13Bitmap(
 		 */
 		const firstDigitGapDots = mmToDots(1, dpi);
 
-		const firstDigitBitmap = renderText(font, firstDigit, fontSize, firstDigitAreaEnd - firstDigitGapDots, 'R');
+		const firstDigitBitmap = renderText(font, firstDigit, fontSize, firstDigitAreaEnd - firstDigitGapDots, 'Right');
 
 		drawBitmap(bitmap, firstDigitBitmap.bitmap, firstDigitAreaStart, textY);
 
@@ -150,7 +150,7 @@ export function createEan13Bitmap(
 
 				const currentSlotWidth = slotEnd - slotStart;
 
-				const digitBitmap = renderText(font, text[i], fontSize, currentSlotWidth, 'C');
+				const digitBitmap = renderText(font, text[i], fontSize, currentSlotWidth, 'Center');
 
 				drawBitmap(bitmap, digitBitmap.bitmap, slotStart, textY);
 			}

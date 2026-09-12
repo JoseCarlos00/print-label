@@ -1,7 +1,7 @@
-import type { BoundingBox, Font } from 'opentype.js';
+import type { Font } from 'opentype.js';
 import type { GraphicBitmap } from '../renderers/graphic.js';
 import { mmToDots } from '../units.js';
-import type { TextAlign } from '../../types.js';
+import type { TextAlignCss } from '../../types.js';
 
 interface Point {
 	x: number;
@@ -25,7 +25,7 @@ export function renderText(
 	text: string,
 	fontSize: number,
 	widthDots: number,
-	align: TextAlign,
+	align: TextAlignCss,
 	_overflows = false,
 ): TextBitmap {
 	const scale = fontSize / font.unitsPerEm;
@@ -59,15 +59,15 @@ export function renderText(
 
 	if (naturalWidthDots < widthDots) {
 		switch (align) {
-			case 'L':
+			case 'Left':
 				offsetX = 0;
 				break;
 
-			case 'C':
+			case 'Center':
 				offsetX = Math.floor((widthDots - naturalWidthDots) / 2);
 				break;
 
-			case 'R':
+			case 'Right':
 				offsetX = widthDots - naturalWidthDots;
 				break;
 		}
@@ -240,16 +240,6 @@ function fillContours(bitmap: GraphicBitmap, contours: Point[][]): void {
 			}
 		}
 	}
-}
-
-function transformContours(contours: Point[][], bbox: BoundingBox, scale: number): Point[][] {
-	return contours.map((contour) =>
-		contour.map((point) => ({
-			x: (point.x - bbox.x1) * scale,
-
-			y: (point.y - bbox.y1) * scale,
-		})),
-	);
 }
 
 export function fontSizeMmToOpenType(font: Font, fontSizeMm: number, dpi: number): number {

@@ -27,7 +27,8 @@ interface BaseElement {
 	locked?: boolean;
 }
 
-export type TextAlign = 'L' | 'C' | 'R' | 'J'; // izquierda, centro, derecha, justificado — valores nativos de ^FB
+export type TextAlignZebra = 'L' | 'C' | 'R' | 'J'; // izquierda, centro, derecha, justificado — valores nativos de ^FB
+export type TextAlignCss = 'Left' | 'Center' | 'Right' | 'Justify';
 
 export interface TextElement extends BaseElement {
 	type: 'text';
@@ -35,7 +36,7 @@ export interface TextElement extends BaseElement {
 	fontSize: number; // mm de alto de carácter
 	bold: boolean;
 	wrapWidth?: number; // mm; si está presente, activa ^FB con este ancho (texto multilínea)
-	textAlign?: TextAlign; // default "L" si wrapWidth está presente pero textAlign no
+	textAlign?: TextAlignZebra; // default "L" si wrapWidth está presente pero textAlign no
 	lineSpacing?: number; // mm extra entre líneas; default 0
 }
 

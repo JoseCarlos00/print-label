@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState, type PointerEvent } from 'react';
-import type { LabelElement, TextAlign } from 'shared';
+import type { LabelElement, TextAlignZebra } from 'shared';
 import { useEditorStore } from '../../store/useEditorStore';
 import { mmToPx, pxToMm } from '../../utils/scale';
 import type { CSSProperties } from 'react';
@@ -15,7 +15,7 @@ interface CanvasElementProps {
 	canvasHeightMm: number;
 }
 
-const TEXT_ALIGN_CSS: Record<TextAlign, CSSProperties['textAlign']> = {
+const TEXT_ALIGN_CSS: Record<TextAlignZebra, CSSProperties['textAlign']> = {
 	L: 'left',
 	C: 'center',
 	R: 'right',
