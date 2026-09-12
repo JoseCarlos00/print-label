@@ -119,3 +119,31 @@ export function barsToBitmap(bars: string, widthDots: number, heightDots: number
 		data,
 	};
 }
+
+export function drawBitmap(destination: GraphicBitmap, source: GraphicBitmap, offsetX: number, offsetY: number): void {
+	for (let sourceY = 0; sourceY < source.heightDots; sourceY++) {
+		for (let sourceX = 0; sourceX < source.widthDots; sourceX++) {
+			const sourceByteIndex = sourceY * source.bytesPerRow + Math.floor(sourceX / 8);
+
+			const sourceBitIndex = 7 - (sourceX % 8);
+
+			const isBlack = (source.data[sourceByteIndex] & (1 << sourceBitIndex)) !== 0;
+
+			if (!isBlack) continue;
+
+			setPixel(destination, offsetX + sourceX, offsetY + sourceY);
+		}
+	}
+}
+
+export function setPixel(bitmap: GraphicBitmap, x: number, y: number): void {
+	if (x < 0 || x >= bitmap.widthDots || y < 0 || y >= bitmap.heightDots) {
+		return;
+	}
+
+	const byteIndex = y * bitmap.bytesPerRow + Math.floor(x / 8);
+
+	const bitIndex = 7 - (x % 8);
+
+	bitmap.data[byteIndex] |= 1 << bitIndex;
+}

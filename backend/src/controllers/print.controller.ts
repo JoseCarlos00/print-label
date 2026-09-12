@@ -3,6 +3,9 @@ import type { LabelElement } from 'shared';
 import { generateZpl, ZplValidationError} from 'shared/zpl';
 import { getPrinterProfileById } from '../printerProfileRepo.js';
 import { sendToPrinter } from '../services/printerService.js';
+import { loadSwiss721 } from 'shared/zpl/font';
+
+const font = await loadSwiss721();
 
 interface PrintRequestBody {
 	elements: LabelElement[];
@@ -36,7 +39,7 @@ export const print = async (req: Request, res: Response) => {
 	let zpl: string;
 
 	try {
-		zpl = generateZpl(req.body.elements, profile);
+		zpl = generateZpl(req.body.elements, profile, font);
 
 	} catch (error) {
 

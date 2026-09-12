@@ -119,7 +119,7 @@ function quadraticBezier(p0: Point, p1: Point, p2: Point, t: number): Point {
 	};
 }
 
-function setPixel(bitmap: GraphicBitmap, x: number, y: number): void {
+export function setPixel(bitmap: GraphicBitmap, x: number, y: number): void {
 	if (x < 0 || x >= bitmap.widthDots || y < 0 || y >= bitmap.heightDots) {
 		return;
 	}
@@ -259,6 +259,8 @@ export function fontSizeMmToOpenType(font: Font, fontSizeMm: number, dpi: number
 }
 
 export function openTypeFontSizeToMm(font: Font, fontSize: number, dpi: number): number {
+	console.log(font);
+	
 	const lineHeightDots = (fontSize * (font.ascender - font.descender)) / font.unitsPerEm;
 
 	return (lineHeightDots * 25.4) / dpi;

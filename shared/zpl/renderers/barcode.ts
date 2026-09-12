@@ -3,6 +3,7 @@ import { escapeZplField, mmToDots, ROTATION_MAP, ZplValidationError } from '../u
 import { createCode128Bitmap, buildCode128TextCommand } from '../barcode/code128.js';
 import { buildGraphicCommand, rotateBitmap } from './graphic.js';
 import { createEan13Bitmap } from '../barcode/ean13.js'
+import { Font } from 'opentype.js'
 
 // ──────────────────────────────────────────────────────────────────────────
 // Código de barras
@@ -55,7 +56,7 @@ function validateBarcodeContent(el: BarcodeElement): void {
 	}
 }
 
-export function buildBarcodeCommand(el: BarcodeElement, dpi: number): string {
+export function buildBarcodeCommand(el: BarcodeElement, dpi: number, font: Font): string {
 	validateBarcodeContent(el);
 
 	const xDots = mmToDots(el.x, dpi);
@@ -73,7 +74,7 @@ export function buildBarcodeCommand(el: BarcodeElement, dpi: number): string {
 
 		return textCommand ? [barcodeCommand, textCommand].join('\n') : barcodeCommand;
 	} else if (el.symbology === 'ean13') {
-		const bitmap = createEan13Bitmap(el, dpi);
+		const bitmap = createEan13Bitmap(el, dpi, font);
 
 		const barcodeCommand = buildGraphicCommand(bitmap, `^FO${xDots},${yDots}`);
 

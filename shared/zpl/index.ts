@@ -5,52 +5,7 @@ import { mmToDots } from './units.js';
 import { buildTextCommand } from './renderers/text.js';
 import { buildBarcodeCommand } from './renderers/barcode.js';
 import { buildQrCommand } from './renderers/qr.js';
-
-import { loadSwiss721 } from "./fonts/loadFont.node.js";
-import type { GraphicBitmap } from './renderers/graphic.js'
-import { fontSizeMmToOpenType, renderText } from './fonts/rasterizeText.js'
-import type { Font } from 'opentype.js'
-
-const font = await loadSwiss721();
-
-function printBitmap(bitmap: GraphicBitmap): void {
-	for (let y = 0; y < bitmap.heightDots; y++) {
-		let row = '';
-
-		for (let x = 0; x < bitmap.widthDots; x++) {
-			const byteIndex = y * bitmap.bytesPerRow + Math.floor(x / 8);
-
-			const bitIndex = 7 - (x % 8);
-
-			const isBlack = (bitmap.data[byteIndex] & (1 << bitIndex)) !== 0;
-
-			row += isBlack ? '██' : '  ';
-		}
-
-		console.log(row);
-	}
-}
-
-
-const fontSizeMm = 10;
-const dpi = 203;
-
-const openTypeFontSize = fontSizeMmToOpenType(font, fontSizeMm, dpi);
-
-const result = renderText(
-  font,
-  'AVAVAVAVAVAVAV',
-  openTypeFontSize,
-  500,
-  'L',
-);
-
-console.log({
-	naturalWidthDots: result.naturalWidthDots,
-	widthDots: result.widthDots,
-	heightDots: result.heightDots,
-	overflows: result.overflows,
-});
+import { Font } from 'opentype.js'
 
 // ──────────────────────────────────────────────────────────────────────────
 // Generador principal
@@ -64,7 +19,7 @@ console.log({
  * (ej. contenido de barcode que no cumple el formato del symbology).
  * El caller debe capturar ese error específico y devolver 400.
  */
-export function generateZpl(elements: LabelElement[], profile: PrinterProfile): string {
+export function generateZpl(elements: LabelElement[], profile: PrinterProfile, font: Font): string {
 	const widthDots = mmToDots(profile.widthMm, profile.dpi);
 	const heightDots = mmToDots(profile.heightMm, profile.dpi);
 
@@ -73,7 +28,7 @@ export function generateZpl(elements: LabelElement[], profile: PrinterProfile): 
 			case 'text':
 				return buildTextCommand(el, profile.dpi);
 			case 'barcode':
-				return buildBarcodeCommand(el, profile.dpi);
+				return buildBarcodeCommand(el, profile.dpi, font);
 			case 'qr':
 				return buildQrCommand(el, profile.dpi);
 		}
@@ -91,6 +46,7 @@ export function generateZpl(elements: LabelElement[], profile: PrinterProfile): 
 }
 
 export type { GraphicBitmap } from './renderers/graphic.js';
+export type { Font } from 'opentype.js';
 
 export { ZplValidationError } from './units.js';
 export { getQrModuleCount } from './renderers/qr.js';

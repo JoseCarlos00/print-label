@@ -1,12 +1,15 @@
 import { useEffect, useRef } from 'react';
 import type { BarcodeElement } from 'shared';
-import type { GraphicBitmap } from 'shared/zpl';
+import type { Font, GraphicBitmap } from 'shared/zpl';
 import { useEditorStore } from '../../../store/useEditorStore';
 import { mmToPx } from '../../../utils/scale';
 
+import { loadSwiss721 } from 'shared/zpl/font';
+const font = await loadSwiss721();
+
 interface BarcodeBitmapPreviewProps {
 	element: BarcodeElement;
-	createBitmap: (element: BarcodeElement, dpi: number) => GraphicBitmap;
+	createBitmap: (element: BarcodeElement, dpi: number, font: Font) => GraphicBitmap;
 }
 
 export function BarcodeBitmapPreview({ element, createBitmap }: BarcodeBitmapPreviewProps) {
@@ -19,7 +22,7 @@ export function BarcodeBitmapPreview({ element, createBitmap }: BarcodeBitmapPre
 		const canvas = canvasRef.current;
 		if (!canvas) return;
 
-		const bitmap = createBitmap(element, dpi);
+		const bitmap = createBitmap(element, dpi, font);
 
 		canvas.width = bitmap.widthDots;
 		canvas.height = bitmap.heightDots;

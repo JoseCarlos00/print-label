@@ -1,64 +1,175 @@
 import { Ean13 } from '@ashaffah/barcodes';
-import type { BarcodeElement } from '../../types';
-import type { GraphicBitmap } from '../renderers/graphic';
-import { mmToDots } from '../units';
+import type { BarcodeElement } from '../../types.js';
+import { drawBitmap, setPixel, type GraphicBitmap } from '../renderers/graphic.js';
+import { mmToDots } from '../units.js';
+import { fontSizeMmToOpenType, renderText } from '../fonts/rasterizeText.js'
+import { Font } from 'opentype.js'
 
-export function encodeEan13(content: string): string {
+export interface Ean13Encoded {
+	content: string;
+	bars: string;
+}
+
+export function encodeEan13(content: string): Ean13Encoded {
+	const fullContent =
+    content.length === 12
+      ? content + calculateEan13CheckDigit(content)
+      : content;
+
 	const result = Ean13.encode(content);
 
 	if (result.data.kind !== 'linear') {
 		throw new Error('EAN-13 encoder did not return a linear barcode');
 	}
 
-	return result.data.bars
-		.map((bar) => (bar ? '1' : '0'))
-		.join('');
+	return {
+    content: fullContent,
+    bars: result.data.bars
+      .map((bar) => (bar ? '1' : '0'))
+      .join(''),
+  };
 }
 
-export function createEan13Bitmap(el: Pick<BarcodeElement, 'content' | 'width' | 'height'>, dpi: number): GraphicBitmap {
-	const bars = encodeEan13(el.content);
+export function createEan13Bitmap(
+	el: Pick<BarcodeElement, 'content' | 'width' | 'height'>,
+	dpi: number,
+	font: Font,
+): GraphicBitmap {
+	const encoded = encodeEan13(el.content);
 
 	const widthDots = mmToDots(el.width, dpi);
 	const heightDots = mmToDots(el.height, dpi);
 
+	const textHeightDots = mmToDots(3, dpi);
+	const barHeightDots = heightDots - textHeightDots;
+
+	if (barHeightDots <= 0) {
+		throw new Error('EAN-13 height is too small for barcode and text');
+	}
+
 	const bytesPerRow = Math.ceil(widthDots / 8);
-	const data = new Uint8Array(bytesPerRow * heightDots);
+
+	const bitmap: GraphicBitmap = {
+		widthDots,
+		heightDots,
+		bytesPerRow,
+		data: new Uint8Array(bytesPerRow * heightDots),
+	};
 
 	const moduleCount = 95;
 
-	// Las barras normales terminan antes que las guardas.
-	const normalHeight = Math.floor(heightDots * 0.88);
+	// Espacio reservado para el primer dígito, fuera de las barras.
+	const firstDigitAreaDots = mmToDots(3.5, dpi);
 
-	function setPixel(x: number, y: number): void {
-		const byteIndex = y * bytesPerRow + Math.floor(x / 8);
+	// Espacio blanco al final del símbolo.
+	const rightQuietZoneDots = mmToDots(2, dpi);
 
-		const bitIndex = 7 - (x % 8);
+	// Área disponible exclusivamente para las 95 barras/módulos.
+	const barcodeStartX = firstDigitAreaDots;
 
-		data[byteIndex] |= 1 << bitIndex;
+	const barcodeWidthDots = widthDots - firstDigitAreaDots - rightQuietZoneDots;
+
+	if (barcodeWidthDots <= 0) {
+		throw new Error('EAN-13 width is too small');
 	}
 
+	// 1. Dibujar barras
 	for (let moduleIndex = 0; moduleIndex < moduleCount; moduleIndex++) {
-		if (bars[moduleIndex] !== '1') continue;
+		if (encoded.bars[moduleIndex] !== '1') {
+			continue;
+		}
 
-		const startX = Math.floor((moduleIndex * widthDots) / moduleCount);
+		const startX = barcodeStartX + Math.floor((moduleIndex * barcodeWidthDots) / moduleCount);
 
-		const endX = Math.floor(((moduleIndex + 1) * widthDots) / moduleCount);
+		const endX = barcodeStartX + Math.floor(((moduleIndex + 1) * barcodeWidthDots) / moduleCount);
 
 		const isGuard = moduleIndex <= 2 || (moduleIndex >= 45 && moduleIndex <= 49) || moduleIndex >= 92;
 
-		const barHeight = isGuard ? heightDots : normalHeight;
+		const currentBarHeight = isGuard ? heightDots : barHeightDots;
 
 		for (let x = startX; x < endX; x++) {
-			for (let y = 0; y < barHeight; y++) {
-				setPixel(x, y);
+			for (let y = 0; y < currentBarHeight; y++) {
+				setPixel(bitmap, x, y);
 			}
 		}
 	}
 
-	return {
-		widthDots,
-		heightDots,
-		bytesPerRow,
-		data,
-	};
+	function moduleX(module: number): number {
+		return barcodeStartX + Math.floor((module * barcodeWidthDots) / moduleCount);
+	}
+
+	// 2. Preparar texto
+
+	const fontSize = fontSizeMmToOpenType(font, 3, dpi);
+
+	const textY = barHeightDots;
+
+	const firstDigit = encoded.content[0];
+	const leftDigits = encoded.content.slice(1, 7);
+	const rightDigits = encoded.content.slice(7, 13);
+
+	// Áreas de texto
+
+	const firstDigitAreaStart = 0;
+	const firstDigitAreaEnd = moduleX(0);
+
+	const leftAreaStart = moduleX(3);
+	const leftAreaEnd = moduleX(45);
+
+	const rightAreaStart = moduleX(50);
+	const rightAreaEnd = moduleX(92);
+
+	// 3. Primer dígito
+	//
+	// Lo colocamos hacia la derecha de su área,
+	// justo antes de la primera guarda.
+
+	const firstDigitGapDots = mmToDots(1, dpi);
+
+	const firstDigitBitmap = renderText(font, firstDigit, fontSize, firstDigitAreaEnd - firstDigitGapDots, 'R');
+
+	drawBitmap(bitmap, firstDigitBitmap.bitmap, firstDigitAreaStart, textY);
+
+	// 4. Dígitos de cada mitad
+	//
+	// Cada dígito ocupa un "slot".
+	// Al centrar cada dígito dentro de su slot,
+	// conseguimos un efecto equivalente a space-around.
+
+	function drawSpacedDigits(text: string, areaStart: number, areaEnd: number): void {
+		const areaWidth = areaEnd - areaStart;
+		const slotWidth = areaWidth / text.length;
+
+		for (let i = 0; i < text.length; i++) {
+			const slotStart = Math.floor(areaStart + i * slotWidth);
+
+			const slotEnd = Math.floor(areaStart + (i + 1) * slotWidth);
+
+			const currentSlotWidth = slotEnd - slotStart;
+
+			const digitBitmap = renderText(font, text[i], fontSize, currentSlotWidth, 'C');
+
+			drawBitmap(bitmap, digitBitmap.bitmap, slotStart, textY);
+		}
+	}
+
+	drawSpacedDigits(leftDigits, leftAreaStart, leftAreaEnd);
+
+	drawSpacedDigits(rightDigits, rightAreaStart, rightAreaEnd);
+
+	return bitmap;
+}
+
+function calculateEan13CheckDigit(content: string): string {
+	let sum = 0;
+
+	for (let i = 0; i < 12; i++) {
+		const digit = Number(content[i]);
+
+		sum += i % 2 === 0 ? digit : digit * 3;
+	}
+
+	const remainder = sum % 10;
+
+	return String(remainder === 0 ? 0 : 10 - remainder);
 }
