@@ -1,23 +1,10 @@
 import { useEffect, useRef } from 'react';
-import type { BarcodeElement, Symbology, TextAlignZebra, TextElement } from 'shared';
-import type { ElementPatch } from '../../store/editorStore.types';
-import { useEditorStore } from '../../store/useEditorStore';
-import { QrFields } from './panel_editor/QrFields'
+import type { ElementPatch } from '../../../store/editorStore.types';
+import { useEditorStore } from '../../../store/useEditorStore';
+import { QrFields } from './QrFields'
+import { TextFields } from './TextFields'
+import { BarcodeFields } from './BarcodeFields'
 
-const SYMBOLOGIES: Symbology[] = ['code128', 'ean13'];
-const TEXT_ALIGNS: TextAlignZebra[] = ['L', 'C', 'R', 'J'];
-
-const SYMBOLOGY_LABELS: Record<Symbology, string> = {
-	code128: 'Code 128',
-	ean13: 'EAN-13',
-};
-
-const TEXT_ALIGN_LABEL = {
-	L: 'Left',
-	C: 'Center',
-	R: 'Right',
-	J: 'Justify',
-};
 
 export function PropertiesPanel() {
 	const positionLocked = useEditorStore((s) => s.positionLocked);
@@ -153,127 +140,5 @@ export function PropertiesPanel() {
 				)}
 			</fieldset>
 		</div>
-	);
-}
-
-function TextFields({
-	element,
-	onChange,
-}: {
-	element: TextElement;
-	onChange: (changes: Partial<TextElement>) => void;
-}) {
-	return (
-		<>
-			<label className='block text-xs text-app-text-muted'>
-				Tamaño de fuente (mm)
-				<input
-					type='number'
-					value={element.fontSize}
-					onChange={(e) => onChange({ fontSize: Number(e.target.value) })}
-					className='mt-1 w-full rounded-md border border-app-border bg-app-surface p-1 text-app-text'
-				/>
-			</label>
-
-			<label className='flex items-center gap-2 text-xs text-app-text-muted'>
-				<input
-					type='checkbox'
-					checked={element.bold}
-					onChange={(e) => onChange({ bold: e.target.checked })}
-				/>
-				Negrita
-			</label>
-
-			<label className='block text-xs text-app-text-muted'>
-				Ancho de ajuste (mm, opcional)
-				
-				<input
-					type='number'
-					placeholder='100mm'
-					value={element.wrapWidth ?? ''}
-					onChange={(e) => onChange({ wrapWidth: e.target.value ? Number(e.target.value) : undefined })}
-					className='mt-1 w-full rounded-md border border-app-border bg-app-surface p-1 text-app-text'
-				/>
-			</label>
-
-			{element.wrapWidth !== undefined && (
-				<label className='block text-xs text-app-text-muted'>
-					Alineación
-					<select
-						value={element.textAlign ?? 'L'}
-						onChange={(e) => onChange({ textAlign: e.target.value as TextAlignZebra })}
-						className='mt-1 w-full rounded-md border border-app-border bg-app-surface p-1 text-app-text'
-					>
-						{TEXT_ALIGNS.map((a) => (
-							<option
-								key={a}
-								value={a}
-							>
-								{TEXT_ALIGN_LABEL[a]}
-							</option>
-						))}
-					</select>
-				</label>
-			)}
-		</>
-	);
-}
-
-function BarcodeFields({
-	element,
-	onChange,
-}: {
-	element: BarcodeElement;
-	onChange: (changes: Partial<BarcodeElement>) => void;
-}) {
-	return (
-		<>
-			<label className='block text-xs text-app-text-muted'>
-				Simbología
-				<select
-					value={element.symbology}
-					onChange={(e) => onChange({ symbology: e.target.value as Symbology })}
-					className='mt-1 w-full rounded-md border border-app-border bg-app-surface p-1 text-app-text'
-				>
-					{SYMBOLOGIES.map((s) => (
-						<option
-							key={s}
-							value={s}
-						>
-							{SYMBOLOGY_LABELS[s]}
-						</option>
-					))}
-				</select>
-			</label>
-
-			<label className='block text-xs text-app-text-muted'>
-				Ancho (mm)
-				<input
-					type='number'
-					value={element.width}
-					onChange={(e) => onChange({ width: Number(e.target.value) })}
-					className='mt-1 w-full rounded-md border border-app-border bg-app-surface p-1 text-app-text'
-				/>
-			</label>
-
-			<label className='block text-xs text-app-text-muted'>
-				Altura (mm)
-				<input
-					type='number'
-					value={element.height}
-					onChange={(e) => onChange({ height: Number(e.target.value) })}
-					className='mt-1 w-full rounded-md border border-app-border bg-app-surface p-1 text-app-text'
-				/>
-			</label>
-
-			<label className='flex items-center gap-2 text-xs text-app-text-muted'>
-				<input
-					type='checkbox'
-					checked={element.showText}
-					onChange={(e) => onChange({ showText: e.target.checked })}
-				/>
-				Mostrar texto legible
-			</label>
-		</>
 	);
 }
