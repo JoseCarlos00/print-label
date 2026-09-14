@@ -60,6 +60,7 @@ export interface QrLabel {
 	fontSize: number; // mm
 	position: 'top' | 'bottom';
 	visible: boolean;
+	wrapWidth?: number; // mm
 }
 
 export interface QrElement extends BaseElement {
