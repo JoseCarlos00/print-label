@@ -50,7 +50,7 @@ export function PropertiesPanel() {
 
 	if (!selectedElementId || !element) {
 		return (
-			<div className='w-50 border-l border-app-border p-4'>
+			<div className='w-70 border-l border-app-border p-4'>
 				<p className='text-sm text-app-text-muted'>Selecciona un elemento para editar sus propiedades.</p>
 			</div>
 		);
@@ -59,7 +59,7 @@ export function PropertiesPanel() {
 	const update = (changes: ElementPatch) => updateElement(element.id, changes);
 
 	return (
-		<div className='w-50 space-y-4 overflow-y-auto border-l border-app-border p-4 thin-scrollbar'>
+		<div className='w-70 space-y-4 overflow-y-auto border-l border-app-border p-4 thin-scrollbar'>
 			<p className='text-xs font-medium uppercase text-app-text-muted'>
 				{element.type === 'text' ? 'Texto' : element.type === 'barcode' ? 'Código de barras' : 'Código QR'}
 			</p>
