@@ -23,25 +23,27 @@ export function generateZpl(elements: LabelElement[], profile: PrinterProfile, f
 	const widthDots = mmToDots(profile.widthMm, profile.dpi);
 	const heightDots = mmToDots(profile.heightMm, profile.dpi);
 
-	const commands = elements.map((el) => {
-		switch (el.type) {
-			case 'text':
-				return buildTextCommand(el, profile.dpi, font);
-			case 'barcode':
-				return buildBarcodeCommand(el, profile.dpi, font);
-			case 'qr':
-				return buildQrCommand(el, profile.dpi, font);
-		}
-	});
+	const commands = elements
+		.map((el) => {
+			switch (el.type) {
+				case 'text':
+					return buildTextCommand(el, profile.dpi, font, widthDots, heightDots);
+				case 'barcode':
+					return buildBarcodeCommand(el, profile.dpi, font, widthDots, heightDots);
+				case 'qr':
+					return buildQrCommand(el, profile.dpi, font, widthDots, heightDots);
+			}
+		})
+		.filter((command): command is string => command !== null);
 
 	return [
 		'^XA',
-		'^CI28', // UTF-8: necesario para acentos y ñ en textos/QRs en español
+		'^CI28',
 		`^PW${widthDots}`,
 		`^LL${heightDots}`,
 		'^LH0,0',
 		...commands,
-		'^XZ',
+		'^XZ'
 	].join('\n');
 }
 

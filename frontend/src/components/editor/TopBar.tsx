@@ -33,12 +33,10 @@ export function TopBar({ profiles }: TopBarProps) {
 		setPrintSuccess(false);
 
 		try {
-			const res = await api.post('/print', {
+			await api.post('/print', {
 				elements,
 				profileId: profile.id,
 			});
-
-			console.log(res)
 
 			setPrintSuccess(true);
 		} catch (err) {

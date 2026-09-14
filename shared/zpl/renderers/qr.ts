@@ -1,9 +1,9 @@
 import QRCode from 'qrcode/lib/core/qrcode.js';
 
-import type { Font } from 'opentype.js'
+import type { Font } from 'opentype.js';
 import type { QrElement, QrErrorCorrection, TextElement } from '../../types.js';
 import { mmToDots } from '../units.js';
-import { buildGraphicCommand, drawBitmap, rotateBitmap, type GraphicBitmap } from './graphic.js';
+import { buildGraphicCommand, clipBitmapToLabel, drawBitmap, rotateBitmap, type GraphicBitmap } from './graphic.js';
 import { createTextBitmap } from '../renderers/text.js';
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -149,14 +149,21 @@ export function createQrBitmap(el: QrElement, dpi: number, font: Font): GraphicB
 	return createQrLabelBitmap(qrBitmap, textBitmap, dpi);
 }
 
-export function buildQrCommand(el: QrElement, dpi: number, font: Font): string {
-
+export function buildQrCommand(
+	el: QrElement,
+	dpi: number,
+	font: Font,
+	labelWidthDots: number,
+	labelHeightDots: number,
+): string | null {
 	const xDots = mmToDots(el.x, dpi);
 	const yDots = mmToDots(el.y, dpi);
 
 	const bitmap = createQrBitmap(el, dpi, font);
-
 	const rotatedBitmap = rotateBitmap(bitmap, el.rotation);
 
-	return buildGraphicCommand(rotatedBitmap, `^FO${xDots},${yDots}`);
+	const clipped = clipBitmapToLabel(rotatedBitmap, xDots, yDots, labelWidthDots, labelHeightDots);
+	if (!clipped) return null;
+
+	return buildGraphicCommand(clipped.bitmap, `^FO${clipped.xDots},${clipped.yDots}`);
 }

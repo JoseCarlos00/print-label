@@ -1,6 +1,6 @@
 import type { TextAlign, TextElement } from 'shared';
 
-const TEXT_ALIGNS: TextAlign[] = ['Left', 'Center', 'Right', 'Right'];
+const TEXT_ALIGNS: TextAlign[] = ['Left', 'Center', 'Right', 'Justify'];
 
 export function TextFields({
 	element,

@@ -1,9 +1,8 @@
 import type { Font } from 'opentype.js';
 import type { TextElement } from '../../types.js';
 import { fontSizeMmToOpenType, renderText } from '../fonts/rasterizeText.js';
-import { buildGraphicCommand, type GraphicBitmap, rotateBitmap } from './graphic.js';
+import { buildGraphicCommand, clipBitmapToLabel, type GraphicBitmap, rotateBitmap } from './graphic.js';
 import { mmToDots } from '../units.js';
-
 
 export function createTextBitmap(el: TextElement, dpi: number, font: Font): GraphicBitmap {
 	const fontSize = fontSizeMmToOpenType(font, el.fontSize, dpi);
@@ -19,19 +18,27 @@ export function createTextBitmap(el: TextElement, dpi: number, font: Font): Grap
 		fit: 'none',
 		wrapWidth: wrapWidthDots,
 		lineSpacingDots,
-		bold: el.bold
+		bold: el.bold,
 	});
 
 	return result.bitmap;
 }
 
-export function buildTextCommand(el: TextElement, dpi: number, font: Font): string {
+export function buildTextCommand(
+	el: TextElement,
+	dpi: number,
+	font: Font,
+	labelWidthDots: number,
+	labelHeightDots: number,
+): string | null {
 	const xDots = mmToDots(el.x, dpi);
 	const yDots = mmToDots(el.y, dpi);
 
 	const bitmap = createTextBitmap(el, dpi, font);
-
 	const rotatedBitmap = rotateBitmap(bitmap, el.rotation);
 
-	return buildGraphicCommand(rotatedBitmap, `^FO${xDots},${yDots}`);
+	const clipped = clipBitmapToLabel(rotatedBitmap, xDots, yDots, labelWidthDots, labelHeightDots);
+	if (!clipped) return null;
+
+	return buildGraphicCommand(clipped.bitmap, `^FO${clipped.xDots},${clipped.yDots}`);
 }

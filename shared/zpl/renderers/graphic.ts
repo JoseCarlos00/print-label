@@ -5,6 +5,12 @@ export interface GraphicBitmap {
 	data: Uint8Array;
 }
 
+export interface ClippedBitmap {
+	bitmap: GraphicBitmap;
+	xDots: number;
+	yDots: number;
+}
+
 export function bytesToHex(data: Uint8Array): string {
 	let result = '';
 
@@ -146,4 +152,69 @@ export function setPixel(bitmap: GraphicBitmap, x: number, y: number): void {
 	const bitIndex = 7 - (x % 8);
 
 	bitmap.data[byteIndex] |= 1 << bitIndex;
+}
+
+
+/**
+ * Recorta un bitmap ya posicionado (xDots,yDots = esquina superior
+ * izquierda, ya rotado) contra el área real de la etiqueta
+ * (0,0 → labelWidthDots,labelHeightDots).
+ *
+ * - null            → el elemento queda 100% fuera, no generar ^GFA.
+ * - sin copiar nada → el elemento queda 100% adentro (caso común).
+ * - bitmap nuevo     → recorte parcial, con xDots/yDots ya no-negativos.
+ */
+export function clipBitmapToLabel(
+	bitmap: GraphicBitmap,
+	xDots: number,
+	yDots: number,
+	labelWidthDots: number,
+	labelHeightDots: number,
+): ClippedBitmap | null {
+	const left = Math.max(xDots, 0);
+	const top = Math.max(yDots, 0);
+	const right = Math.min(xDots + bitmap.widthDots, labelWidthDots);
+	const bottom = Math.min(yDots + bitmap.heightDots, labelHeightDots);
+
+	if (left >= right || top >= bottom) {
+		return null;
+	}
+
+	const isFullyInside =
+		left === xDots && top === yDots && right === xDots + bitmap.widthDots && bottom === yDots + bitmap.heightDots;
+
+	if (isFullyInside) {
+		return { bitmap, xDots, yDots };
+	}
+
+	const widthDots = right - left;
+	const heightDots = bottom - top;
+	const bytesPerRow = Math.ceil(widthDots / 8);
+
+	const clipped: GraphicBitmap = {
+		widthDots,
+		heightDots,
+		bytesPerRow,
+		data: new Uint8Array(bytesPerRow * heightDots),
+	};
+
+	const sourceOffsetX = left - xDots;
+	const sourceOffsetY = top - yDots;
+
+	for (let y = 0; y < heightDots; y++) {
+		for (let x = 0; x < widthDots; x++) {
+			const sourceX = x + sourceOffsetX;
+			const sourceY = y + sourceOffsetY;
+
+			const sourceByteIndex = sourceY * bitmap.bytesPerRow + Math.floor(sourceX / 8);
+			const sourceBitIndex = 7 - (sourceX % 8);
+
+			const isBlack = (bitmap.data[sourceByteIndex] & (1 << sourceBitIndex)) !== 0;
+			if (!isBlack) continue;
+
+			setPixel(clipped, x, y);
+		}
+	}
+
+	return { bitmap: clipped, xDots: left, yDots: top };
 }
