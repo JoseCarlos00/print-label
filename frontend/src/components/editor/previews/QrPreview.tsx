@@ -1,12 +1,11 @@
 import type { QrElement } from 'shared';
-import { createQrBitmap } from 'shared/zpl'
-
-import { useEffect, useRef } from 'react';
+import { createQrBitmap } from 'shared/zpl';
+import { useEffect, useRef, useState } from 'react';
 import type { Font, GraphicBitmap } from 'shared/zpl';
 import { useEditorStore } from '../../../store/useEditorStore';
 import { mmToPx } from '../../../utils/scale';
-
 import { loadSwiss721 } from 'shared/zpl/font';
+
 const font = await loadSwiss721();
 
 export function QrPreview({ element }: { element: QrElement }) {
@@ -18,23 +17,41 @@ export function QrPreview({ element }: { element: QrElement }) {
 	);
 }
 
-
 interface QrBitmapPreviewProps {
 	element: QrElement;
 	createBitmap: (element: QrElement, dpi: number, font: Font) => GraphicBitmap;
 }
 
+type BitmapSize = {
+	width: number;
+	height: number;
+};
+
+function dotsToMm(dots: number, dpi: number): number {
+	return (dots * 25.4) / dpi;
+}
+
 function QrBitmapPreview({ element, createBitmap }: QrBitmapPreviewProps) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
-	
+
 	const profile = useEditorStore((s) => s.profile);
 	const dpi = profile?.dpi ?? 203;
-	
+
+	const [size, setSize] = useState<BitmapSize>({
+		width: mmToPx(element.size),
+		height: mmToPx(element.size),
+	});
+
 	useEffect(() => {
 		const canvas = canvasRef.current;
 		if (!canvas) return;
-		
+
 		const bitmap = createBitmap(element, dpi, font);
+
+		setSize({
+			width: mmToPx(dotsToMm(bitmap.widthDots, dpi)),
+			height: mmToPx(dotsToMm(bitmap.heightDots, dpi)),
+		});
 
 		canvas.width = bitmap.widthDots;
 		canvas.height = bitmap.heightDots;
@@ -70,8 +87,8 @@ function QrBitmapPreview({ element, createBitmap }: QrBitmapPreviewProps) {
 		<div
 			style={{
 				position: 'relative',
-				width: mmToPx(element.size),
-				height: mmToPx(element.size),
+				width: size.width,
+				height: size.height,
 			}}
 		>
 			<canvas
