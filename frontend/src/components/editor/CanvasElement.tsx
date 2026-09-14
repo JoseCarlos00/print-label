@@ -167,8 +167,13 @@ function ElementPreview({ element }: { element: LabelElement }) {
 	switch (element.type) {
 		case 'text': 
 			return (
-				<TextPreview element={element} />
-			)
+				<PreviewErrorBoundary
+					key={`${element.content}-${element.type}`}
+					fallback={<InvalidBarcodePreview symbology={'code128'} />}
+				>
+					<TextPreview element={element} />
+				</PreviewErrorBoundary>
+			);
 		case 'barcode':
 			return (
 				<PreviewErrorBoundary

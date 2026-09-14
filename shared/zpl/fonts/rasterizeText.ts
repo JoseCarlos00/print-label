@@ -9,6 +9,7 @@ export interface RenderTextOptions {
 	fit?: 'none' | 'compress';
 	wrapWidth?: number;
 	lineSpacingDots?: number;
+	bold?: boolean;
 }
 
 export interface TextBitmap {
@@ -39,7 +40,7 @@ export function renderText(
 	options: RenderTextOptions = {},
 ): TextBitmap {
 	const scale = fontSize / font.unitsPerEm;
-	const { align, fit, wrapWidth } = options;
+	const { align, fit, wrapWidth, bold = false } = options;
 
 	const lineHeightDots = Math.ceil((font.ascender - font.descender) * scale);
 
@@ -184,7 +185,7 @@ export function renderText(
 		fillContours(bitmap, transformedContours);
 	}
 
-	return {
+	const result = {
 		bitmap,
 		naturalWidthDots,
 		naturalHeightDots,
@@ -192,6 +193,15 @@ export function renderText(
 		heightDots: naturalHeightDots,
 		overflows,
 	};
+
+	if (bold) {
+		return {
+			...result,
+			bitmap: emboldenBitmap(result.bitmap),
+		};
+	}
+
+	return result;
 }
 
 function quadraticBezier(p0: Point, p1: Point, p2: Point, t: number): Point {
@@ -380,6 +390,35 @@ function wrapLine(font: Font, text: string, fontSize: number, maxWidthDots: numb
 	}
 
 	return lines.length > 0 ? lines : [''];
+}
+
+function emboldenBitmap(bitmap: GraphicBitmap): GraphicBitmap {
+	const result: GraphicBitmap = {
+		widthDots: bitmap.widthDots,
+		heightDots: bitmap.heightDots,
+		bytesPerRow: bitmap.bytesPerRow,
+		data: new Uint8Array(bitmap.data.length),
+	};
+
+	for (let y = 0; y < bitmap.heightDots; y++) {
+		for (let x = 0; x < bitmap.widthDots; x++) {
+			const byteIndex = y * bitmap.bytesPerRow + Math.floor(x / 8);
+
+			const bitIndex = 7 - (x % 8);
+
+			const isBlack = (bitmap.data[byteIndex] & (1 << bitIndex)) !== 0;
+
+			if (!isBlack) continue;
+
+			setPixel(result, x, y);
+			setPixel(result, x - 1, y);
+			setPixel(result, x + 1, y);
+			setPixel(result, x, y - 1);
+			setPixel(result, x, y + 1);
+		}
+	}
+
+	return result;
 }
 
 

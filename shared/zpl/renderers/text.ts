@@ -19,6 +19,7 @@ export function createTextBitmap(el: TextElement, dpi: number, font: Font): Grap
 		fit: 'none',
 		wrapWidth: wrapWidthDots,
 		lineSpacingDots,
+		bold: el.bold
 	});
 
 	return result.bitmap;
