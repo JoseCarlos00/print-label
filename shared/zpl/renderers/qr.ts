@@ -31,7 +31,7 @@ function createQrLabelBitmap(qrBitmap: GraphicBitmap, textBitmap: GraphicBitmap,
 		data: new Uint8Array(bytesPerRow * heightDots),
 	};
 
-	const qrX = Math.floor((widthDots - qrBitmap.widthDots) / 2);
+	const qrX = 0;
 
 	const textX = Math.floor((widthDots - textBitmap.widthDots) / 2);
 
@@ -140,7 +140,7 @@ export function createQrBitmap(el: QrElement, dpi: number, font: Font): GraphicB
 		fontSize: el.label.fontSize,
 		bold: false,
 		wrapWidth: el.label.wrapWidth,
-		textAlign: 'C',
+		textAlign: 'L',
 		lineSpacing: 0,
 	};
 
