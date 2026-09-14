@@ -218,37 +218,14 @@ function ElementPreview({ element }: { element: LabelElement }) {
 					<BarcodePreview element={element} />
 				</PreviewErrorBoundary>
 			);
-		case 'qr': {
-			const label = element.label;
-			const labelText = label?.visible ? label.customText?.trim() || element.content : null;
-
+		case 'qr':
 			return (
-				<div className='relative'>
-					{labelText && (
-						<span
-							style={{
-								position: 'absolute',
-								left: 0,
-								right: 0,
-								fontSize: mmToPx(label!.fontSize),
-								textAlign: 'center',
-								whiteSpace: 'nowrap',
-								...(label!.position === 'top' ? { bottom: '100%', marginBottom: 2 } : { top: '100%', marginTop: 2 }),
-							}}
-							className='text-black'
-						>
-							{labelText}
-						</span>
-					)}
-					
 					<PreviewErrorBoundary
 						key={element.content}
 						fallback={<InvalidBarcodePreview symbology='code128' />}
 					>
 						<QrPreview element={element} />
 					</PreviewErrorBoundary>
-				</div>
 			);
-		}
 	}
 }
