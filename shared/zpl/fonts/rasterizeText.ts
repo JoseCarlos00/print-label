@@ -1,5 +1,5 @@
 import type { Font } from 'opentype.js';
-import type { GraphicBitmap } from '../renderers/graphic.js';
+import { setPixel, type GraphicBitmap } from '../renderers/graphic.js';
 import { mmToDots } from '../units.js';
 import type { TextAlignCss } from '../../types.js';
 
@@ -192,17 +192,6 @@ function quadraticBezier(p0: Point, p1: Point, p2: Point, t: number): Point {
 	};
 }
 
-export function setPixel(bitmap: GraphicBitmap, x: number, y: number): void {
-	if (x < 0 || x >= bitmap.widthDots || y < 0 || y >= bitmap.heightDots) {
-		return;
-	}
-
-	const byteIndex = y * bitmap.bytesPerRow + Math.floor(x / 8);
-
-	const bitIndex = 7 - (x % 8);
-
-	bitmap.data[byteIndex] |= 1 << bitIndex;
-}
 
 function pathToContours(path: opentype.Path): Point[][] {
 	const contours: Point[][] = [];
@@ -350,7 +339,7 @@ function wrapLine(font: Font, text: string, fontSize: number, maxWidthDots: numb
 	}
 
 	const scale = fontSize / font.unitsPerEm;
-	const words = text.trim().split(/\s+/);
+	const words = text.trim();
 
 	if (words.length === 0) {
 		return [''];
