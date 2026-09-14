@@ -1,3 +1,4 @@
+import type { Font } from 'opentype.js'
 import type { TextAlignZebra, TextElement } from '../../types.js';
 import { escapeZplField, mmToDots, ROTATION_MAP } from '../units.js'
 
@@ -21,7 +22,7 @@ const MAX_WRAP_LINES = 10;
 
 const TEXT_ALIGN_DEFAULT: TextAlignZebra = 'L';
 
-export function buildTextCommand(el: TextElement, dpi: number): string {
+export function buildTextCommand(el: TextElement, dpi: number, _font: Font): string {
 	const xDots = mmToDots(el.x, dpi);
 	const yDots = mmToDots(el.y, dpi);
 	const heightDots = mmToDots(el.fontSize, dpi);

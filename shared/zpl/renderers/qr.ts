@@ -88,7 +88,8 @@ export function createQrBitmap(matrix: boolean[][], requestedSizeDots: number): 
 	};
 }
 
-export function buildQrCommand(el: QrElement, dpi: number): string {
+export function buildQrCommand(el: QrElement, dpi: number, _font: Font): string {
+
 	const xDots = mmToDots(el.x, dpi);
 	const yDots = mmToDots(el.y, dpi);
 

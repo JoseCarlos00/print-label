@@ -26,11 +26,11 @@ export function generateZpl(elements: LabelElement[], profile: PrinterProfile, f
 	const commands = elements.map((el) => {
 		switch (el.type) {
 			case 'text':
-				return buildTextCommand(el, profile.dpi);
+				return buildTextCommand(el, profile.dpi, font);
 			case 'barcode':
 				return buildBarcodeCommand(el, profile.dpi, font);
 			case 'qr':
-				return buildQrCommand(el, profile.dpi);
+				return buildQrCommand(el, profile.dpi, font);
 		}
 	});
 

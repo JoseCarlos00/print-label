@@ -7,6 +7,7 @@ import type { TextAlignCss } from '../../types.js';
 export interface RenderTextOptions {
 	align?: TextAlignCss;
 	fit?: 'none' | 'compress';
+	wrapWidth?: number;
 }
 
 export interface TextBitmap {
@@ -31,96 +32,152 @@ export function renderText(
 	options: RenderTextOptions = {},
 ): TextBitmap {
 	const scale = fontSize / font.unitsPerEm;
-	const { align, fit } = options;
+	const { align, fit, wrapWidth } = options;
 
 	const lineHeightDots = Math.ceil((font.ascender - font.descender) * scale);
 
 	const baseline = Math.ceil(font.ascender * scale);
 
-	let naturalWidth = 0;
+	/*
+	 * 1. Separar las líneas explícitas.
+	 *
+	 * split() conserva las líneas vacías:
+	 *
+	 * "Hola\n\nMundo"
+	 * ->
+	 * ["Hola", "", "Mundo"]
+	 */
+	const explicitLines = text.split(/\r?\n/);
 
-	for (const char of text) {
-		const glyph = font.charToGlyph(char);
+	/*
+	 * 2. Aplicar wrapping a cada línea.
+	 */
+	const lines: string[] = [];
 
-		naturalWidth += glyph.advanceWidth! * scale;
+	for (const line of explicitLines) {
+		if (wrapWidth != null) {
+			lines.push(...wrapLine(font, line, fontSize, wrapWidth));
+		} else {
+			lines.push(line);
+		}
 	}
 
-	const naturalWidthDots = Math.ceil(getTextWidth(font, text, scale));
+	/*
+	 * 3. Calcular el ancho natural de cada línea.
+	 */
+	const lineWidthsDots = lines.map((line) => Math.ceil(getTextWidth(font, line, scale)));
 
-	const naturalHeightDots = lineHeightDots;
+	const naturalWidthDots = Math.max(0, ...lineWidthsDots);
 
+	const naturalHeightDots = lines.length * lineHeightDots;
 
-	const isCompressing =
-		fit === 'compress' &&
-		naturalWidthDots > widthDots;
+	/*
+	 * 4. Determinar si alguna línea excede el ancho disponible.
+	 */
+	const overflows = lineWidthsDots.some((lineWidth) => lineWidth > widthDots);
 
-	const horizontalScale = isCompressing
-		? widthDots / naturalWidthDots
-		: 1;
+	/*
+	 * 5. El bitmap final:
+	 *
+	 * - Con compress: siempre usamos widthDots.
+	 * - Sin compress: permitimos que el bitmap crezca
+	 *   para contener el texto natural.
+	 */
+	const isCompressing = fit === 'compress';
 
-	const bitmapWidthDots =
-		fit === 'compress'
-			? widthDots
-			: Math.max(widthDots, naturalWidthDots);
-
+	const bitmapWidthDots = isCompressing ? widthDots : Math.max(widthDots, naturalWidthDots);
 
 	const bitmap: GraphicBitmap = {
 		widthDots: bitmapWidthDots,
-		heightDots: lineHeightDots,
+		heightDots: naturalHeightDots,
 		bytesPerRow: Math.ceil(bitmapWidthDots / 8),
-		data: new Uint8Array(Math.ceil(bitmapWidthDots / 8) * lineHeightDots),
+		data: new Uint8Array(Math.ceil(bitmapWidthDots / 8) * naturalHeightDots),
 	};
 
-	let offsetX = 0;
+	/*
+	 * 6. Renderizar cada línea.
+	 */
+	for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+		const line = lines[lineIndex];
+		const lineNaturalWidth = lineWidthsDots[lineIndex];
 
-	if (naturalWidthDots < widthDots) {
-		switch (align) {
-			case 'Left':
-				offsetX = 0;
-				break;
+		const shouldCompress = fit === 'compress' && lineNaturalWidth > widthDots;
 
-			case 'Center':
-				offsetX = Math.floor((widthDots - naturalWidthDots) / 2);
-				break;
+		const horizontalScale = shouldCompress ? widthDots / lineNaturalWidth : 1;
 
-			case 'Right':
-				offsetX = widthDots - naturalWidthDots;
-				break;
+		/*
+		 * Alinear solamente cuando la línea cabe
+		 * sin compresión.
+		 */
+		let offsetX = 0;
+
+		if (!shouldCompress && lineNaturalWidth < widthDots) {
+			switch (align) {
+				case 'Left':
+					offsetX = 0;
+					break;
+
+				case 'Center':
+					offsetX = Math.floor((widthDots - lineNaturalWidth) / 2);
+					break;
+
+				case 'Right':
+					offsetX = widthDots - lineNaturalWidth;
+					break;
+			}
 		}
-	}
 
-	let cursorX = offsetX;
-	const contours: Point[][] = [];
+		const contours: Point[][] = [];
 
-	for (let i = 0; i < text.length; i++) {
-		const glyph = font.charToGlyph(text[i]);
+		let cursorX = 0;
 
-		if (i > 0) {
-			const previousGlyph = font.charToGlyph(text[i - 1]);
-			const kerning = font.getKerningValue(previousGlyph, glyph);
-			cursorX += kerning * scale;
+		for (let i = 0; i < line.length; i++) {
+			const glyph = font.charToGlyph(line[i]);
+
+			if (i > 0) {
+				const previousGlyph = font.charToGlyph(line[i - 1]);
+
+				const kerning = font.getKerningValue(previousGlyph, glyph);
+
+				cursorX += kerning * scale;
+			}
+
+			const path = glyph.getPath(cursorX, baseline, fontSize);
+
+			contours.push(...pathToContours(path));
+
+			cursorX += glyph.advanceWidth! * scale;
 		}
 
-		const path = glyph.getPath(cursorX, baseline, fontSize);
-		contours.push(...pathToContours(path));
+		/*
+		 * Primero aplicamos la compresión horizontal
+		 * sobre toda la línea.
+		 */
+		let transformedContours = contours;
 
-		cursorX += glyph.advanceWidth! * scale;
+		if (shouldCompress) {
+			transformedContours = transformContours(contours, horizontalScale, 1);
+		}
+
+		/*
+		 * Después desplazamos la línea a su posición
+		 * horizontal.
+		 */
+		if (offsetX !== 0) {
+			transformedContours = transformContours(transformedContours, 1, 1, offsetX, lineIndex * lineHeightDots);
+		} else if (lineIndex !== 0) {
+			transformedContours = transformContours(transformedContours, 1, 1, 0, lineIndex * lineHeightDots);
+		}
+
+		fillContours(bitmap, transformedContours);
 	}
-
-	const transformedContours = isCompressing
-		? transformContours(contours, horizontalScale, 1)
-		: contours;
-
-	fillContours(bitmap, transformedContours);
-
-	const overflows = naturalWidthDots > widthDots;
 
 	return {
 		bitmap,
 		naturalWidthDots,
 		naturalHeightDots,
-		widthDots,
-		heightDots: lineHeightDots,
+		widthDots: bitmapWidthDots,
+		heightDots: naturalHeightDots,
 		overflows,
 	};
 }
@@ -278,13 +335,48 @@ function getTextWidth(font: Font, text: string, scale: number): number {
 	return width;
 }
 
-function transformContours(contours: Point[][], scaleX: number, scaleY: number): Point[][] {
+function transformContours(contours: Point[][], scaleX: number, scaleY: number, offsetX = 0, offsetY = 0): Point[][] {
 	return contours.map((contour) =>
 		contour.map((point) => ({
-			x: point.x * scaleX,
-			y: point.y * scaleY,
+			x: point.x * scaleX + offsetX,
+			y: point.y * scaleY + offsetY,
 		})),
 	);
+}
+
+function wrapLine(font: Font, text: string, fontSize: number, maxWidthDots: number): string[] {
+	if (text.length === 0) {
+		return [''];
+	}
+
+	const scale = fontSize / font.unitsPerEm;
+	const words = text.trim().split(/\s+/);
+
+	if (words.length === 0) {
+		return [''];
+	}
+
+	const lines: string[] = [];
+	let currentLine = '';
+
+	for (const word of words) {
+		const candidate = currentLine ? `${currentLine} ${word}` : word;
+
+		const candidateWidth = Math.ceil(getTextWidth(font, candidate, scale));
+
+		if (currentLine && candidateWidth > maxWidthDots) {
+			lines.push(currentLine);
+			currentLine = word;
+		} else {
+			currentLine = candidate;
+		}
+	}
+
+	if (currentLine) {
+		lines.push(currentLine);
+	}
+
+	return lines;
 }
 
 

@@ -3,10 +3,15 @@ import type { BarcodeElement, QrElement, QrLabel, Symbology, TextAlignZebra, Tex
 import type { ElementPatch } from '../../store/editorStore.types';
 import { useEditorStore } from '../../store/useEditorStore';
 
-const SYMBOLOGIES: Symbology[] = ['code128', 'ean13', 'code39', 'upc'];
+const SYMBOLOGIES: Symbology[] = ['code128', 'ean13'];
 const TEXT_ALIGNS: TextAlignZebra[] = ['L', 'C', 'R', 'J'];
 
-const TEXT_ALIGN_CSS = {
+const SYMBOLOGY_LABELS: Record<Symbology, string> = {
+	code128: 'Code 128',
+	ean13: 'EAN-13',
+};
+
+const TEXT_ALIGN_LABEL = {
 	L: 'Left',
 	C: 'Center',
 	R: 'Right',
@@ -203,7 +208,7 @@ function TextFields({
 								key={a}
 								value={a}
 							>
-								{TEXT_ALIGN_CSS[a]}
+								{TEXT_ALIGN_LABEL[a]}
 							</option>
 						))}
 					</select>
@@ -234,7 +239,7 @@ function BarcodeFields({
 							key={s}
 							value={s}
 						>
-							{s}
+							{SYMBOLOGY_LABELS[s]}
 						</option>
 					))}
 				</select>
