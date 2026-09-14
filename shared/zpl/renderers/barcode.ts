@@ -1,9 +1,9 @@
 import type { BarcodeElement, Symbology } from '../../types.js';
-import { escapeZplField, mmToDots, ROTATION_MAP, ZplValidationError } from '../units.js'
+import type { Font } from 'opentype.js'
+import { mmToDots, ZplValidationError } from '../units.js'
 import { createCode128Bitmap } from '../barcode/code128.js';
 import { buildGraphicCommand, GraphicBitmap, rotateBitmap } from './graphic.js';
 import { createEan13Bitmap } from '../barcode/ean13.js'
-import { Font } from 'opentype.js'
 
 // ──────────────────────────────────────────────────────────────────────────
 // Código de barras
@@ -12,8 +12,6 @@ import { Font } from 'opentype.js'
 const BARCODE_LABELS: Record<Symbology, string> = {
 	code128: 'Code 128',
 	ean13: 'EAN-13',
-	code39: 'Code 39',
-	upc: 'UPC-A',
 };
 
 function validateBarcodeContent(el: BarcodeElement): void {
@@ -24,25 +22,6 @@ function validateBarcodeContent(el: BarcodeElement): void {
 			if (!/^\d{12,13}$/.test(content)) {
 				throw new ZplValidationError(
 					`El código ${BARCODE_LABELS.ean13} debe tener 12 o 13 dígitos numéricos (recibido: "${content}")`,
-					el.id,
-				);
-			}
-			break;
-
-		case 'upc':
-			if (!/^\d{11,12}$/.test(content)) {
-				throw new ZplValidationError(
-					`El código ${BARCODE_LABELS.upc} debe tener 11 o 12 dígitos numéricos (recibido: "${content}")`,
-					el.id,
-				);
-			}
-			break;
-
-		case 'code39':
-			// Code 39 estándar: A-Z, 0-9, espacio, y - . $ / + %
-			if (!/^[A-Z0-9\-. $/+%]+$/.test(content)) {
-				throw new ZplValidationError(
-					`El código ${BARCODE_LABELS.code39} solo admite mayúsculas, dígitos y los símbolos - . $ / + % (espacio incluido). Recibido: "${content}"`,
 					el.id,
 				);
 			}
@@ -63,45 +42,24 @@ export function buildBarcodeCommand(el: BarcodeElement, dpi: number, font: Font)
 	const yDots = mmToDots(el.y, dpi);
 
 	let bitmap: GraphicBitmap;
-
-	if (el.symbology === 'code128') {
-		bitmap = createCode128Bitmap(el, dpi, font);
-
-		const rotatedBitmap = rotateBitmap(bitmap, el.rotation);
-		const barcodeCommand = buildGraphicCommand(rotatedBitmap, `^FO${xDots},${yDots}`);
-
-		return barcodeCommand;
-	} else if (el.symbology === 'ean13') {
-		const bitmap = createEan13Bitmap(el, dpi, font);
-
-		const rotatedBitmap = rotateBitmap(bitmap, el.rotation);
-		const barcodeCommand = buildGraphicCommand(rotatedBitmap, `^FO${xDots},${yDots}`);
-
-		return barcodeCommand;
-	}
-
-	const heightDots = mmToDots(el.height, dpi);
-	const orientation = ROTATION_MAP[el.rotation];
-	const printText = el.showText ? 'Y' : 'N';
-	const content = escapeZplField(el.content);
-
 	let barcodeCommand: string;
-	const moduleWidth = el.width;
+	let rotatedBitmap: GraphicBitmap;
 
 	switch (el.symbology) {
-		case 'code39':
-			barcodeCommand = `^B3${orientation},N,${heightDots},${printText},N`;
+		case 'code128':
+			bitmap = createCode128Bitmap(el, dpi, font);
+			rotatedBitmap = rotateBitmap(bitmap, el.rotation);
+
+			barcodeCommand = buildGraphicCommand(rotatedBitmap, `^FO${xDots},${yDots}`);
 			break;
 
-		case 'upc':
-			barcodeCommand = `^BU${orientation},${heightDots},${printText},N,Y`;
+		case 'ean13':
+			bitmap = createEan13Bitmap(el, dpi, font);
+			rotatedBitmap = rotateBitmap(bitmap, el.rotation);
+
+			barcodeCommand = buildGraphicCommand(rotatedBitmap, `^FO${xDots},${yDots}`);
 			break;
 	}
-
-	return [
-		`^FO${xDots},${yDots}`,
-		`^BY${moduleWidth},3`,
-		barcodeCommand,
-		`^FH^FD${content}^FS`
-	].join('\n');
+	
+	return barcodeCommand;
 }

@@ -1,9 +1,9 @@
 import { Ean13 } from '@ashaffah/barcodes';
+import type { Font } from 'opentype.js'
 import type { BarcodeElement } from '../../types.js';
 import { drawBitmap, setPixel, type GraphicBitmap } from '../renderers/graphic.js';
 import { mmToDots, resolveBarcodeTextSize } from '../units.js';
 import { fontSizeMmToOpenType, renderText } from '../fonts/rasterizeText.js'
-import { Font } from 'opentype.js'
 
 export interface Ean13Encoded {
 	content: string;

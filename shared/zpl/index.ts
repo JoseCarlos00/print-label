@@ -5,7 +5,7 @@ import { mmToDots } from './units.js';
 import { buildTextCommand } from './renderers/text.js';
 import { buildBarcodeCommand } from './renderers/barcode.js';
 import { buildQrCommand } from './renderers/qr.js';
-import { Font } from 'opentype.js'
+import type { Font } from 'opentype.js'
 
 // ──────────────────────────────────────────────────────────────────────────
 // Generador principal
