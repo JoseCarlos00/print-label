@@ -40,7 +40,7 @@ export interface TextElement extends BaseElement {
 	lineSpacing?: number; // mm extra entre líneas; default 0
 }
 
-export type Symbology = 'code128' | 'ean13' | 'code39' | 'upc';
+export type Symbology = 'code128' | 'ean13';
 
 export interface BarcodeElement extends BaseElement {
 	type: 'barcode';
