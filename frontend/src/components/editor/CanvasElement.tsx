@@ -6,13 +6,20 @@ import { mmToPx, pxToMm } from '../../utils/scale';
 import { BarcodePreview, InvalidBarcodePreview } from './previews/BarcodePreview';
 import { QrPreview } from './previews/QrPreview';
 import { PreviewErrorBoundary } from './previews/PreviewErrorBoundary';
-import { TextPreview } from './previews/TextPreview'
+import { TextPreview } from './previews/TextPreview';
+import { OutOfBoundsWarning } from './OutOfBoundsWarning';
 
 interface CanvasElementProps {
 	element: LabelElement;
 	isSelected: boolean;
 	canvasWidthMm: number;
 	canvasHeightMm: number;
+}
+
+interface Actions {
+	rotateElement: (id: string) => void;
+	duplicateElement: (id: string) => void;
+	removeElement: (id: string) => void;
 }
 
 export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeightMm }: CanvasElementProps) {
@@ -23,6 +30,12 @@ export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeight
 	const duplicateElement = useEditorStore((s) => s.duplicateElement);
 	const removeElement = useEditorStore((s) => s.removeElement);
 	const requestContentFocus = useEditorStore((s) => s.requestContentFocus);
+
+	const actions: Actions = {
+		rotateElement,
+		duplicateElement,
+		removeElement,
+	};
 
 	const dragOffsetMm = useRef<{ dx: number; dy: number } | null>(null);
 	const draggable = !positionLocked;
@@ -52,8 +65,8 @@ export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeight
 		if (!draggable || !dragOffsetMm.current) return;
 
 		const cursor = cursorToMm(e);
-		const xMm = Math.max(0, Math.min(cursor.x - dragOffsetMm.current.dx, canvasWidthMm));
-		const yMm = Math.max(0, Math.min(cursor.y - dragOffsetMm.current.dy, canvasHeightMm));
+		const xMm = cursor.x - dragOffsetMm.current.dx;
+		const yMm = cursor.y - dragOffsetMm.current.dy;
 		updateElement(element.id, { x: xMm, y: yMm });
 	};
 
@@ -69,7 +82,6 @@ export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeight
 		selectElement(element.id);
 		requestContentFocus();
 	};
-
 
 	// offsetWidth/offsetHeight ignoran `transform`, así que dan el tamaño
 	// SIN ROTAR del elemento aunque ya tenga rotate() aplicado. Lo necesitamos
@@ -97,66 +109,52 @@ export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeight
 	const offsetXPx = isSideways ? (naturalSize.height - naturalSize.width) / 2 : 0;
 	const offsetYPx = isSideways ? (naturalSize.width - naturalSize.height) / 2 : 0;
 
+	const widthPx = isSideways ? naturalSize.height : naturalSize.width;
+	const heightPx = isSideways ? naturalSize.width : naturalSize.height;
+	const leftPx = mmToPx(element.x) + offsetXPx;
+	const topPx = mmToPx(element.y) + offsetYPx;
+
+	// Evita falso positivo antes de que ResizeObserver mida por primera vez
+	const hasMeasured = naturalSize.width > 0 && naturalSize.height > 0;
+
+	const isOutOfBounds =
+		hasMeasured &&
+		(leftPx < 0 || topPx < 0 || leftPx + widthPx > mmToPx(canvasWidthMm) || topPx + heightPx > mmToPx(canvasHeightMm));
+
 	return (
-		<div
-			ref={elementRef}
-			onPointerDown={handlePointerDown}
-			onPointerMove={handlePointerMove}
-			onPointerUp={handlePointerUp}
-			onDoubleClick={handleDoubleClick}
-			style={{
-				position: 'absolute',
-				left: mmToPx(element.x) + offsetXPx,
-				top: mmToPx(element.y) + offsetYPx,
-				transform: `rotate(${element.rotation}deg)`,
-				cursor: draggable ? 'move' : 'default',
-			}}
-			className={`select-none ${isSelected ? 'outline-2 outline-app-accent-500' : ''}`}
-		>
-			<ElementPreview
-				element={element}
-			/>
+		<>
+			<div
+				ref={elementRef}
+				onPointerDown={handlePointerDown}
+				onPointerMove={handlePointerMove}
+				onPointerUp={handlePointerUp}
+				onDoubleClick={handleDoubleClick}
+				style={{
+					position: 'absolute',
+					left: mmToPx(element.x) + offsetXPx,
+					top: mmToPx(element.y) + offsetYPx,
+					transform: `rotate(${element.rotation}deg)`,
+					cursor: draggable ? 'move' : 'default',
+				}}
+				className={`select-none ${isSelected ? 'outline-2 outline-app-accent-500' : ''}`}
+			>
+				<ElementPreview element={element} />
 
-			{isSelected && !positionLocked && (
-				<div
-					data-element-toolbar
-					className='absolute -top-8 left-0 flex gap-1 rounded-md bg-app-surface p-1 shadow'
-				>
-					<button
-						title='Rotar'
-						onClick={(e) => {
-							e.stopPropagation();
-							rotateElement(element.id);
-						}}
-						className='rounded px-1.5 text-xs hover:bg-app-border'
-					>
-						⟳
-					</button>
+				{isSelected && !positionLocked && (
+					<ActionsButtons
+						element={element}
+						actions={actions}
+					/>
+				)}
+			</div>
 
-					<button
-						title='Duplicar'
-						onClick={(e) => {
-							e.stopPropagation();
-							duplicateElement(element.id);
-						}}
-						className='rounded px-1.5 text-xs hover:bg-app-border'
-					>
-						⧉
-					</button>
-
-					<button
-						title='Eliminar'
-						onClick={(e) => {
-							e.stopPropagation();
-							removeElement(element.id);
-						}}
-						className='rounded px-1.5 text-xs text-red-400 hover:bg-app-border'
-					>
-						✕
-					</button>
-				</div>
+			{isOutOfBounds && (
+				<OutOfBoundsWarning
+					x={leftPx + widthPx / 2}
+					y={topPx + heightPx / 2}
+				/>
 			)}
-		</div>
+		</>
 	);
 }
 
@@ -165,7 +163,7 @@ export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeight
 // el preview real vía Labelary.
 function ElementPreview({ element }: { element: LabelElement }) {
 	switch (element.type) {
-		case 'text': 
+		case 'text':
 			return (
 				<PreviewErrorBoundary
 					key={`${element.content}-${element.type}`}
@@ -185,12 +183,59 @@ function ElementPreview({ element }: { element: LabelElement }) {
 			);
 		case 'qr':
 			return (
-					<PreviewErrorBoundary
-						key={element.content}
-						fallback={<InvalidBarcodePreview symbology='code128' />}
-					>
-						<QrPreview element={element} />
-					</PreviewErrorBoundary>
+				<PreviewErrorBoundary
+					key={element.content}
+					fallback={<InvalidBarcodePreview symbology='code128' />}
+				>
+					<QrPreview element={element} />
+				</PreviewErrorBoundary>
 			);
 	}
+}
+
+interface ActionsButtonsProps {
+	element: LabelElement;
+	actions: Actions;
+}
+
+function ActionsButtons({ element, actions }: ActionsButtonsProps) {
+	return (
+		<div
+			data-element-toolbar
+			className='absolute -top-8 left-0 flex gap-1 rounded-md bg-app-surface p-1 shadow'
+		>
+			<button
+				title='Rotar'
+				onClick={(e) => {
+					e.stopPropagation();
+					actions.rotateElement(element.id);
+				}}
+				className='rounded px-1.5 text-xs hover:bg-app-border'
+			>
+				⟳
+			</button>
+
+			<button
+				title='Duplicar'
+				onClick={(e) => {
+					e.stopPropagation();
+					actions.duplicateElement(element.id);
+				}}
+				className='rounded px-1.5 text-xs hover:bg-app-border'
+			>
+				⧉
+			</button>
+
+			<button
+				title='Eliminar'
+				onClick={(e) => {
+					e.stopPropagation();
+					actions.removeElement(element.id);
+				}}
+				className='rounded px-1.5 text-xs text-red-400 hover:bg-app-border'
+			>
+				✕
+			</button>
+		</div>
+	);
 }
