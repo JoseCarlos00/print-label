@@ -58,7 +58,6 @@ export interface QrLabel {
 	/** Si es undefined, se muestra element.content directo (mismo texto que codifica el QR) */
 	customText?: string;
 	fontSize: number; // mm
-	position: 'top' | 'bottom';
 	visible: boolean;
 	wrapWidth?: number; // mm
 }

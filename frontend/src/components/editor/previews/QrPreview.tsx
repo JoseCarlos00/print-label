@@ -35,7 +35,6 @@ function QrBitmapPreview({ element, createBitmap }: QrBitmapPreviewProps) {
 		if (!canvas) return;
 		
 		const bitmap = createBitmap(element, dpi, font);
-		console.log('BarcodeBitmapPreview:', bitmap);
 
 		canvas.width = bitmap.widthDots;
 		canvas.height = bitmap.heightDots;

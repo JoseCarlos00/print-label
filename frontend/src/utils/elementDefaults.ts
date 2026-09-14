@@ -14,7 +14,6 @@ export function createDefaultElement(type: ElementType, index: number): LabelEle
 
 	const baseQrLabel: QrLabel = { 
 		fontSize: 5,
-		position: 'bottom',
 		visible: true 
 	};
 

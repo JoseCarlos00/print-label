@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
-import type { BarcodeElement, QrElement, QrLabel, Symbology, TextAlignZebra, TextElement } from 'shared';
+import type { BarcodeElement, Symbology, TextAlignZebra, TextElement } from 'shared';
 import type { ElementPatch } from '../../store/editorStore.types';
 import { useEditorStore } from '../../store/useEditorStore';
+import { QrFields } from './panel_editor/QrFields'
 
 const SYMBOLOGIES: Symbology[] = ['code128', 'ean13'];
 const TEXT_ALIGNS: TextAlignZebra[] = ['L', 'C', 'R', 'J'];
@@ -272,85 +273,6 @@ function BarcodeFields({
 					onChange={(e) => onChange({ showText: e.target.checked })}
 				/>
 				Mostrar texto legible
-			</label>
-		</>
-	);
-}
-
-function QrFields({ element, onChange }: { element: QrElement; onChange: (changes: Partial<QrElement>) => void }) {
-	const label = element.label;
-
-	const updateLabel = (changes: Partial<QrLabel>) => {
-		const base: QrLabel = label ?? { fontSize: 3, position: 'bottom', visible: true };
-		onChange({ label: { ...base, ...changes } });
-	};
-
-	const classOpacity = label?.visible ? '' : 'opacity-55';
-
-	return (
-		<>
-			<label className='block text-xs text-app-text-muted'>
-				Tamaño (factor)
-				<input
-					type='number'
-					min={1}
-					value={element.size}
-					onChange={(e) => onChange({ size: Number(e.target.value) })}
-					className='mt-1 w-full rounded-md border border-app-border bg-app-surface p-1 text-app-text'
-				/>
-			</label>
-
-			<label className='flex items-center gap-2 text-xs text-app-text-muted'>
-				<input
-					type='checkbox'
-					checked={label?.visible ?? false}
-					onChange={(e) => updateLabel({ visible: e.target.checked })}
-				/>
-				Mostrar etiqueta con el contenido
-			</label>
-
-			<label className={`block text-xs text-app-text-muted ${classOpacity}`}>
-				Posición
-				<select
-					value={label?.position}
-					onChange={(e) => updateLabel({ position: e.target.value as 'top' | 'bottom' })}
-					className={`mt-1 w-full rounded-md border border-app-border bg-app-surface p-1 text-app-text ${classOpacity}`}
-				>
-					<option value='top'>Arriba</option>
-					<option value='bottom'>Abajo</option>
-				</select>
-			</label>
-
-			<label className={`block text-xs text-app-text-muted ${classOpacity}`}>
-				Tamaño de fuente (mm)
-				<input
-					type='number'
-					value={label?.fontSize}
-					onChange={(e) => updateLabel({ fontSize: Number(e.target.value) })}
-					className={`mt-1 w-full rounded-md border border-app-border bg-app-surface p-1 text-app-text ${classOpacity}`}
-				/>
-			</label>
-
-			<label className={`flex items-center gap-2 text-xs text-app-text-muted ${classOpacity}`}>
-				<input
-					className={classOpacity}
-					type='checkbox'
-					checked={label?.customText !== undefined}
-					onChange={(e) =>
-						updateLabel({ customText: e.target.checked ? (label?.customText ?? element.content) : undefined })
-					}
-				/>
-				Usar texto personalizado
-			</label>
-
-			<label className={`block text-xs text-app-text-muted ${classOpacity} ${label?.customText ? '' : 'opacity-55'}`}>
-				Texto de la etiqueta
-				<input
-					disabled={label?.visible}
-					value={label?.customText}
-					onChange={(e) => updateLabel({ customText: e.target.value })}
-					className={`mt-1 w-full rounded-md border border-app-border bg-app-surface p-1 text-app-text ${classOpacity}`}
-				/>
 			</label>
 		</>
 	);
