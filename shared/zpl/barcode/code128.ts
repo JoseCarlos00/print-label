@@ -65,8 +65,8 @@ export function createCode128Bitmap(
 	// 2. Texto
 	if (el.showText) {
 		const fontSize = fontSizeMmToOpenType(font, textSizeMm, dpi);
-		const textBitmap = renderText(font, el.content, fontSize, widthDots, 'Center');
-
+		const textBitmap = renderText(font, el.content, fontSize, widthDots, { align: 'Center', fit: 'compress' });
+		
 		drawBitmap(bitmap, textBitmap.bitmap, 0, barHeightDots);
 	}
 

@@ -3,21 +3,24 @@ import type { GraphicBitmap } from '../renderers/graphic.js';
 import { mmToDots } from '../units.js';
 import type { TextAlignCss } from '../../types.js';
 
-interface Point {
-	x: number;
-	y: number;
+
+export interface RenderTextOptions {
+	align?: TextAlignCss;
+	fit?: 'none' | 'compress';
 }
 
 export interface TextBitmap {
 	bitmap: GraphicBitmap;
-
 	naturalWidthDots: number;
 	naturalHeightDots: number;
-
 	widthDots: number;
 	heightDots: number;
-
 	overflows: boolean;
+}
+
+interface Point {
+	x: number;
+	y: number;
 }
 
 export function renderText(
@@ -25,10 +28,10 @@ export function renderText(
 	text: string,
 	fontSize: number,
 	widthDots: number,
-	align: TextAlignCss,
-	_overflows = false,
+	options: RenderTextOptions = {},
 ): TextBitmap {
 	const scale = fontSize / font.unitsPerEm;
+	const { align, fit } = options;
 
 	const lineHeightDots = Math.ceil((font.ascender - font.descender) * scale);
 
@@ -46,7 +49,20 @@ export function renderText(
 
 	const naturalHeightDots = lineHeightDots;
 
-	const bitmapWidthDots = Math.max(widthDots, naturalWidthDots);
+
+	const isCompressing =
+		fit === 'compress' &&
+		naturalWidthDots > widthDots;
+
+	const horizontalScale = isCompressing
+		? widthDots / naturalWidthDots
+		: 1;
+
+	const bitmapWidthDots =
+		fit === 'compress'
+			? widthDots
+			: Math.max(widthDots, naturalWidthDots);
+
 
 	const bitmap: GraphicBitmap = {
 		widthDots: bitmapWidthDots,
@@ -74,28 +90,28 @@ export function renderText(
 	}
 
 	let cursorX = offsetX;
+	const contours: Point[][] = [];
 
 	for (let i = 0; i < text.length; i++) {
 		const glyph = font.charToGlyph(text[i]);
 
 		if (i > 0) {
 			const previousGlyph = font.charToGlyph(text[i - 1]);
-
 			const kerning = font.getKerningValue(previousGlyph, glyph);
-
 			cursorX += kerning * scale;
 		}
 
-		// const glyphs = [...text].map((char) => font.charToGlyph(char));
-
 		const path = glyph.getPath(cursorX, baseline, fontSize);
-
-		const contours = pathToContours(path);
-
-		fillContours(bitmap, contours);
+		contours.push(...pathToContours(path));
 
 		cursorX += glyph.advanceWidth! * scale;
 	}
+
+	const transformedContours = isCompressing
+		? transformContours(contours, horizontalScale, 1)
+		: contours;
+
+	fillContours(bitmap, transformedContours);
 
 	const overflows = naturalWidthDots > widthDots;
 
@@ -242,18 +258,6 @@ function fillContours(bitmap: GraphicBitmap, contours: Point[][]): void {
 	}
 }
 
-export function fontSizeMmToOpenType(font: Font, fontSizeMm: number, dpi: number): number {
-	const heightDots = mmToDots(fontSizeMm, dpi);
-
-	return (heightDots * font.unitsPerEm) / (font.ascender - font.descender);
-}
-
-export function openTypeFontSizeToMm(font: Font, fontSize: number, dpi: number): number {
-	const lineHeightDots = (fontSize * (font.ascender - font.descender)) / font.unitsPerEm;
-
-	return (lineHeightDots * 25.4) / dpi;
-}
-
 function getTextWidth(font: Font, text: string, scale: number): number {
 	let width = 0;
 
@@ -272,4 +276,26 @@ function getTextWidth(font: Font, text: string, scale: number): number {
 	}
 
 	return width;
+}
+
+function transformContours(contours: Point[][], scaleX: number, scaleY: number): Point[][] {
+	return contours.map((contour) =>
+		contour.map((point) => ({
+			x: point.x * scaleX,
+			y: point.y * scaleY,
+		})),
+	);
+}
+
+
+export function fontSizeMmToOpenType(font: Font, fontSizeMm: number, dpi: number): number {
+	const heightDots = mmToDots(fontSizeMm, dpi);
+
+	return (heightDots * font.unitsPerEm) / (font.ascender - font.descender);
+}
+
+export function openTypeFontSizeToMm(font: Font, fontSize: number, dpi: number): number {
+	const lineHeightDots = (fontSize * (font.ascender - font.descender)) / font.unitsPerEm;
+
+	return (lineHeightDots * 25.4) / dpi;
 }
