@@ -53,3 +53,4 @@ export { getQrModuleCount } from './renderers/qr.js';
 
 export { createCode128Bitmap } from './barcode/code128.js';
 export { createEan13Bitmap } from './barcode/ean13.js';
+export { createQrBitmap } from './renderers/qr.js';

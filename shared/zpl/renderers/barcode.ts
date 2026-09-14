@@ -2,7 +2,7 @@ import type { BarcodeElement, Symbology } from '../../types.js';
 import type { Font } from 'opentype.js'
 import { mmToDots, ZplValidationError } from '../units.js'
 import { createCode128Bitmap } from '../barcode/code128.js';
-import { buildGraphicCommand, GraphicBitmap, rotateBitmap } from './graphic.js';
+import { buildGraphicCommand, type GraphicBitmap, rotateBitmap } from './graphic.js';
 import { createEan13Bitmap } from '../barcode/ean13.js'
 
 // ──────────────────────────────────────────────────────────────────────────

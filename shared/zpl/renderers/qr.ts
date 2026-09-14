@@ -1,15 +1,15 @@
 import QRCode from 'qrcode/lib/core/qrcode.js';
 
 import type { QrElement, QrErrorCorrection } from '../../types.js';
-import { mmToDots} from '../units.js';
-import { buildGraphicCommand, type GraphicBitmap } from './graphic.js';
+import { mmToDots } from '../units.js';
+import { buildGraphicCommand, rotateBitmap, type GraphicBitmap } from './graphic.js';
+import type { Font } from 'opentype.js'
 
 // ──────────────────────────────────────────────────────────────────────────
 // QR
 // ──────────────────────────────────────────────────────────────────────────
 const QR_ERROR_CORRECTION_DEFAULT: QrErrorCorrection = 'M';
 const LABEL_MARGIN_MM = 1;
-
 
 export function getQrModuleCount(content: string, errorCorrection: QrErrorCorrection = 'M'): number {
 	return QRCode.create(content, { errorCorrectionLevel: errorCorrection }).modules.size;
@@ -38,7 +38,7 @@ function getQrMatrix(content: string, errorCorrection: QrErrorCorrection): boole
 	return matrix;
 }
 
-function createQrBitmap(matrix: boolean[][], requestedSizeDots: number): GraphicBitmap {
+export function createQrBitmap(matrix: boolean[][], requestedSizeDots: number): GraphicBitmap {
 	const moduleCount = matrix.length;
 
 	/*
@@ -92,17 +92,14 @@ export function buildQrCommand(el: QrElement, dpi: number): string {
 	const xDots = mmToDots(el.x, dpi);
 	const yDots = mmToDots(el.y, dpi);
 
-	// const orientation = ROTATION_MAP[el.rotation];
-
 	const errorCorrection = el.errorCorrection ?? QR_ERROR_CORRECTION_DEFAULT;
 
 	const matrix = getQrMatrix(el.content, errorCorrection);
-
 	const requestedSizeDots = mmToDots(el.size, dpi);
 
 	const bitmap = createQrBitmap(matrix, requestedSizeDots);
 
-	const qrCommand = buildGraphicCommand(bitmap, `^FO${xDots},${yDots}`)
+	const rotatedBitmap = rotateBitmap(bitmap, el.rotation);
 
-	return qrCommand;
+	return buildGraphicCommand(rotatedBitmap, `^FO${xDots},${yDots}`);
 }
