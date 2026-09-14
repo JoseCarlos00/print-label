@@ -1,11 +1,11 @@
 import type { Font } from 'opentype.js';
 import { setPixel, type GraphicBitmap } from '../renderers/graphic.js';
 import { mmToDots } from '../units.js';
-import type { TextAlignCss } from '../../types.js';
+import type { TextAlign } from '../../types.js';
 
 
 export interface RenderTextOptions {
-	align?: TextAlignCss;
+	align?: TextAlign;
 	fit?: 'none' | 'compress';
 	wrapWidth?: number;
 	lineSpacingDots?: number;

@@ -1,15 +1,9 @@
 import type { Font } from 'opentype.js';
-import type { TextAlignZebra, TextElement } from '../../types.js';
+import type { TextElement } from '../../types.js';
 import { fontSizeMmToOpenType, renderText } from '../fonts/rasterizeText.js';
 import { buildGraphicCommand, type GraphicBitmap, rotateBitmap } from './graphic.js';
 import { mmToDots } from '../units.js';
 
-const TEXT_ALIGN_MAP: Record<TextAlignZebra, 'Left' | 'Center' | 'Right' | 'Justify'> = {
-	L: 'Left',
-	C: 'Center',
-	R: 'Right',
-	J: 'Justify',
-};
 
 export function createTextBitmap(el: TextElement, dpi: number, font: Font): GraphicBitmap {
 	const fontSize = fontSizeMmToOpenType(font, el.fontSize, dpi);
@@ -18,7 +12,7 @@ export function createTextBitmap(el: TextElement, dpi: number, font: Font): Grap
 
 	const lineSpacingDots = mmToDots(el.lineSpacing ?? 0, dpi);
 
-	const align = el.textAlign != null ? TEXT_ALIGN_MAP[el.textAlign] : 'Left';
+	const align = el.textAlign != null ? el.textAlign : 'Left';
 
 	const result = renderText(font, el.content, fontSize, wrapWidthDots, {
 		align,

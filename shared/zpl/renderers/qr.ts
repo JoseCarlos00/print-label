@@ -1,7 +1,7 @@
 import QRCode from 'qrcode/lib/core/qrcode.js';
 
 import type { Font } from 'opentype.js'
-import type { QrElement, QrErrorCorrection, QrLabel, TextElement } from '../../types.js';
+import type { QrElement, QrErrorCorrection, TextElement } from '../../types.js';
 import { mmToDots } from '../units.js';
 import { buildGraphicCommand, drawBitmap, rotateBitmap, type GraphicBitmap } from './graphic.js';
 import { createTextBitmap } from '../renderers/text.js';
@@ -140,7 +140,7 @@ export function createQrBitmap(el: QrElement, dpi: number, font: Font): GraphicB
 		fontSize: el.label.fontSize,
 		bold: false,
 		wrapWidth: el.label.wrapWidth,
-		textAlign: 'L',
+		textAlign: 'Left',
 		lineSpacing: 0,
 	};
 
