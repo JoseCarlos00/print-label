@@ -4,6 +4,7 @@ import { useEditorStore } from '../../../store/useEditorStore';
 import { QrFields } from './QrFields'
 import { TextFields } from './TextFields'
 import { BarcodeFields } from './BarcodeFields'
+import { NumberField } from './NumberField'
 
 
 export function PropertiesPanel() {
@@ -61,25 +62,17 @@ export function PropertiesPanel() {
 				disabled={structureDisabled}
 				className='space-y-2 disabled:opacity-50'
 			>
-				<label className='block text-xs text-app-text-muted'>
-					X (mm)
-					<input
-						type='number'
-						value={element.x}
-						onChange={(e) => update({ x: Number(e.target.value) })}
-						className='mt-1 w-full rounded-md border border-app-border bg-app-surface p-1 text-app-text'
-					/>
-				</label>
+				<NumberField
+					label='X (mm)'
+					value={element.x}
+					onChange={(x) => update({ x })}
+				/>
 
-				<label className='block text-xs text-app-text-muted'>
-					Y (mm)
-					<input
-						type='number'
-						value={element.y}
-						onChange={(e) => update({ y: Number(e.target.value) })}
-						className='mt-1 w-full rounded-md border border-app-border bg-app-surface p-1 text-app-text'
-					/>
-				</label>
+				<NumberField
+					label='Y (mm)'
+					value={element.y}
+					onChange={(y) => update({ y })}
+				/>
 
 				<label className='block text-xs text-app-text-muted'>
 					Rotación

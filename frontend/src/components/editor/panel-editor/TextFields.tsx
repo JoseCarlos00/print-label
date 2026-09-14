@@ -1,4 +1,6 @@
 import type { TextAlign, TextElement } from 'shared';
+import { NumberField } from './NumberField'
+import { EDITOR_LIMITS } from '../../../utils/editorLimits'
 
 const TEXT_ALIGNS: TextAlign[] = ['Left', 'Center', 'Right', 'Justify'];
 
@@ -11,15 +13,13 @@ export function TextFields({
 }) {
 	return (
 		<>
-			<label className='block text-xs text-app-text-muted'>
-				Tamaño de fuente (mm)
-				<input
-					type='number'
-					value={element.fontSize}
-					onChange={(e) => onChange({ fontSize: Number(e.target.value) })}
-					className='mt-1 w-full rounded-md border border-app-border bg-app-surface p-1 text-app-text'
-				/>
-			</label>
+			<NumberField
+				label='Tamaño de fuente (mm)'
+				value={element.fontSize}
+				min={EDITOR_LIMITS.fontSizeMm.min}
+				max={EDITOR_LIMITS.fontSizeMm.max}
+				onChange={(fontSize) => onChange({ fontSize })}
+			/>
 
 			<label className='flex items-center gap-2 text-xs text-app-text-muted'>
 				<input

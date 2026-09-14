@@ -1,4 +1,6 @@
 import type { BarcodeElement, Symbology } from 'shared';
+import { NumberField } from './NumberField'
+import { EDITOR_LIMITS } from '../../../utils/editorLimits'
 
 const SYMBOLOGIES: Symbology[] = ['code128', 'ean13'];
 
@@ -34,25 +36,21 @@ export function BarcodeFields({
 				</select>
 			</label>
 
-			<label className='block text-xs text-app-text-muted'>
-				Ancho (mm)
-				<input
-					type='number'
-					value={element.width}
-					onChange={(e) => onChange({ width: Number(e.target.value) })}
-					className='mt-1 w-full rounded-md border border-app-border bg-app-surface p-1 text-app-text'
-				/>
-			</label>
+			<NumberField
+				label='Ancho (mm)'
+				value={element.width}
+				min={EDITOR_LIMITS.dimensionMm.min}
+				max={EDITOR_LIMITS.dimensionMm.max}
+				onChange={(width) => onChange({ width })}
+			/>
 
-			<label className='block text-xs text-app-text-muted'>
-				Altura (mm)
-				<input
-					type='number'
-					value={element.height}
-					onChange={(e) => onChange({ height: Number(e.target.value) })}
-					className='mt-1 w-full rounded-md border border-app-border bg-app-surface p-1 text-app-text'
-				/>
-			</label>
+			<NumberField
+				label='Altura (mm)'
+				value={element.height}
+				min={EDITOR_LIMITS.dimensionMm.min}
+				max={EDITOR_LIMITS.dimensionMm.max}
+				onChange={(height) => onChange({ height })}
+			/>
 
 			<label className='flex items-center gap-2 text-xs text-app-text-muted'>
 				<input
