@@ -19,7 +19,7 @@ export function createDefaultElement(type: ElementType, index: number): LabelEle
 
 	switch (type) {
 		case 'text':
-			return { ...base, type: 'text', content: 'Texto', fontSize: 5, bold: false };
+			return { ...base, type: 'text', content: 'Texto', fontSize: 10, bold: false };
 		case 'barcode':
 			return { ...base, type: 'barcode', content: '123456789012', symbology: 'code128', width: 50, height: 25, showText: true };
 		case 'qr':

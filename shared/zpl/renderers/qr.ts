@@ -1,10 +1,10 @@
 import QRCode from 'qrcode/lib/core/qrcode.js';
 
-import type { QrElement, QrErrorCorrection, QrLabel } from '../../types.js';
+import type { Font } from 'opentype.js'
+import type { QrElement, QrErrorCorrection, QrLabel, TextElement } from '../../types.js';
 import { mmToDots } from '../units.js';
 import { buildGraphicCommand, drawBitmap, rotateBitmap, type GraphicBitmap } from './graphic.js';
-import type { Font } from 'opentype.js'
-import { fontSizeMmToOpenType, renderText } from '../fonts/rasterizeText.js';
+import { createTextBitmap } from '../renderers/text.js';
 
 // ──────────────────────────────────────────────────────────────────────────
 // QR
@@ -15,35 +15,7 @@ export function getQrModuleCount(content: string, errorCorrection: QrErrorCorrec
 	return QRCode.create(content, { errorCorrectionLevel: errorCorrection }).modules.size;
 }
 
-function createQrLabelBitmap(
-	qrBitmap: GraphicBitmap,
-	label: QrLabel,
-	labelText: string,
-	dpi: number,
-	font: Font,
-): GraphicBitmap {
-	const labelWidthDots = label.wrapWidth != null ? mmToDots(label.wrapWidth, dpi) : qrBitmap.widthDots;
-
-	const textFontSize = fontSizeMmToOpenType(font, label.fontSize, dpi);
-
-	const textBitmap = renderText(
-		font,
-		labelText,
-		textFontSize,
-		labelWidthDots,
-		{
-			align: 'Center',
-			fit: label.wrapWidth != null
-				? 'compress'
-				: 'none',
-			wrapWidth:
-				label.wrapWidth != null
-					? labelWidthDots
-					: undefined,
-		},
-	);
-
-
+function createQrLabelBitmap(qrBitmap: GraphicBitmap, textBitmap: GraphicBitmap, dpi: number): GraphicBitmap {
 	const gapDots = mmToDots(1, dpi);
 
 	const widthDots = Math.max(qrBitmap.widthDots, textBitmap.widthDots);
@@ -65,7 +37,7 @@ function createQrLabelBitmap(
 
 	drawBitmap(bitmap, qrBitmap, qrX, 0);
 
-	drawBitmap(bitmap, textBitmap.bitmap, textX, qrBitmap.heightDots + gapDots);
+	drawBitmap(bitmap, textBitmap, textX, qrBitmap.heightDots + gapDots);
 
 	return bitmap;
 }
@@ -158,7 +130,23 @@ export function createQrBitmap(el: QrElement, dpi: number, font: Font): GraphicB
 
 	const labelText = el.label.customText ?? el.content;
 
-	return createQrLabelBitmap(qrBitmap, el.label, labelText, dpi, font);
+	const textElement: TextElement = {
+		id: `${el.id}-label`,
+		type: 'text',
+		x: 0,
+		y: 0,
+		rotation: 0,
+		content: labelText,
+		fontSize: el.label.fontSize,
+		bold: false,
+		wrapWidth: el.label.wrapWidth,
+		textAlign: 'C',
+		lineSpacing: 0,
+	};
+
+	const textBitmap = createTextBitmap(textElement, dpi, font);
+
+	return createQrLabelBitmap(qrBitmap, textBitmap, dpi);
 }
 
 export function buildQrCommand(el: QrElement, dpi: number, font: Font): string {
