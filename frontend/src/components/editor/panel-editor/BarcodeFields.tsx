@@ -1,6 +1,7 @@
 import type { BarcodeElement, Symbology } from 'shared';
 import { NumberField } from './NumberField'
 import { EDITOR_LIMITS } from '../../../utils/editorLimits'
+import { Field } from './Field'
 
 const SYMBOLOGIES: Symbology[] = ['code128', 'ean13'];
 
@@ -18,23 +19,26 @@ export function BarcodeFields({
 }) {
 	return (
 		<>
-			<label className='block text-xs text-app-text-muted'>
-				Simbología
+			<Field label='Simbología'>
 				<select
 					value={element.symbology}
-					onChange={(e) => onChange({ symbology: e.target.value as Symbology })}
+					onChange={(e) =>
+						onChange({
+							symbology: e.target.value as Symbology,
+						})
+					}
 					className='mt-1 w-full rounded-md border border-app-border bg-app-surface p-1 text-app-text'
 				>
-					{SYMBOLOGIES.map((s) => (
+					{SYMBOLOGIES.map((symbology) => (
 						<option
-							key={s}
-							value={s}
+							key={symbology}
+							value={symbology}
 						>
-							{SYMBOLOGY_LABELS[s]}
+							{SYMBOLOGY_LABELS[symbology]}
 						</option>
 					))}
 				</select>
-			</label>
+			</Field>
 
 			<NumberField
 				label='Ancho (mm)'

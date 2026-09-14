@@ -1,10 +1,12 @@
 import { useEffect, useRef } from 'react';
 import type { ElementPatch } from '../../../store/editorStore.types';
+import type { Rotation} from 'shared'
 import { useEditorStore } from '../../../store/useEditorStore';
 import { QrFields } from './QrFields'
 import { TextFields } from './TextFields'
 import { BarcodeFields } from './BarcodeFields'
 import { NumberField } from './NumberField'
+import { Field } from './Field';
 
 
 export function PropertiesPanel() {
@@ -74,23 +76,26 @@ export function PropertiesPanel() {
 					onChange={(y) => update({ y })}
 				/>
 
-				<label className='block text-xs text-app-text-muted'>
-					Rotación
+				<Field label='Rotación'>
 					<select
 						value={element.rotation}
-						onChange={(e) => update({ rotation: Number(e.target.value) as 0 | 90 | 180 | 270 })}
+						onChange={(e) =>
+							update({
+								rotation: Number(e.target.value) as Rotation,
+							})
+						}
 						className='mt-1 w-full rounded-md border border-app-border bg-app-surface p-1 text-app-text'
 					>
-						{[0, 90, 180, 270].map((r) => (
+						{[0, 90, 180, 270].map((rotation) => (
 							<option
-								key={r}
-								value={r}
+								key={rotation}
+								value={rotation}
 							>
-								{r}°
+								{rotation}°
 							</option>
 						))}
 					</select>
-				</label>
+				</Field>
 			</fieldset>
 
 			<fieldset

@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type FocusEvent } from 'react';
 import { Field } from './Field';
 
 interface NumberFieldProps {
 	label: string;
-	value: number;
-	onChange: (value: number) => void;
+	value: number | undefined;
+	onChange: (value: number | undefined) => void;
 	min?: number;
 	max?: number;
 	disabled?: boolean;
@@ -26,24 +26,33 @@ export function NumberField({
 	placeholder,
 	debounceMs = DEFAULT_DEBOUNCE_MS,
 }: NumberFieldProps) {
-	const [inputValue, setInputValue] = useState(String(value));
-	const lastCommittedValue = useRef(value);
+	const [inputValue, setInputValue] = useState(value === undefined ? '' : String(value));
 
-	/*
-	 * Si el valor cambia desde fuera del componente
-	 * (por ejemplo, al seleccionar otro elemento),
-	 * sincronizamos el input local.
-	 */
+	const lastCommittedValue = useRef<number | undefined>(value);
+
 	useEffect(() => {
 		if (value === lastCommittedValue.current) {
 			return;
 		}
 
-		setInputValue(String(value));
+		setInputValue(value === undefined ? '' : String(value));
 		lastCommittedValue.current = value;
 	}, [value]);
 
 	useEffect(() => {
+		if (inputValue.trim() === '') {
+			if (lastCommittedValue.current !== undefined) {
+				const timer = window.setTimeout(() => {
+					lastCommittedValue.current = undefined;
+					onChange(undefined);
+				}, debounceMs);
+
+				return () => window.clearTimeout(timer);
+			}
+
+			return;
+		}
+
 		const parsed = Number(inputValue);
 
 		if (!Number.isFinite(parsed)) {
@@ -70,20 +79,19 @@ export function NumberField({
 		return () => window.clearTimeout(timer);
 	}, [inputValue, min, max, debounceMs, onChange]);
 
-	const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+	const handleFocus = (e: FocusEvent<HTMLInputElement>) => {
 		e.currentTarget.select();
 	};
 
 	const handleBlur = () => {
 		if (inputValue.trim() === '') {
-			setInputValue(String(value));
 			return;
 		}
 
 		const parsed = Number(inputValue);
 
 		if (!Number.isFinite(parsed)) {
-			setInputValue(String(value));
+			setInputValue(value === undefined ? '' : String(value));
 			return;
 		}
 

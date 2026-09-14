@@ -1,8 +1,14 @@
 import type { TextAlign, TextElement } from 'shared';
-import { NumberField } from './NumberField'
-import { EDITOR_LIMITS } from '../../../utils/editorLimits'
+import { Field } from './Field';
+import { NumberField } from './NumberField';
+import { EDITOR_LIMITS } from '../../../utils/editorLimits';
 
-const TEXT_ALIGNS: TextAlign[] = ['Left', 'Center', 'Right', 'Justify'];
+const TEXT_ALIGNS: TextAlign[] = [
+	'Left',
+	'Center',
+	'Right',
+	'Justify',
+];
 
 export function TextFields({
 	element,
@@ -30,35 +36,33 @@ export function TextFields({
 				Negrita
 			</label>
 
-			<label className='block text-xs text-app-text-muted'>
-				Ancho de ajuste (mm, opcional)
-				<input
-					type='number'
-					placeholder='100mm'
-					value={element.wrapWidth ?? ''}
-					onChange={(e) => onChange({ wrapWidth: e.target.value ? Number(e.target.value) : undefined })}
-					className='mt-1 w-full rounded-md border border-app-border bg-app-surface p-1 text-app-text'
-				/>
-			</label>
+			<NumberField
+				label='Ancho de ajuste (mm, opcional)'
+				value={element.wrapWidth}
+				min={EDITOR_LIMITS.dimensionMm.min}
+				max={EDITOR_LIMITS.dimensionMm.max}
+				placeholder='100 mm'
+				onChange={(wrapWidth) => onChange({ wrapWidth })}
+			/>
 
 			{element.wrapWidth !== undefined && (
-				<label className='block text-xs text-app-text-muted'>
-					Alineación
+				<Field label='Alineación'>
 					<select
 						value={element.textAlign ?? 'L'}
-						onChange={(e) => onChange({ textAlign: e.target.value as TextAlign })}
+						onChange={(e) =>
+							onChange({
+								textAlign: e.target.value as TextAlign,
+							})
+						}
 						className='mt-1 w-full rounded-md border border-app-border bg-app-surface p-1 text-app-text'
 					>
-						{TEXT_ALIGNS.map((a) => (
-							<option
-								key={a}
-								value={a}
-							>
-								{a}
+						{TEXT_ALIGNS.map((align) => (
+							<option key={align} value={align}>
+								{align}
 							</option>
 						))}
 					</select>
-				</label>
+				</Field>
 			)}
 		</>
 	);
