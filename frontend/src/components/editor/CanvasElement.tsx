@@ -3,11 +3,12 @@ import type { LabelElement } from 'shared';
 import { useEditorStore } from '../../store/useEditorStore';
 import { mmToPx, pxToMm } from '../../utils/scale';
 
-import { BarcodePreview, InvalidBarcodePreview } from './previews/BarcodePreview';
+import { BarcodePreview } from './previews/BarcodePreview';
 import { QrPreview } from './previews/QrPreview';
 import { PreviewErrorBoundary } from './previews/PreviewErrorBoundary';
 import { TextPreview } from './previews/TextPreview';
 import { OutOfBoundsWarning } from './OutOfBoundsWarning';
+import { InvalidPreview } from './previews/InvalidPreview'
 
 interface CanvasElementProps {
 	element: LabelElement;
@@ -158,35 +159,25 @@ export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeight
 	);
 }
 
-// Render aproximado — no es el ZPL real. Barcode/QR quedan como placeholders
-// hasta que integremos una librería de render (jsbarcode / qrcode.react) o
-// el preview real vía Labelary.
 function ElementPreview({ element }: { element: LabelElement }) {
 	switch (element.type) {
 		case 'text':
 			return (
-				<PreviewErrorBoundary
-					key={`${element.content}-${element.type}`}
-					fallback={<InvalidBarcodePreview symbology={'code128'} />}
-				>
+				<PreviewErrorBoundary>
 					<TextPreview element={element} />
 				</PreviewErrorBoundary>
 			);
+
 		case 'barcode':
 			return (
-				<PreviewErrorBoundary
-					key={`${element.content}-${element.symbology}`}
-					fallback={<InvalidBarcodePreview symbology={element.symbology} />}
-				>
+				<PreviewErrorBoundary fallback={<InvalidPreview message={`Contenido inválido para ${element.symbology}`} />}>
 					<BarcodePreview element={element} />
 				</PreviewErrorBoundary>
 			);
+
 		case 'qr':
 			return (
-				<PreviewErrorBoundary
-					key={element.content}
-					fallback={<InvalidBarcodePreview symbology='code128' />}
-				>
+				<PreviewErrorBoundary>
 					<QrPreview element={element} />
 				</PreviewErrorBoundary>
 			);
