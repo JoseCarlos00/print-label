@@ -8,6 +8,7 @@ export interface RenderTextOptions {
 	align?: TextAlignCss;
 	fit?: 'none' | 'compress';
 	wrapWidth?: number;
+	lineSpacingDots?: number;
 }
 
 export interface TextBitmap {
@@ -24,11 +25,17 @@ interface Point {
 	y: number;
 }
 
+interface RenderLine {
+	text: string;
+	paragraphIndex: number;
+	isLastLineOfParagraph: boolean;
+}
+
 export function renderText(
 	font: Font,
 	text: string,
 	fontSize: number,
-	widthDots: number,
+	widthDots?: number,
 	options: RenderTextOptions = {},
 ): TextBitmap {
 	const scale = fontSize / font.unitsPerEm;
@@ -36,56 +43,58 @@ export function renderText(
 
 	const lineHeightDots = Math.ceil((font.ascender - font.descender) * scale);
 
+	const lineSpacingDots = options.lineSpacingDots ?? 0;
+	const lineAdvanceDots = lineHeightDots + lineSpacingDots;
+
 	const baseline = Math.ceil(font.ascender * scale);
 
-	/*
-	 * 1. Separar las líneas explícitas.
-	 *
-	 * split() conserva las líneas vacías:
-	 *
-	 * "Hola\n\nMundo"
-	 * ->
-	 * ["Hola", "", "Mundo"]
-	 */
 	const explicitLines = text.split(/\r?\n/);
 
-	/*
-	 * 2. Aplicar wrapping a cada línea.
-	 */
-	const lines: string[] = [];
+	const lines: RenderLine[] = [];
 
-	for (const line of explicitLines) {
+	for (let paragraphIndex = 0; paragraphIndex < explicitLines.length; paragraphIndex++) {
+		const explicitLine = explicitLines[paragraphIndex];
+
 		if (wrapWidth != null) {
-			lines.push(...wrapLine(font, line, fontSize, wrapWidth));
+			const wrappedLines = wrapLine(font, explicitLine, fontSize, wrapWidth);
+
+			for (let i = 0; i < wrappedLines.length; i++) {
+				lines.push({
+					text: wrappedLines[i],
+					paragraphIndex,
+					isLastLineOfParagraph: i === wrappedLines.length - 1,
+				});
+			}
 		} else {
-			lines.push(line);
+			lines.push({
+				text: explicitLine,
+				paragraphIndex,
+				isLastLineOfParagraph: true,
+			});
 		}
 	}
 
-	/*
-	 * 3. Calcular el ancho natural de cada línea.
-	 */
-	const lineWidthsDots = lines.map((line) => Math.ceil(getTextWidth(font, line, scale)));
+	const lineWidthsDots = lines.map((line) => Math.ceil(getTextWidth(font, line.text, scale)));
 
 	const naturalWidthDots = Math.max(0, ...lineWidthsDots);
 
-	const naturalHeightDots = lines.length * lineHeightDots;
+	const naturalHeightDots =
+		lines.length === 0
+			? 0
+			: lines.length * lineHeightDots +
+				(lines.length - 1) * lineSpacingDots;
 
-	/*
-	 * 4. Determinar si alguna línea excede el ancho disponible.
-	 */
-	const overflows = lineWidthsDots.some((lineWidth) => lineWidth > widthDots);
+	const availableWidthDots = widthDots ?? naturalWidthDots;
 
-	/*
-	 * 5. El bitmap final:
-	 *
-	 * - Con compress: siempre usamos widthDots.
-	 * - Sin compress: permitimos que el bitmap crezca
-	 *   para contener el texto natural.
-	 */
+	const overflows = widthDots != null && lineWidthsDots.some((lineWidth) => lineWidth > widthDots);
+
 	const isCompressing = fit === 'compress';
 
-	const bitmapWidthDots = isCompressing ? widthDots : Math.max(widthDots, naturalWidthDots);
+	if (isCompressing && widthDots == null) {
+		throw new Error('fit="compress" requires widthDots');
+	}
+
+	const bitmapWidthDots = isCompressing ? widthDots! : availableWidthDots;
 
 	const bitmap: GraphicBitmap = {
 		widthDots: bitmapWidthDots,
@@ -94,41 +103,48 @@ export function renderText(
 		data: new Uint8Array(Math.ceil(bitmapWidthDots / 8) * naturalHeightDots),
 	};
 
-	/*
-	 * 6. Renderizar cada línea.
-	 */
 	for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
-		const line = lines[lineIndex];
+		const renderLine = lines[lineIndex];
+		const line = renderLine.text;
 		const lineNaturalWidth = lineWidthsDots[lineIndex];
 
-		const shouldCompress = fit === 'compress' && lineNaturalWidth > widthDots;
+		const shouldCompress = fit === 'compress' && lineNaturalWidth > widthDots!;
 
-		const horizontalScale = shouldCompress ? widthDots / lineNaturalWidth : 1;
+		const horizontalScale = shouldCompress ? widthDots! / lineNaturalWidth : 1;
 
-		/*
-		 * Alinear solamente cuando la línea cabe
-		 * sin compresión.
-		 */
-		let offsetX = 0;
+		const shouldJustify =
+			align === 'Justify' && !renderLine.isLastLineOfParagraph && lineNaturalWidth < availableWidthDots;
 
-		if (!shouldCompress && lineNaturalWidth < widthDots) {
-			switch (align) {
-				case 'Left':
-					offsetX = 0;
-					break;
+		let extraSpace = 0;
 
-				case 'Center':
-					offsetX = Math.floor((widthDots - lineNaturalWidth) / 2);
-					break;
+		if (shouldJustify) {
+			const spaceCount = [...line].filter((char) => char === ' ').length;
 
-				case 'Right':
-					offsetX = widthDots - lineNaturalWidth;
-					break;
+			if (spaceCount > 0) {
+				extraSpace = (availableWidthDots - lineNaturalWidth) / spaceCount;
 			}
 		}
 
-		const contours: Point[][] = [];
+		let offsetX = 0;
 
+		if (!shouldCompress && !shouldJustify) {
+			if (lineNaturalWidth < availableWidthDots) {
+				switch (align) {
+					case 'Left':
+						offsetX = 0;
+						break;
+
+					case 'Center':
+						offsetX = Math.floor((availableWidthDots - lineNaturalWidth) / 2);
+						break;
+
+					case 'Right':
+						offsetX = availableWidthDots - lineNaturalWidth;
+						break;
+				}
+			}
+		}
+		const contours: Point[][] = [];
 		let cursorX = 0;
 
 		for (let i = 0; i < line.length; i++) {
@@ -147,26 +163,22 @@ export function renderText(
 			contours.push(...pathToContours(path));
 
 			cursorX += glyph.advanceWidth! * scale;
+
+			if (shouldJustify && line[i] === ' ') {
+				cursorX += extraSpace;
+			}
 		}
 
-		/*
-		 * Primero aplicamos la compresión horizontal
-		 * sobre toda la línea.
-		 */
 		let transformedContours = contours;
 
 		if (shouldCompress) {
 			transformedContours = transformContours(contours, horizontalScale, 1);
 		}
 
-		/*
-		 * Después desplazamos la línea a su posición
-		 * horizontal.
-		 */
 		if (offsetX !== 0) {
-			transformedContours = transformContours(transformedContours, 1, 1, offsetX, lineIndex * lineHeightDots);
+			transformedContours = transformContours(transformedContours, 1, 1, offsetX, lineIndex * lineAdvanceDots);
 		} else if (lineIndex !== 0) {
-			transformedContours = transformContours(transformedContours, 1, 1, 0, lineIndex * lineHeightDots);
+			transformedContours = transformContours(transformedContours, 1, 1, 0, lineIndex * lineAdvanceDots);
 		}
 
 		fillContours(bitmap, transformedContours);
@@ -191,7 +203,6 @@ function quadraticBezier(p0: Point, p1: Point, p2: Point, t: number): Point {
 		y: mt * mt * p0.y + 2 * mt * t * p1.y + t * t * p2.y,
 	};
 }
-
 
 function pathToContours(path: opentype.Path): Point[][] {
 	const contours: Point[][] = [];
@@ -338,12 +349,15 @@ function wrapLine(font: Font, text: string, fontSize: number, maxWidthDots: numb
 		return [''];
 	}
 
-	const scale = fontSize / font.unitsPerEm;
-	const words = text.trim();
+	const trimmedText = text.trim();
 
-	if (words.length === 0) {
+	if (trimmedText.length === 0) {
 		return [''];
 	}
+
+	const scale = fontSize / font.unitsPerEm;
+
+	const words = trimmedText.split(' ');
 
 	const lines: string[] = [];
 	let currentLine = '';
@@ -365,7 +379,7 @@ function wrapLine(font: Font, text: string, fontSize: number, maxWidthDots: numb
 		lines.push(currentLine);
 	}
 
-	return lines;
+	return lines.length > 0 ? lines : [''];
 }
 
 

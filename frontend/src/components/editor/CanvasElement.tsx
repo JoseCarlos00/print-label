@@ -1,12 +1,12 @@
 import { useLayoutEffect, useRef, useState, type PointerEvent } from 'react';
-import type { LabelElement, TextAlignZebra } from 'shared';
+import type { LabelElement } from 'shared';
 import { useEditorStore } from '../../store/useEditorStore';
 import { mmToPx, pxToMm } from '../../utils/scale';
-import type { CSSProperties } from 'react';
 
 import { BarcodePreview, InvalidBarcodePreview } from './previews/BarcodePreview';
 import { QrPreview } from './previews/QrPreview';
 import { PreviewErrorBoundary } from './previews/PreviewErrorBoundary';
+import { TextPreview } from './previews/TextPreview'
 
 interface CanvasElementProps {
 	element: LabelElement;
@@ -14,13 +14,6 @@ interface CanvasElementProps {
 	canvasWidthMm: number;
 	canvasHeightMm: number;
 }
-
-const TEXT_ALIGN_CSS: Record<TextAlignZebra, CSSProperties['textAlign']> = {
-	L: 'left',
-	C: 'center',
-	R: 'right',
-	J: 'justify',
-};
 
 export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeightMm }: CanvasElementProps) {
 	const positionLocked = useEditorStore((s) => s.positionLocked);
@@ -172,43 +165,10 @@ export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeight
 // el preview real vía Labelary.
 function ElementPreview({ element }: { element: LabelElement }) {
 	switch (element.type) {
-		case 'text': {
-			const baseStyle: CSSProperties = {
-				fontSize: mmToPx(element.fontSize),
-				fontWeight: element.bold ? '800' : 'inherit',
-				color: 'black',
-				fontStretch: element.bold ? 'initial' : 'semi-condensed',
-				letterSpacing: '0.035rem',
-			};
-
-			if (element.wrapWidth === undefined) {
-				return (
-					<span
-						style={baseStyle}
-						className='whitespace-nowrap'
-					>
-						{element.content || 'Texto'}
-					</span>
-				);
-			}
-
+		case 'text': 
 			return (
-				<span
-					style={{
-						...baseStyle,
-						display: 'block',
-						width: mmToPx(element.wrapWidth),
-						whiteSpace: 'normal',
-						overflowWrap: 'break-word',
-						textAlign: TEXT_ALIGN_CSS[element.textAlign ?? 'L'],
-						lineHeight: element.lineSpacing ? `${element.fontSize + element.lineSpacing}mm` : 'normal',
-					}}
-					className='whitespace-nowrap text-black multi-line'
-				>
-					{element.content || 'Texto'}
-				</span>
-			);
-		}
+				<TextPreview element={element} />
+			)
 		case 'barcode':
 			return (
 				<PreviewErrorBoundary

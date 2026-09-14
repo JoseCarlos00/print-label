@@ -1,48 +1,42 @@
-import type { Font } from 'opentype.js'
+import type { Font } from 'opentype.js';
 import type { TextAlignZebra, TextElement } from '../../types.js';
-import { escapeZplField, mmToDots, ROTATION_MAP } from '../units.js'
+import { fontSizeMmToOpenType, renderText } from '../fonts/rasterizeText.js';
+import { buildGraphicCommand, type GraphicBitmap, rotateBitmap } from './graphic.js';
+import { mmToDots } from '../units.js';
 
-/**
- * Ratio ancho/alto de carácter para simular negrita en ^A0 (ZPL no tiene
- * negrita real). Probado y confirmado: 1.4.
- */
-export const BOLD_WIDTH_RATIO = 1.4;
+const TEXT_ALIGN_MAP: Record<TextAlignZebra, 'Left' | 'Center' | 'Right' | 'Justify'> = {
+	L: 'Left',
+	C: 'Center',
+	R: 'Right',
+	J: 'Justify',
+};
 
-// ──────────────────────────────────────────────────────────────────────────
-// Texto
-// ──────────────────────────────────────────────────────────────────────────
+export function createTextBitmap(el: TextElement, dpi: number, font: Font): GraphicBitmap {
+	const fontSize = fontSizeMmToOpenType(font, el.fontSize, dpi);
 
-/**
- * Tope de líneas fijo para ^FB cuando el texto usa wrapWidth. No es
- * configurable desde el modelo de datos a propósito — es una salvaguarda
- * interna para que un texto excesivamente largo no desborde la etiqueta
- * verticalmente sin que nadie se dé cuenta hasta imprimir.
- */
-const MAX_WRAP_LINES = 10;
+	const wrapWidthDots = el.wrapWidth != null ? mmToDots(el.wrapWidth, dpi) : undefined;
 
-const TEXT_ALIGN_DEFAULT: TextAlignZebra = 'L';
+	const lineSpacingDots = mmToDots(el.lineSpacing ?? 0, dpi);
 
-export function buildTextCommand(el: TextElement, dpi: number, _font: Font): string {
+	const align = el.textAlign != null ? TEXT_ALIGN_MAP[el.textAlign] : 'Left';
+
+	const result = renderText(font, el.content, fontSize, wrapWidthDots, {
+		align,
+		fit: 'none',
+		wrapWidth: wrapWidthDots,
+		lineSpacingDots,
+	});
+
+	return result.bitmap;
+}
+
+export function buildTextCommand(el: TextElement, dpi: number, font: Font): string {
 	const xDots = mmToDots(el.x, dpi);
 	const yDots = mmToDots(el.y, dpi);
-	const heightDots = mmToDots(el.fontSize, dpi);
-	const widthDots = el.bold ? Math.round(heightDots * BOLD_WIDTH_RATIO) : heightDots;
-	const orientation = ROTATION_MAP[el.rotation];
-	const content = escapeZplField(el.content);
 
-	const commands = [`^FO${xDots},${yDots}`];
+	const bitmap = createTextBitmap(el, dpi, font);
 
-	// ^FB (field block): activa texto multilínea con ancho fijo. Solo se
-	// incluye si el elemento define wrapWidth — comportamiento por default
-	// sigue siendo una sola línea, sin cambios respecto a la versión anterior.
-	if (el.wrapWidth !== undefined) {
-		const wrapWidthDots = mmToDots(el.wrapWidth, dpi);
-		const lineSpacingDots = mmToDots(el.lineSpacing ?? 0, dpi);
-		const textAlign = el.textAlign ?? TEXT_ALIGN_DEFAULT;
-		commands.push(`^FB${wrapWidthDots},${MAX_WRAP_LINES},${lineSpacingDots},${textAlign},0`);
-	}
+	const rotatedBitmap = rotateBitmap(bitmap, el.rotation);
 
-	commands.push(`^A0${orientation},${heightDots},${widthDots}`, `^FH^FD${content}^FS`);
-
-	return commands.join('\n');
+	return buildGraphicCommand(rotatedBitmap, `^FO${xDots},${yDots}`);
 }
