@@ -48,7 +48,6 @@ function TextBitmapPreview({ element, createBitmap }: TextBitmapPreviewProps) {
 		if (!canvas) return;
 
 		const bitmap = createBitmap(element, dpi, font);
-		console.log(bitmap);
 
 		setSize({
 			width: mmToPx(dotsToMm(bitmap.widthDots, dpi)),

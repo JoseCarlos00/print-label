@@ -1,7 +1,9 @@
 import type { QrElement, QrLabel } from 'shared';
 import { Field } from './Field';
 import { NumberField } from './NumberField';
-import { EDITOR_LIMITS } from '@/config/editorLimits'
+import { EDITOR_LIMITS } from '@/config/editorLimits';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 export function QrFields({
 	element,
@@ -17,17 +19,8 @@ export function QrFields({
 	const wrapEnabled = label.wrapWidth !== undefined;
 
 	const updateLabel = (changes: Partial<QrLabel>) => {
-		const base: QrLabel = label ?? {
-			fontSize: 3,
-			visible: true,
-		};
-
-		onChange({
-			label: {
-				...base,
-				...changes,
-			},
-		});
+		const base: QrLabel = label ?? { fontSize: 3, visible: true };
+		onChange({ label: { ...base, ...changes } });
 	};
 
 	return (
@@ -38,24 +31,17 @@ export function QrFields({
 				min={EDITOR_LIMITS.qrSizeMm.min}
 				max={EDITOR_LIMITS.qrSizeMm.max}
 				onChange={(size) => {
-					if (size !== undefined) {
-						onChange({ size });
-					}
+					if (size !== undefined) onChange({ size });
 				}}
 			/>
 
-			<label className='flex items-center gap-2 text-xs text-app-text-muted my-3 cursor-pointer'>
-				<input
-					type='checkbox'
+			<div className='my-3 flex items-center justify-between'>
+				<Label className='text-xs font-normal text-app-text-muted'>Mostrar etiqueta con el contenido</Label>
+				<Switch
 					checked={labelVisible}
-					onChange={(e) =>
-						updateLabel({
-							visible: e.target.checked,
-						})
-					}
+					onCheckedChange={(visible) => updateLabel({ visible })}
 				/>
-				Mostrar etiqueta con el contenido
-			</label>
+			</div>
 
 			<NumberField
 				label='Tamaño de fuente (mm)'
@@ -64,32 +50,18 @@ export function QrFields({
 				max={EDITOR_LIMITS.fontSizeMm.max}
 				disabled={!labelVisible}
 				onChange={(fontSize) => {
-					if (fontSize !== undefined) {
-						updateLabel({ fontSize });
-					}
+					if (fontSize !== undefined) updateLabel({ fontSize });
 				}}
 			/>
 
-			<label
-				className={[
-					'flex items-center gap-2 text-xs text-app-text-muted my-3 cursor-pointer',
-					!labelVisible && 'opacity-55',
-				]
-					.filter(Boolean)
-					.join(' ')}
-			>
-				<input
-					type='checkbox'
+			<div className='my-3 flex items-center justify-between opacity-100 data-disabled:opacity-55'>
+				<Label className='text-xs font-normal text-app-text-muted'>Usar texto personalizado</Label>
+				<Switch
 					checked={customTextEnabled}
 					disabled={!labelVisible}
-					onChange={(e) =>
-						updateLabel({
-							customText: e.target.checked ? '' : undefined,
-						})
-					}
+					onCheckedChange={(checked) => updateLabel({ customText: checked ? '' : undefined })}
 				/>
-				Usar texto personalizado
-			</label>
+			</div>
 
 			<Field
 				label='Texto de la etiqueta'
@@ -99,35 +71,19 @@ export function QrFields({
 					type='text'
 					value={label?.customText ?? ''}
 					disabled={!labelVisible || !customTextEnabled}
-					onChange={(e) =>
-						updateLabel({
-							customText: e.target.value,
-						})
-					}
-					className='mt-1 w-full rounded-md border border-app-border bg-app-surface p-1 text-app-text'
+					onChange={(e) => updateLabel({ customText: e.target.value })}
+					className='mt-1 w-full rounded-md border border-app-border bg-app-surface p-1 text-app-text disabled:opacity-50'
 				/>
 			</Field>
 
-			<label
-				className={[
-					'flex items-center gap-2 text-xs text-app-text-muted my-3 cursor-pointer',
-					!labelVisible && 'opacity-55',
-				]
-					.filter(Boolean)
-					.join(' ')}
-			>
-				<input
-					type='checkbox'
+			<div className='my-3 flex items-center justify-between'>
+				<Label className='text-xs font-normal text-app-text-muted'>Ajustar ancho del texto</Label>
+				<Switch
 					checked={wrapEnabled}
 					disabled={!labelVisible}
-					onChange={(e) =>
-						updateLabel({
-							wrapWidth: e.target.checked ? 50 : undefined,
-						})
-					}
+					onCheckedChange={(checked) => updateLabel({ wrapWidth: checked ? 50 : undefined })}
 				/>
-				Ajustar ancho del texto
-			</label>
+			</div>
 
 			<NumberField
 				label='Ancho de ajuste (mm)'

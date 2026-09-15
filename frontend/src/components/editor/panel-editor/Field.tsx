@@ -1,4 +1,6 @@
 import type { ReactNode } from 'react';
+import { Label } from '@/components/ui/label';
+import { cn } from 'cn';
 
 interface FieldProps {
 	label: string;
@@ -8,16 +10,9 @@ interface FieldProps {
 
 export function Field({ label, disabled = false, children }: FieldProps) {
 	return (
-		<label
-			className={[
-				'block text-xs text-app-text-muted',
-				disabled && 'opacity-55',
-			]
-				.filter(Boolean)
-				.join(' ')}
-		>
-			{label}
+		<div className={cn('space-y-1', disabled && 'opacity-55')}>
+			<Label className='text-xs font-normal text-app-text-muted'>{label}</Label>
 			{children}
-		</label>
+		</div>
 	);
 }

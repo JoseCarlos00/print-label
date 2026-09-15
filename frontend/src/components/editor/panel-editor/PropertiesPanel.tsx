@@ -1,14 +1,20 @@
 import { useEffect, useRef } from 'react';
+import { Barcode, FileText, Move, QrCode, Type } from 'lucide-react';
 import type { ElementPatch } from '@/store/editorStore.types';
-import type { Rotation} from 'shared'
+import type { Rotation } from 'shared';
 import { useEditorStore } from '@/store/useEditorStore';
-import { QrFields } from './QrFields'
-import { TextFields } from './TextFields'
-import { BarcodeFields } from './BarcodeFields'
-import { NumberField } from './NumberField'
+import { QrFields } from './QrFields';
+import { TextFields } from './TextFields';
+import { BarcodeFields } from './BarcodeFields';
+import { NumberField } from './NumberField';
 import { Field } from './Field';
-import { TextAreaField } from './TextAreaField'
+import { TextAreaField } from './TextAreaField';
+import { PanelSection } from './PanelSection';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
+const TYPE_ICON = { text: Type, barcode: Barcode, qr: QrCode } as const;
+const TYPE_LABEL = { text: 'Texto', barcode: 'Código de barras', qr: 'Código QR' } as const;
+const ROTATIONS: Rotation[] = [0, 90, 180, 270];
 
 export function PropertiesPanel() {
 	const positionLocked = useEditorStore((s) => s.positionLocked);
@@ -17,27 +23,17 @@ export function PropertiesPanel() {
 	const updateElement = useEditorStore((s) => s.updateElement);
 	const focusContentRequest = useEditorStore((s) => s.focusContentRequest);
 
-
 	const contentRef = useRef<HTMLTextAreaElement>(null);
 
-	// "Estructura" (posición, tamaño, estilo) se bloquea cuando la plantilla
-	// tiene positionLocked. Si además el elemento tiene locked=true, ni
-	// siquiera el contenido queda editable.
 	const structureDisabled = positionLocked;
 	const contentDisabled = positionLocked && Boolean(element?.locked);
-	
-	useEffect(() => {
-		if (!element || contentDisabled || !focusContentRequest) {
-			return;
-		}
 
+	useEffect(() => {
+		if (!element || contentDisabled || !focusContentRequest) return;
 		contentRef.current?.focus();
 		contentRef.current?.select();
-
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [focusContentRequest, contentDisabled]);
-
-	
 
 	if (!selectedElementId || !element) {
 		return (
@@ -48,12 +44,14 @@ export function PropertiesPanel() {
 	}
 
 	const update = (changes: ElementPatch) => updateElement(element.id, changes);
+	const Icon = TYPE_ICON[element.type];
 
 	return (
-		<div className='w-70 space-y-4 overflow-y-auto border-l border-app-border p-4 thin-scrollbar'>
-			<p className='text-xs font-medium uppercase text-app-text-muted'>
-				{element.type === 'text' ? 'Texto' : element.type === 'barcode' ? 'Código de barras' : 'Código QR'}
-			</p>
+		<div className='flex w-70 flex-col gap-3 overflow-y-auto border-l border-app-border p-3 thin-scrollbar'>
+			<div className='flex items-center gap-2 rounded-md border border-app-border bg-app-surface px-3 py-2'>
+				<Icon className='size-4 text-app-accent-500' />
+				<span className='text-sm font-medium text-app-text'>{TYPE_LABEL[element.type]}</span>
+			</div>
 
 			{contentDisabled && (
 				<p className='rounded-md border border-app-border bg-app-surface p-2 text-xs text-app-text-muted'>
@@ -61,80 +59,100 @@ export function PropertiesPanel() {
 				</p>
 			)}
 
-			<fieldset
-				disabled={structureDisabled}
-				className='space-y-2 disabled:opacity-50'
+			<PanelSection
+				title='Posición y rotación'
+				icon={<Move className='size-3.5' />}
 			>
-				<NumberField
-					label='X (mm)'
-					value={element.x}
-					onChange={(x) => update({ x })}
-				/>
+				<fieldset
+					disabled={structureDisabled}
+					className='grid grid-cols-2 gap-2 disabled:opacity-50'
+				>
+					<NumberField
+						label='X (mm)'
+						value={element.x}
+						onChange={(x) => update({ x })}
+					/>
+					<NumberField
+						label='Y (mm)'
+						value={element.y}
+						onChange={(y) => update({ y })}
+					/>
+				</fieldset>
 
-				<NumberField
-					label='Y (mm)'
-					value={element.y}
-					onChange={(y) => update({ y })}
-				/>
+				<fieldset
+					disabled={structureDisabled}
+					className='disabled:opacity-50'
+				>
+					<Field label='Rotación'>
+						<Select
+							value={String(element.rotation)}
+							onValueChange={(value) => update({ rotation: Number(value) as Rotation })}
+							disabled={structureDisabled}
+						>
+							<SelectTrigger className='mt-1 w-full'>
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								{ROTATIONS.map((rotation) => (
+									<SelectItem
+										key={rotation}
+										value={String(rotation)}
+									>
+										{rotation}°
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</Field>
+				</fieldset>
+			</PanelSection>
 
-				<Field label='Rotación'>
-					<select
-						value={element.rotation}
-						onChange={(e) =>
-							update({
-								rotation: Number(e.target.value) as Rotation,
-							})
-						}
-						className='mt-1 w-full rounded-md border border-app-border bg-app-surface p-1 text-app-text'
-					>
-						{[0, 90, 180, 270].map((rotation) => (
-							<option
-								key={rotation}
-								value={rotation}
-							>
-								{rotation}°
-							</option>
-						))}
-					</select>
-				</Field>
-			</fieldset>
-
-			<fieldset
-				disabled={contentDisabled}
-				className='disabled:opacity-50'
+			<PanelSection
+				title='Contenido'
+				icon={<FileText className='size-3.5' />}
 			>
-				<TextAreaField
-					ref={contentRef}
-					label='Contenido'
-					value={element.content}
-					onChange={(content) => update({ content })}
-					rows={2}
-				/>
-			</fieldset>
+				<fieldset
+					disabled={contentDisabled}
+					className='disabled:opacity-50'
+				>
+					<TextAreaField
+						ref={contentRef}
+						label='Contenido'
+						value={element.content}
+						onChange={(content) => update({ content })}
+						rows={2}
+					/>
+				</fieldset>
+			</PanelSection>
 
-			<fieldset
-				disabled={structureDisabled}
-				className='space-y-2 disabled:opacity-50'
+			<PanelSection
+				title='Propiedades'
+				icon={<Icon className='size-3.5' />}
 			>
-				{element.type === 'text' && (
-					<TextFields
-						element={element}
-						onChange={update}
-					/>
-				)}
-				{element.type === 'barcode' && (
-					<BarcodeFields
-						element={element}
-						onChange={update}
-					/>
-				)}
-				{element.type === 'qr' && (
-					<QrFields
-						element={element}
-						onChange={update}
-					/>
-				)}
-			</fieldset>
+				<fieldset
+					disabled={structureDisabled}
+					className='space-y-2 disabled:opacity-50'
+				>
+					{element.type === 'text' && (
+						<TextFields
+							element={element}
+							onChange={update}
+						/>
+					)}
+					{element.type === 'barcode' && (
+						<BarcodeFields
+							element={element}
+							onChange={update}
+						/>
+					)}
+					{element.type === 'qr' && (
+						<QrFields
+							element={element}
+							onChange={update}
+						/>
+					)}
+				</fieldset>
+			</PanelSection>
 		</div>
 	);
 }

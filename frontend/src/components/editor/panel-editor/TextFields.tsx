@@ -2,6 +2,9 @@ import type { TextAlign, TextElement } from 'shared';
 import { Field } from './Field';
 import { NumberField } from './NumberField';
 import { EDITOR_LIMITS } from '@/config/editorLimits';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const TEXT_ALIGNS: TextAlign[] = ['Left', 'Center', 'Right', 'Justify'];
 
@@ -16,14 +19,13 @@ export function TextFields({
 
 	return (
 		<>
-			<label className='flex items-center gap-2 text-xs text-app-text-muted mb-3 cursor-pointer'>
-				<input
-					type='checkbox'
+			<div className='mb-3 flex items-center justify-between'>
+				<Label className='text-xs font-normal text-app-text-muted'>Negrita</Label>
+				<Switch
 					checked={element.bold}
-					onChange={(e) => onChange({ bold: e.target.checked })}
+					onCheckedChange={(bold) => onChange({ bold })}
 				/>
-				Negrita
-			</label>
+			</div>
 
 			<NumberField
 				label='Tamaño de fuente (mm)'
@@ -31,24 +33,17 @@ export function TextFields({
 				min={EDITOR_LIMITS.fontSizeMm.min}
 				max={EDITOR_LIMITS.fontSizeMm.max}
 				onChange={(fontSize) => {
-					if (fontSize !== undefined) {
-						onChange({ fontSize });
-					}
+					if (fontSize !== undefined) onChange({ fontSize });
 				}}
 			/>
 
-			<label className='flex items-center gap-2 text-xs text-app-text-muted my-3 cursor-pointer'>
-				<input
-					type='checkbox'
+			<div className='my-3 flex items-center justify-between'>
+				<Label className='text-xs font-normal text-app-text-muted'>Ajustar ancho del texto</Label>
+				<Switch
 					checked={wrapEnabled}
-					onChange={(e) =>
-						onChange({
-							wrapWidth: e.target.checked ? 50 : undefined,
-						})
-					}
+					onCheckedChange={(checked) => onChange({ wrapWidth: checked ? 50 : undefined })}
 				/>
-				Ajustar ancho del texto
-			</label>
+			</div>
 
 			<NumberField
 				label='Ancho de ajuste (mm, opcional)'
@@ -63,25 +58,25 @@ export function TextFields({
 				label='Alineación'
 				disabled={!wrapEnabled}
 			>
-				<select
+				<Select
 					value={element.textAlign ?? 'Left'}
 					disabled={!wrapEnabled}
-					onChange={(e) =>
-						onChange({
-							textAlign: e.target.value as TextAlign,
-						})
-					}
-					className='mt-1 w-full rounded-md border border-app-border bg-app-surface p-1 text-app-text'
+					onValueChange={(value) => onChange({ textAlign: value as TextAlign })}
 				>
-					{TEXT_ALIGNS.map((align) => (
-						<option
-							key={align}
-							value={align}
-						>
-							{align}
-						</option>
-					))}
-				</select>
+					<SelectTrigger className='mt-1 w-full'>
+						<SelectValue />
+					</SelectTrigger>
+					<SelectContent>
+						{TEXT_ALIGNS.map((align) => (
+							<SelectItem
+								key={align}
+								value={align}
+							>
+								{align}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
 			</Field>
 		</>
 	);
