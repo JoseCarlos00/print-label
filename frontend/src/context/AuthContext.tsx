@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { api } from '../api/client';
+import { api } from '@/api/client';
 
 interface AuthContextValue {
 	isAdmin: boolean;

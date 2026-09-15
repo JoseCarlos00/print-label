@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useEditorStore } from '../store/useEditorStore';
+import { useEditorStore } from '@/store/useEditorStore';
 
 function isTextInput(target: EventTarget | null) {
 	if (!(target instanceof HTMLElement)) {

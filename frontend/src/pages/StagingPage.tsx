@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { Template } from 'shared';
-import { api, ApiError } from '../api/client';
+import { api, ApiError } from '@/api/client';
 
 type ActionState = 'idle' | 'approving' | 'rejecting';
 

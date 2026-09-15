@@ -1,7 +1,7 @@
 import type { BarcodeElement, Symbology } from 'shared';
 
 import { NumberField } from './NumberField';
-import { EDITOR_LIMITS } from '../../../config/editorLimits';
+import { EDITOR_LIMITS } from '@/config/editorLimits';
 import { Field } from './Field';
 
 const SYMBOLOGIES: Symbology[] = ['code128', 'ean13'];

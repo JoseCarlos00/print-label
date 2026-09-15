@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
-import type { ElementPatch } from '../../../store/editorStore.types';
+import type { ElementPatch } from '@/store/editorStore.types';
 import type { Rotation} from 'shared'
-import { useEditorStore } from '../../../store/useEditorStore';
+import { useEditorStore } from '@/store/useEditorStore';
 import { QrFields } from './QrFields'
 import { TextFields } from './TextFields'
 import { BarcodeFields } from './BarcodeFields'

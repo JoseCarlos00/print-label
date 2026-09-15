@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useTemplates } from '../../hooks/useTemplates';
+import { useTemplates } from '@/hooks/useTemplates';
 
 const QUICK_LIMIT = 8;
 

@@ -1,6 +1,6 @@
-import { useEditorStore } from '../../store/useEditorStore';
+import { useEditorStore } from '@/store/useEditorStore';
 import { CanvasElement } from './CanvasElement';
-import { mmToPx } from '../../utils/scale';
+import { mmToPx } from '@/utils/scale';
 
 export function Canvas() {
 	const profile = useEditorStore((s) => s.profile);

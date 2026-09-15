@@ -3,10 +3,10 @@ import { createTextBitmap } from 'shared/zpl';
 
 import { useEffect, useRef, useState } from 'react';
 import type { Font, GraphicBitmap } from 'shared/zpl';
-import { useEditorStore } from '../../../store/useEditorStore';
+import { useEditorStore } from '@/store/useEditorStore';
 
 import { loadSwiss721 } from 'shared/zpl/font';
-import { mmToPx } from '../../../utils/scale';
+import { mmToPx } from '@/utils/scale';
 const font = await loadSwiss721();
 
 export function TextPreview({ element }: { element: TextElement }) {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { PrinterProfile } from 'shared';
-import { api, ApiError } from '../api/client';
+import { api, ApiError } from '@/api/client';
 
 interface UsePrinterProfilesResult {
 	profiles: PrinterProfile[];

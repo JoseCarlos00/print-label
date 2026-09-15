@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { usePrinterProfiles } from '../hooks/usePrinterProfiles';
-import { useTemplate } from '../hooks/useTemplate';
-import { useEditorStore } from '../store/useEditorStore';
-import { getSavedPrinterId } from '../utils/printerPreference';
-import { TopBar } from '../components/editor/TopBar';
-import { Toolbar } from '../components/editor/Toolbar';
-import { Canvas } from '../components/editor/Canvas';
-import { PropertiesPanel } from '../components/editor/panel-editor/PropertiesPanel';
-import { QuickTemplatesPanel } from '../components/editor/QuickTemplatesPanel'
+import { usePrinterProfiles } from '@/hooks/usePrinterProfiles';
+import { useTemplate } from '@/hooks/useTemplate';
+import { useEditorStore } from '@/store/useEditorStore';
+import { getSavedPrinterId } from '@/utils/printerPreference';
+import { TopBar } from '@/components/editor/TopBar';
+import { Toolbar } from '@/components/editor/Toolbar';
+import { Canvas } from '@/components/editor/Canvas';
+import { PropertiesPanel } from '@/components/editor/panel-editor/PropertiesPanel';
+import { QuickTemplatesPanel } from '@/components/editor/QuickTemplatesPanel'
 
 
 // Wrapper que fuerza un remount COMPLETO de EditorPage cada vez que cambia

@@ -1,4 +1,4 @@
-import { useEditorStore } from '../store/useEditorStore';
+import { useEditorStore } from '@/store/useEditorStore';
 
 const CONFIRM_MESSAGE = 'Vas a perder el diseño actual sin guardar. ¿Continuar?';
 

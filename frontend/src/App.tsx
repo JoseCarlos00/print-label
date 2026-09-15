@@ -1,13 +1,14 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
-import { ProtectedRoute } from './components/ProtectedRoute';
-import { NavBar } from './components/NavBar';
-import { EditorRoute } from './pages/EditorPage';
-import { LoginPage } from './pages/LoginPage';
-import { StagingPage } from './pages/StagingPage';
-import { GalleryPage } from './pages/GalleryPage';
-import { useUnsavedChangesGuard } from './hooks/useUnsavedChangesGuard'
-import { useEditorKeyboard } from './hooks/useEditorKeyboard'
+import { AuthProvider } from '@/context/AuthContext';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { NavBar } from '@/components/NavBar';
+import { EditorRoute } from '@/pages/EditorPage';
+import { LoginPage } from '@/pages/LoginPage';
+import { StagingPage } from '@/pages/StagingPage';
+import { GalleryPage } from '@/pages/GalleryPage';
+import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard'
+import { useEditorKeyboard } from '@/hooks/useEditorKeyboard'
+
 
 function App() {
 	useUnsavedChangesGuard();

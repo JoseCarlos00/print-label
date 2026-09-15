@@ -1,4 +1,4 @@
-import { useEditorStore } from '../../store/useEditorStore';
+import { useEditorStore } from '@/store/useEditorStore';
 
 type Buttons = {
 	type: 'text' | 'barcode' | 'qr';

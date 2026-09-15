@@ -1,7 +1,7 @@
 import type { TextAlign, TextElement } from 'shared';
 import { Field } from './Field';
 import { NumberField } from './NumberField';
-import { EDITOR_LIMITS } from '../../../config/editorLimits';
+import { EDITOR_LIMITS } from '@/config/editorLimits';
 
 const TEXT_ALIGNS: TextAlign[] = ['Left', 'Center', 'Right', 'Justify'];
 

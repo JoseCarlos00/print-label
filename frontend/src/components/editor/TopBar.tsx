@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import type { PrinterProfile, Template } from 'shared';
-import { useAuth } from '../../context/AuthContext';
-import { useEditorStore } from '../../store/useEditorStore';
-import { api, ApiError } from '../../api/client';
+import { useAuth } from '@/context/AuthContext';
+import { useEditorStore } from '@/store/useEditorStore';
+import { api, ApiError } from '@/api/client';
 import { SaveTemplateModal } from './SaveTemplateModal';
 
 interface TopBarProps {

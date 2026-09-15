@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { usePrinterProfiles } from '../hooks/usePrinterProfiles';
-import { useTemplates } from '../hooks/useTemplates';
-import { TemplateCard } from '../components/gallery/TemplateCard';
+import { useAuth } from '@/context/AuthContext';
+import { usePrinterProfiles } from '@/hooks/usePrinterProfiles';
+import { useTemplates } from '@/hooks/useTemplates';
+import { TemplateCard } from '@/components/gallery/TemplateCard';
 import { useState } from 'react';
 
 export function GalleryPage() {

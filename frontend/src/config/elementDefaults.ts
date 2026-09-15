@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import type { LabelElement, QrLabel } from 'shared';
-import type { ElementType } from '../store/editorStore.types';
+import type { ElementType } from '@/store/editorStore.types';
 
 export function createDefaultElement(type: ElementType, index: number): LabelElement {
 	// offset simple para que los elementos nuevos no queden todos apilados

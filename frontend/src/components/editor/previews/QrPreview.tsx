@@ -2,8 +2,8 @@ import type { QrElement } from 'shared';
 import { createQrBitmap } from 'shared/zpl';
 import { useEffect, useRef, useState } from 'react';
 import type { Font, GraphicBitmap } from 'shared/zpl';
-import { useEditorStore } from '../../../store/useEditorStore';
-import { mmToPx } from '../../../utils/scale';
+import { useEditorStore } from '@/store/useEditorStore';
+import { mmToPx } from '@/utils/scale';
 import { loadSwiss721 } from 'shared/zpl/font';
 
 const font = await loadSwiss721();

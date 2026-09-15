@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState, type PointerEvent } from 'react';
 import type { LabelElement } from 'shared';
-import { useEditorStore } from '../../store/useEditorStore';
-import { mmToPx, pxToMm } from '../../utils/scale';
+import { useEditorStore } from '@/store/useEditorStore';
+import { mmToPx, pxToMm } from '@/utils/scale';
 
 import { BarcodePreview } from './previews/BarcodePreview';
 import { QrPreview } from './previews/QrPreview';

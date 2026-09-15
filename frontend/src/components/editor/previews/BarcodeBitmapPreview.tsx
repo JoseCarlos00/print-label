@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react';
 import type { BarcodeElement } from 'shared';
 import type { Font, GraphicBitmap } from 'shared/zpl';
-import { useEditorStore } from '../../../store/useEditorStore';
-import { mmToPx } from '../../../utils/scale';
+import { useEditorStore } from '@/store/useEditorStore';
+import { mmToPx } from '@/utils/scale';
 
 import { loadSwiss721 } from 'shared/zpl/font';
 const font = await loadSwiss721();

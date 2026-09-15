@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useEditorStore } from '../store/useEditorStore';
+import { useEditorStore } from '@/store/useEditorStore';
 
 /**
  * Registra el diálogo nativo del navegador al cerrar/recargar la pestaña

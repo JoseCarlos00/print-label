@@ -1,9 +1,9 @@
 import { create } from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
 import type { LabelElement, PrinterProfile, Rotation, Template } from 'shared';
-import { createDefaultElement } from '../config/elementDefaults';
+import { createDefaultElement } from '@/config/elementDefaults';
 import type { EditorState, EditorStore } from './editorStore.types';
-import { savePrinterId } from '../utils/printerPreference'
+import { savePrinterId } from '@/utils/printerPreference'
 
 const ROTATIONS: Rotation[] = [0, 90, 180, 270];
 

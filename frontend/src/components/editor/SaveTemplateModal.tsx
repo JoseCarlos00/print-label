@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import type { CreateTemplateInput, Template, UpdateTemplateInput } from 'shared';
-import { useAuth } from '../../context/AuthContext';
-import { useEditorStore } from '../../store/useEditorStore';
-import { api, ApiError } from '../../api/client';
+import { useAuth } from '@/context/AuthContext';
+import { useEditorStore } from '@/store/useEditorStore';
+import { api, ApiError } from '@/api/client';
 
 interface SaveTemplateModalProps {
 	onClose: () => void;
