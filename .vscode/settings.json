@@ -4,21 +4,29 @@
     "barcodes",
     "bbox",
     "conversor",
+    "fontsource",
     "galeria",
+    "geist",
     "hardcodeado",
     "imprimible",
     "jsbarcode",
     "labelary",
     "Labelary",
     "multilínea",
+    "oklch",
     "qrcode",
     "Redibujar",
     "rendericen",
     "renderiza",
     "renderizan",
     "reseteamos",
+    "shadcn",
     "SYMBOLOGIES",
+    "tailwindcss",
     "usás",
     "uuidv"
-  ]
+  ],
+  "files.associations": {
+    "*.tailwind.css": "tailwindcss"
+  }
 }
