@@ -7,6 +7,7 @@ import { TextFields } from './TextFields'
 import { BarcodeFields } from './BarcodeFields'
 import { NumberField } from './NumberField'
 import { Field } from './Field';
+import { TextAreaField } from './TextAreaField'
 
 
 export function PropertiesPanel() {
@@ -102,16 +103,13 @@ export function PropertiesPanel() {
 				disabled={contentDisabled}
 				className='disabled:opacity-50'
 			>
-				<label className='block text-xs text-app-text-muted'>
-					Contenido
-					<textarea
-						ref={contentRef}
-						value={element.content}
-						onChange={(e) => update({ content: e.target.value })}
-						rows={2}
-						className='mt-1 w-full rounded-md border border-app-border bg-app-surface p-1 text-app-text'
-					/>
-				</label>
+				<TextAreaField
+					ref={contentRef}
+					label='Contenido'
+					value={element.content}
+					onChange={(content) => update({ content })}
+					rows={2}
+				/>
 			</fieldset>
 
 			<fieldset

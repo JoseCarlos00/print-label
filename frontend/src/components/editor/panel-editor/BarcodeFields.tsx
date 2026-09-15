@@ -1,6 +1,6 @@
 import type { BarcodeElement, Symbology } from 'shared';
 import { NumberField } from './NumberField'
-import { EDITOR_LIMITS } from '../../../utils/editorLimits'
+import { EDITOR_LIMITS } from '../../../config/editorLimits'
 import { Field } from './Field'
 
 const SYMBOLOGIES: Symbology[] = ['code128', 'ean13'];
@@ -45,7 +45,11 @@ export function BarcodeFields({
 				value={element.width}
 				min={EDITOR_LIMITS.dimensionMm.min}
 				max={EDITOR_LIMITS.dimensionMm.max}
-				onChange={(width) => onChange({ width })}
+				onChange={(width) => {
+					if (width !== undefined) {
+						onChange({ width });
+					}
+				}}
 			/>
 
 			<NumberField
@@ -53,14 +57,22 @@ export function BarcodeFields({
 				value={element.height}
 				min={EDITOR_LIMITS.dimensionMm.min}
 				max={EDITOR_LIMITS.dimensionMm.max}
-				onChange={(height) => onChange({ height })}
+				onChange={(height) => {
+					if (height !== undefined) {
+						onChange({ height });
+					}
+				}}
 			/>
 
-			<label className='flex items-center gap-2 text-xs text-app-text-muted'>
+			<label className='flex items-center gap-2 text-xs text-app-text-muted my-3 cursor-pointer'>
 				<input
 					type='checkbox'
 					checked={element.showText}
-					onChange={(e) => onChange({ showText: e.target.checked })}
+					onChange={(e) =>
+						onChange({
+							showText: e.target.checked,
+						})
+					}
 				/>
 				Mostrar texto legible
 			</label>

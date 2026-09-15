@@ -13,7 +13,7 @@ export function createDefaultElement(type: ElementType, index: number): LabelEle
 	};
 
 	const baseQrLabel: QrLabel = { 
-		fontSize: 5,
+		fontSize: 8,
 		visible: true 
 	};
 
