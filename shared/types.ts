@@ -47,6 +47,7 @@ export interface BarcodeElement extends BaseElement {
 	symbology: Symbology;
 	width: number; // mm
 	height: number; // mm
+	lockAspectRatio: boolean;
 	showText: boolean; // imprime el número legible debajo del código
 	fontSize?: number;
 }
@@ -66,7 +67,7 @@ export interface QrElement extends BaseElement {
 	content: string;
 	size: number; // tamaño deseado del QR en mm
 	errorCorrection?: QrErrorCorrection; // por defecto "M" si no se especifica
-	label?: QrLabel;
+	label: QrLabel;
 }
 
 /**

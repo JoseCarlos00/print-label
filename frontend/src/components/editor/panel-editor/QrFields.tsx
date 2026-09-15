@@ -12,9 +12,9 @@ export function QrFields({
 }) {
 	const label = element.label;
 
-	const labelVisible = label?.visible ?? false;
-	const customTextEnabled = label?.customText !== undefined;
-	const wrapEnabled = label?.wrapWidth !== undefined;
+	const labelVisible = label.visible ?? false;
+	const customTextEnabled = label.customText !== undefined;
+	const wrapEnabled = label.wrapWidth !== undefined;
 
 	const updateLabel = (changes: Partial<QrLabel>) => {
 		const base: QrLabel = label ?? {

@@ -11,6 +11,7 @@ interface NumberFieldProps {
 	step?: number;
 	placeholder?: string;
 	debounceMs?: number;
+	inputClassName?: string;
 }
 
 const DEFAULT_DEBOUNCE_MS = 120;
@@ -25,6 +26,7 @@ export function NumberField({
 	step = 1,
 	placeholder,
 	debounceMs = DEFAULT_DEBOUNCE_MS,
+	inputClassName,
 }: NumberFieldProps) {
 	const [inputValue, setInputValue] = useState(value === undefined ? '' : String(value));
 
@@ -129,7 +131,9 @@ export function NumberField({
 				onFocus={handleFocus}
 				onBlur={handleBlur}
 				onChange={(e) => setInputValue(e.target.value)}
-				className='mt-1 w-full rounded-md border border-app-border bg-app-surface p-1 text-app-text'
+				className={['mt-1 w-full rounded-md border border-app-border bg-app-surface p-1 text-app-text', inputClassName]
+					.filter(Boolean)
+					.join(' ')}
 			/>
 		</Field>
 	);

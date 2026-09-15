@@ -124,7 +124,7 @@ export function createQrBitmap(el: QrElement, dpi: number, font: Font): GraphicB
 
 	const qrBitmap = createQrGraphicBitmap(matrix, requestedSizeDots);
 
-	if (!el.label?.visible) {
+	if (!el.label.visible) {
 		return qrBitmap;
 	}
 

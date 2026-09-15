@@ -24,9 +24,9 @@ export function Toolbar() {
 					key={type}
 					disabled={positionLocked}
 					onClick={() => addElement(type)}
-					className='rounded-md border border-app-border px-2 py-1 text-left text-sm text-app-text hover:bg-app-surface disabled:opacity-50 cursor-pointer'
+					className='rounded-md border border-app-border px-2 py-1 text-left text-sm text-app-text enabled:cursor-pointer enabled:hover:bg-app-surface disabled:opacity-50'
 				>
-					+ {label} 
+					+ {label}
 				</button>
 			))}
 
