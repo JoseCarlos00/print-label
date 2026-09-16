@@ -8,7 +8,8 @@
 		"typecheck": "tsc",
 		"build": "npm run typecheck && node esbuild.config.js",
 		"start": "cross-env NODE_ENV=production node dist/server.js",
-		"dev": "cross-env NODE_ENV=development tsx watch server.ts"
+		"dev": "cross-env NODE_ENV=development tsx watch server.ts",
+		"type-check": "npx tsc --noEmit"
 	},
 	"keywords": [],
 	"author": "",
