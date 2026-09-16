@@ -69,20 +69,23 @@ function EditorPage() {
 				profiles={profiles}
 				profilesError={profilesError}
 			/>
-			<div className='flex flex-1 overflow-hidden'>
-				<Toolbar />
-				<Canvas loadError={loadError} />
 
-				{!mobilePanelOpen && (
-					<button
-						type='button'
-						onClick={() => setMobilePanelOpen(true)}
-						aria-label='Abrir panel de propiedades'
-						className='fixed bottom-4 right-4 z-30 flex size-11 items-center justify-center rounded-full bg-app-accent-500 text-app-accent-contrast shadow-lg active:bg-app-accent-700 lg:hidden'
-					>
-						<PanelRight className='size-5' />
-					</button>
-				)}
+			{!mobilePanelOpen && (
+				<button
+					type='button'
+					onClick={() => setMobilePanelOpen(true)}
+					aria-label='Abrir panel de propiedades'
+					className='fixed bottom-4 right-4 z-30 flex size-11 items-center justify-center rounded-full bg-app-accent-500 text-app-accent-contrast shadow-lg active:bg-app-accent-700 lg:hidden'
+				>
+					<PanelRight className='size-5' />
+				</button>
+			)}
+
+			<div className='flex flex-1 overflow-hidden'>
+				<main className='relative min-w-0 flex-1 overflow-hidden pl-8 sm:pl-0'>
+					<Toolbar />
+					<Canvas loadError={loadError} />
+				</main>
 
 				<EditorPanelTabs
 					mobileOpen={mobilePanelOpen}

@@ -137,7 +137,7 @@ export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeight
 					transform: `rotate(${element.rotation}deg)`,
 					cursor: draggable ? 'move' : 'default',
 				}}
-				className={`select-none ${isSelected ? 'outline-2 outline-app-accent-500' : ''}`}
+				className={`select-none ${draggable ? 'touch-none' : ''} ${isSelected ? 'outline-2 outline-app-accent-500' : ''}`}
 			>
 				<ElementPreview element={element} />
 

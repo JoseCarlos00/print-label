@@ -36,7 +36,7 @@ export function Canvas({ loadError }: CanvasProps) {
 				style={{ width: mmToPx(profile.widthMm), height: mmToPx(profile.heightMm) }}
 				className='relative border border-app-border bg-gray-300 zebra-font-emulated'
 			>
-				<div className='flex items-center gap-2 absolute -top-10 left-0'>
+				<div hidden className='flex items-center gap-2 absolute -top-10 left-0'>
 					<button
 						onClick={resetEditor}
 						disabled={elements.length === 0}
