@@ -1,5 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { PanelRight } from 'lucide-react';
 import { usePrinterProfiles } from '@/hooks/usePrinterProfiles';
 import { useTemplate } from '@/hooks/useTemplate';
 import { useEditorStore } from '@/store/useEditorStore';
@@ -18,6 +19,7 @@ export function EditorRoute() {
 
 function EditorPage() {
 	const { id } = useParams<{ id: string }>();
+	const [mobilePanelOpen, setMobilePanelOpen] = useState(false);
 
 	const { profiles, loading: loadingProfiles, error: profilesError } = usePrinterProfiles();
 	const { template, error: templateError } = useTemplate(id);
@@ -70,7 +72,22 @@ function EditorPage() {
 			<div className='flex flex-1 overflow-hidden'>
 				<Toolbar />
 				<Canvas loadError={loadError} />
-				<EditorPanelTabs />
+
+				{!mobilePanelOpen && (
+					<button
+						type='button'
+						onClick={() => setMobilePanelOpen(true)}
+						aria-label='Abrir panel de propiedades'
+						className='fixed bottom-4 right-4 z-30 flex size-11 items-center justify-center rounded-full bg-app-accent-500 text-app-accent-contrast shadow-lg active:bg-app-accent-700 lg:hidden'
+					>
+						<PanelRight className='size-5' />
+					</button>
+				)}
+
+				<EditorPanelTabs
+					mobileOpen={mobilePanelOpen}
+					onCloseMobile={() => setMobilePanelOpen(false)}
+				/>
 			</div>
 		</div>
 	);

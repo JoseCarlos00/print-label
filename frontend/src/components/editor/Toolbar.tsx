@@ -21,7 +21,7 @@ export function Toolbar() {
 	const disabled = positionLocked || !profile;
 
 	return (
-		<div className='flex w-12 shrink-0 flex-col items-stretch gap-1 border-r border-app-border p-2 sm:w-44'>
+		<div className='flex w-12 shrink-0 flex-col items-stretch gap-1 border-r border-app-border p-2 sm:mr-0 mr-6 sm:w-44'>
 			<p className='hidden text-[10px] font-medium uppercase text-app-text-muted sm:block'>Agregar</p>
 
 			{BUTTONS.map(({ type, label, icon: Icon }) => (
