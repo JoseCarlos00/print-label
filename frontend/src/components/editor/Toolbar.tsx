@@ -63,17 +63,20 @@ export function Toolbar() {
 			{/* Mobile */}
 			<div className='lg:hidden'>
 				<DropdownMenu>
-					<DropdownMenuTrigger asChild>
-						<Button
-							type='button'
-							disabled={disabled}
-							size='sm'
-							className='shadow-md'
-						>
-							<Plus />
-							Agregar
-						</Button>
-					</DropdownMenuTrigger>
+					<DropdownMenuTrigger
+						render=
+						{
+							<Button
+								type='button'
+								disabled={disabled}
+								size='sm'
+								className='shadow-md'
+							>
+								<Plus />
+								Agregar
+							</Button>
+						}
+					/>
 
 					<DropdownMenuContent align='center'>
 						{BUTTONS.map(({ type, label, icon: Icon }) => (

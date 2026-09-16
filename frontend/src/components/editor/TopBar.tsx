@@ -159,16 +159,18 @@ function LogoMenu() {
 	return (
 		<div className='flex items-center gap-2'>
 			<DropdownMenu>
-				<DropdownMenuTrigger asChild>
-					<Button
-						variant='ghost'
-						size='sm'
-						className='gap-1 px-2 text-sm font-semibold text-app-text'
-					>
-						PrintLabel
-						<ChevronDown className='size-3.5 text-app-text-muted' />
-					</Button>
-				</DropdownMenuTrigger>
+				<DropdownMenuTrigger
+					render={
+						<Button
+							variant='ghost'
+							size='sm'
+							className='gap-1 px-2 text-sm font-semibold text-app-text'
+						>
+							PrintLabel
+							<ChevronDown className='size-3.5 text-app-text-muted' />
+						</Button>
+					}
+				/>
 
 				<DropdownMenuContent align='start'>
 					<DropdownMenuItem onClick={() => navigate('/galeria')}>Galería</DropdownMenuItem>
