@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import type { LabelElement, Rotation, Template } from 'shared';
 import { createDefaultElement } from '@/config/elementDefaults';
 import type { EditorState, EditorStore } from './editorStore.types';
-import { savePrinterId } from '@/utils/printerPreference'
+import { removePrinterId, savePrinterId } from '@/utils/printerPreference'
 
 const ROTATIONS: Rotation[] = [0, 90, 180, 270];
 
@@ -43,7 +43,12 @@ export const useEditorStore = create<EditorStore>()((set, get) => ({
 	...initialState,
 
 	setProfile: (profile) => {
-		savePrinterId(profile.id);
+		if (profile) {
+			savePrinterId(profile.id);
+		} else {
+			removePrinterId();
+		}
+
 		set({ profile });
 	},
 

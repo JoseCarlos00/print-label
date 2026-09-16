@@ -15,3 +15,11 @@ export function savePrinterId(id: string): void {
 		// no-op: si falla, simplemente no persiste la preferencia
 	}
 }
+
+export function removePrinterId(): void {
+	try {
+		localStorage.removeItem(STORAGE_KEY);
+	} catch {
+		// no-op: si falla, simplemente no persiste la preferencia
+	}
+}
