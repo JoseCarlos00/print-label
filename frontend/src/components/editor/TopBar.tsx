@@ -1,12 +1,18 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronDown, LogIn, LogOut } from 'lucide-react';
+import { ChevronDown, LogIn, LogOut, Printer } from 'lucide-react';
+
 import type { PrinterProfile, Template } from 'shared';
+
 import { useAuth } from '@/context/AuthContext';
 import { useEditorStore } from '@/store/useEditorStore';
 import { api, ApiError } from '@/api/client';
+
 import { SaveTemplateModal } from './SaveTemplateModal';
+
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -15,6 +21,8 @@ import {
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 interface TopBarProps {
 	profiles: PrinterProfile[];
 	profilesError: string | null;
@@ -22,6 +30,7 @@ interface TopBarProps {
 
 export function TopBar({ profiles, profilesError }: TopBarProps) {
 	const { isAdmin } = useAuth();
+
 	const profile = useEditorStore((s) => s.profile);
 	const setProfile = useEditorStore((s) => s.setProfile);
 	const elements = useEditorStore((s) => s.elements);
@@ -30,10 +39,13 @@ export function TopBar({ profiles, profilesError }: TopBarProps) {
 	const loadedTemplateState = useEditorStore((s) => s.loadedTemplateState);
 
 	const [printState, setPrintState] = useState<'idle' | 'printing'>('idle');
+
 	const [printError, setPrintError] = useState<string | null>(null);
+
 	const [printSuccess, setPrintSuccess] = useState(false);
 
 	const [isSaveModalOpen, setSaveModalOpen] = useState(false);
+
 	const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
 	const handlePrint = async () => {
@@ -63,16 +75,20 @@ export function TopBar({ profiles, profilesError }: TopBarProps) {
 			updated: `Plantilla "${saved.name}" actualizada.`,
 			requested: `Solicitud enviada para "${saved.name}". Un admin debe aprobarla.`,
 		};
+
 		setSaveMessage(messages[mode]);
 	};
 
 	const isUpdating = isAdmin && Boolean(templateId) && loadedTemplateState === 'approved';
 
+	const canEdit = Boolean(profile) && elements.length > 0;
+
 	return (
-		<div className='flex flex-wrap items-center justify-between gap-2 border-b border-app-border p-2'>
-			<div className='flex items-center gap-3'>
+		<header className='flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-app-border p-2'>
+			<div className='flex min-w-0 items-center gap-3'>
 				<LogoMenu />
-				<h1 className='text-sm font-medium text-app-text-muted'>{templateName || 'Nueva etiqueta'}</h1>
+
+				<h1 className='truncate text-sm font-medium text-app-text-muted'>{templateName || 'Nueva etiqueta'}</h1>
 			</div>
 
 			<div className='flex items-center gap-2'>
@@ -86,34 +102,47 @@ export function TopBar({ profiles, profilesError }: TopBarProps) {
 					/>
 				)}
 
-				<button
+				<Button
+					type='button'
 					onClick={handlePrint}
-					disabled={printState === 'printing' || !profile || elements.length === 0}
-					className='rounded-md bg-app-accent-500 px-3 py-1.5 text-sm font-medium text-app-accent-contrast disabled:opacity-50 active:bg-app-accent-700 hover:bg-app-accent-700  cursor-pointer'
+					disabled={printState === 'printing' || !canEdit}
+					className='bg-app-accent-500 text-app-accent-contrast hover:bg-app-accent-700'
 				>
-					{printState === 'printing' ? 'Imprimiendo...' : 'Imprimir'}
-				</button>
+					<Printer />
+					<span className='hidden sm:inline'>{printState === 'printing' ? 'Imprimiendo...' : 'Imprimir'}</span>
+				</Button>
 
-				<button
+				<Button
+					type='button'
+					variant='outline'
 					onClick={() => setSaveModalOpen(true)}
-					disabled={!profile || elements.length === 0}
-					className='rounded-md border border-app-border px-3 py-1.5 text-sm font-medium text-app-text disabled:opacity-50 cursor-pointer hover:bg-app-surface'
+					disabled={!canEdit}
 				>
-					{isUpdating ? 'Actualizar plantilla' : isAdmin ? 'Guardar plantilla' : 'Solicitar plantilla'}
-				</button>
+					<span className='hidden sm:inline'>
+						{isUpdating ? 'Actualizar plantilla' : isAdmin ? 'Guardar plantilla' : 'Solicitar plantilla'}
+					</span>
+
+					<span className='sm:hidden'>{isUpdating ? 'Actualizar' : isAdmin ? 'Guardar' : 'Solicitar'}</span>
+				</Button>
 			</div>
 
-			{printSuccess && <p className='w-full text-sm text-green-400'>Enviado a {profile?.name}.</p>}
-			{printError && <p className='w-full text-sm text-red-400'>{printError}</p>}
+			{(printSuccess || printError || saveMessage) && (
+				<div className='w-full text-xs'>
+					{printSuccess && <p className='text-green-400'>Enviado a {profile?.name}.</p>}
 
-			{saveMessage && <p className='w-full text-sm text-green-400'>{saveMessage}</p>}
+					{printError && <p className='text-red-400'>{printError}</p>}
+
+					{saveMessage && <p className='text-green-400'>{saveMessage}</p>}
+				</div>
+			)}
+
 			{isSaveModalOpen && (
 				<SaveTemplateModal
 					onClose={() => setSaveModalOpen(false)}
 					onSaved={handleSaved}
 				/>
 			)}
-		</div>
+		</header>
 	);
 }
 
@@ -127,27 +156,37 @@ function LogoMenu() {
 	};
 
 	return (
-		<div className='flex flex-col items-start gap-1'>
+		<div className='flex items-center gap-2'>
 			<DropdownMenu>
-				<DropdownMenuTrigger className='flex items-center gap-1 text-sm font-semibold text-app-text cursor-pointer'>
-					PrintLabel
-					<ChevronDown className='size-3.5 text-app-text-muted' />
+				<DropdownMenuTrigger asChild>
+					<Button
+						variant='ghost'
+						size='sm'
+						className='gap-1 px-2 text-sm font-semibold text-app-text'
+					>
+						PrintLabel
+						<ChevronDown className='size-3.5 text-app-text-muted' />
+					</Button>
 				</DropdownMenuTrigger>
+
 				<DropdownMenuContent align='start'>
 					<DropdownMenuItem onClick={() => navigate('/galeria')}>Galería</DropdownMenuItem>
+
 					{isAdmin && <DropdownMenuItem onClick={() => navigate('/staging')}>Staging</DropdownMenuItem>}
+
 					<DropdownMenuSeparator />
+
 					{isAdmin ? (
 						<DropdownMenuItem
 							variant='destructive'
 							onClick={handleLogout}
 						>
-							<LogOut className='size-4' />
+							<LogOut />
 							Cerrar sesión
 						</DropdownMenuItem>
 					) : (
 						<DropdownMenuItem onClick={() => navigate('/login')}>
-							<LogIn className='size-4' />
+							<LogIn />
 							Login admin
 						</DropdownMenuItem>
 					)}
@@ -157,7 +196,7 @@ function LogoMenu() {
 			{isAdmin && (
 				<Badge
 					variant='outline'
-					className='border-amber-700 text-amber-400'
+					className='hidden border-amber-700 text-amber-400 sm:inline-flex'
 				>
 					Modo admin
 				</Badge>
@@ -173,74 +212,38 @@ interface PrinterSelectProps {
 }
 
 function PrinterSelect({ profiles, profile, setProfile }: PrinterSelectProps) {
-	const [open, setOpen] = useState(false);
-	const containerRef = useRef<HTMLDivElement>(null);
+	const handleChange = (profileId: string) => {
+		const selectedProfile = profiles.find((item) => item.id === profileId);
 
-	useEffect(() => {
-		const handleClickOutside = (e: MouseEvent) => {
-			if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-				setOpen(false);
-			}
-		};
-
-		document.addEventListener('mousedown', handleClickOutside);
-		return () => document.removeEventListener('mousedown', handleClickOutside);
-	}, []);
+		if (selectedProfile) {
+			setProfile(selectedProfile);
+		}
+	};
 
 	return (
-		<div
-			ref={containerRef}
-			className='relative'
+		<Select
+			value={profile?.id}
+			onValueChange={handleChange}
+			disabled={profiles.length === 0}
 		>
-			<button
-				type='button'
-				onClick={() => setOpen((value) => !value)}
-				className='flex min-w-48 items-center justify-between gap-1 rounded-md border border-app-border bg-app-surface px-2 py-1 text-left text-app-text cursor-pointer'
-			>
-				<div className='min-w-0'>
-					<div className='truncate text-sm'>{profile?.name ?? 'Seleccionar impresora'}</div>
-					{profile?.ip && <div className='text-[10px] text-app-text-muted'>{profile.label}</div>}
-				</div>
+			<SelectTrigger className='w-36 sm:w-48'>
+				<SelectValue placeholder='Seleccionar impresora' />
+			</SelectTrigger>
 
-				<span className='text-xs text-app-text-muted'>
-					<svg
-						className={`size-4 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
-						xmlns='http://www.w3.org/2000/svg'
-						viewBox='0 0 320 512'
+			<SelectContent>
+				{profiles.map((item) => (
+					<SelectItem
+						key={item.id}
+						value={item.id}
 					>
-						<path
-							fill='currentColor'
-							d='M140.3 376.8c12.6 10.2 31.1 9.5 42.8-2.2l128-128c9.2-9.2 11.9-22.9 6.9-34.9S301.4 192 288.5 192l-256 0c-12.9 0-24.6 7.8-29.6 19.8S.7 237.5 9.9 246.6l128 128 2.4 2.2z'
-						/>
-					</svg>
-				</span>
-			</button>
+						<div className='flex min-w-0 flex-col'>
+							<span className='truncate'>{item.name}</span>
 
-			<div
-				className={`
-				absolute left-0 top-full z-50 mt-1 max-h-120 w-full
-				overflow-y-auto thin-scrollbar rounded-md border border-app-border 
-				bg-app-surface shadow-lg
-				transition-[opacity,transform,visibility]
-				duration-200 ease-out
-				${open ? 'visible translate-y-0 opacity-100' : 'invisible -translate-y-1 opacity-0 pointer-events-none'}
-			`}
-			>
-				{profiles.map((p) => (
-					<button
-						key={p.id}
-						type='button'
-						onClick={() => {
-							setProfile(p);
-							setOpen(false);
-						}}
-						className='w-full px-3 py-2 text-left hover:bg-app-border cursor-pointer'
-					>
-						<div className='text-sm text-app-text'>{p.name}</div>
-						<div className='text-[10px] text-app-text-muted'>{p.label}</div>
-					</button>
+							<span className='truncate text-[10px] text-app-text-muted'>{item.label}</span>
+						</div>
+					</SelectItem>
 				))}
-			</div>
-		</div>
+			</SelectContent>
+		</Select>
 	);
 }

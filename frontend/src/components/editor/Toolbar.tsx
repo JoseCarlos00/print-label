@@ -42,7 +42,7 @@ export function Toolbar() {
 	const disabled = positionLocked || !profile;
 
 	return (
-		<div className='absolute left-3 top-3'>
+		<div className='absolute left-3 top-2'>
 			{/* Desktop */}
 			<div className='hidden items-start gap-1 rounded-lg border border-app-border bg-app-surface p-1 shadow-md lg:flex lg:flex-col'>
 				{BUTTONS.map(({ type, label, icon: Icon }) => (
