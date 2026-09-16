@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import type { EditorStore } from '@/store/editorStore.types'
 
 interface TopBarProps {
 	profiles: PrinterProfile[];
@@ -205,24 +206,21 @@ function LogoMenu() {
 	);
 }
 
-interface PrinterSelectProps {
+interface PrinterSelectProps extends Pick<EditorStore, 'setProfile'> {
 	profiles: PrinterProfile[];
 	profile: PrinterProfile | null;
-	setProfile: (profile: PrinterProfile) => void;
 }
 
 function PrinterSelect({ profiles, profile, setProfile }: PrinterSelectProps) {
-	const handleChange = (profileId: string) => {
+	const handleChange = (profileId: string | null) => {
 		const selectedProfile = profiles.find((item) => item.id === profileId);
 
-		if (selectedProfile) {
-			setProfile(selectedProfile);
-		}
+		setProfile(selectedProfile ?? null);
 	};
 
 	return (
 		<Select
-			value={profile?.id}
+			value={profile?.name ?? ''}
 			onValueChange={handleChange}
 			disabled={profiles.length === 0}
 		>

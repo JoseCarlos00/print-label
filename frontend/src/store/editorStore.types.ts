@@ -30,7 +30,7 @@ export interface EditorState {
 }
 
 export interface EditorActions {
-	setProfile: (profile: PrinterProfile) => void;
+	setProfile: (profile: PrinterProfile | null) => void;
 	addElement: (type: ElementType) => void;
 	updateElement: (id: string, changes: Partial<LabelElement>) => void;
 	removeElement: (id: string) => void;
