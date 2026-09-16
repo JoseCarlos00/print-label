@@ -20,8 +20,14 @@ export function TextFields({
 	return (
 		<>
 			<div className='mb-3 flex items-center justify-between'>
-				<Label className='text-xs font-normal text-app-text-muted'>Negrita</Label>
+				<Label
+					htmlFor='enableTextBold'
+					className='text-xs font-normal text-app-text-muted w-full cursor-pointer'
+				>
+					Negrita
+				</Label>
 				<Switch
+					id='enableTextBold'
 					checked={element.bold}
 					onCheckedChange={(bold) => onChange({ bold })}
 				/>
@@ -38,8 +44,14 @@ export function TextFields({
 			/>
 
 			<div className='my-3 flex items-center justify-between'>
-				<Label className='text-xs font-normal text-app-text-muted'>Ajustar ancho del texto</Label>
+				<Label
+					htmlFor='wrapTextEnabled'
+					className='text-xs font-normal text-app-text-muted w-full cursor-pointer'
+				>
+					Ajustar ancho del texto
+				</Label>
 				<Switch
+					id='wrapTextEnabled'
 					checked={wrapEnabled}
 					onCheckedChange={(checked) => onChange({ wrapWidth: checked ? 50 : undefined })}
 				/>

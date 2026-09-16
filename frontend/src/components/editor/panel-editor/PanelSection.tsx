@@ -26,7 +26,7 @@ export function PanelSection({ title, icon, children, defaultOpen = true }: Pane
 				</span>
 				<ChevronDown className={cn('size-3.5 text-app-text-muted transition-transform', open && 'rotate-180')} />
 			</CollapsibleTrigger>
-			<CollapsibleContent className='space-y-2 px-3 pb-3'>{children}</CollapsibleContent>
+			<CollapsibleContent className='space-y-2 px-3 pb-3 text-sm'>{children}</CollapsibleContent>
 		</Collapsible>
 	);
 }

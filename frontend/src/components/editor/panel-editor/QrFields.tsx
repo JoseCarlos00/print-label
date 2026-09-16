@@ -4,6 +4,7 @@ import { NumberField } from './NumberField';
 import { EDITOR_LIMITS } from '@/config/editorLimits';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 
 export function QrFields({
 	element,
@@ -26,7 +27,7 @@ export function QrFields({
 	return (
 		<>
 			<NumberField
-				label='Tamaño (factor)'
+				label='Tamaño (mm)'
 				value={element.size}
 				min={EDITOR_LIMITS.qrSizeMm.min}
 				max={EDITOR_LIMITS.qrSizeMm.max}
@@ -36,8 +37,14 @@ export function QrFields({
 			/>
 
 			<div className='my-3 flex items-center justify-between'>
-				<Label className='text-xs font-normal text-app-text-muted'>Mostrar etiqueta con el contenido</Label>
+				<Label
+					htmlFor='showQrLabel'
+					className='text-xs font-normal text-app-text-muted w-full cursor-pointer'
+				>
+					Mostrar etiqueta con el contenido
+				</Label>
 				<Switch
+					id='showQrLabel'
 					checked={labelVisible}
 					onCheckedChange={(visible) => updateLabel({ visible })}
 				/>
@@ -55,8 +62,14 @@ export function QrFields({
 			/>
 
 			<div className='my-3 flex items-center justify-between opacity-100 data-disabled:opacity-55'>
-				<Label className='text-xs font-normal text-app-text-muted'>Usar texto personalizado</Label>
+				<Label
+					htmlFor='customQrLabel'
+					className='text-xs font-normal text-app-text-muted w-full cursor-pointer'
+				>
+					Usar texto personalizado
+				</Label>
 				<Switch
+					id='customQrLabel'
 					checked={customTextEnabled}
 					disabled={!labelVisible}
 					onCheckedChange={(checked) => updateLabel({ customText: checked ? '' : undefined })}
@@ -67,7 +80,7 @@ export function QrFields({
 				label='Texto de la etiqueta'
 				disabled={!labelVisible || !customTextEnabled}
 			>
-				<input
+				<Input
 					type='text'
 					value={label?.customText ?? ''}
 					disabled={!labelVisible || !customTextEnabled}
@@ -77,8 +90,14 @@ export function QrFields({
 			</Field>
 
 			<div className='my-3 flex items-center justify-between'>
-				<Label className='text-xs font-normal text-app-text-muted'>Ajustar ancho del texto</Label>
+				<Label
+					htmlFor='wrapQrEnabled'
+					className='text-xs font-normal text-app-text-muted w-full cursor-pointer'
+				>
+					Ajustar ancho del texto
+				</Label>
 				<Switch
+					id='wrapQrEnabled'
 					checked={wrapEnabled}
 					disabled={!labelVisible}
 					onCheckedChange={(checked) => updateLabel({ wrapWidth: checked ? 50 : undefined })}

@@ -84,20 +84,30 @@ export function BarcodeFields({
 				/>
 			</div>
 
-			<div className='flex items-center justify-between'>
-				<Label className='flex items-center gap-1.5 text-xs font-normal text-app-text-muted'>
+			<div className='my-3 flex items-center justify-between'>
+				<Label
+					htmlFor='blockBarcodeRelationAspect'
+					className='flex items-center gap-1.5 text-xs font-normal text-app-text-muted w-full cursor-pointer'
+				>
 					{element.lockAspectRatio ? <Lock className='size-3' /> : <LockOpen className='size-3' />}
 					Bloquear relación de aspecto
 				</Label>
 				<Switch
+					id='blockBarcodeRelationAspect'
 					checked={element.lockAspectRatio}
 					onCheckedChange={(lockAspectRatio) => onChange({ lockAspectRatio })}
 				/>
 			</div>
 
-			<div className='flex items-center justify-between'>
-				<Label className='text-xs font-normal text-app-text-muted'>Mostrar texto legible</Label>
+			<div className='my-3 flex items-center justify-between'>
+				<Label
+					htmlFor='showBarcodeText'
+					className='text-xs font-normal text-app-text-muted w-full cursor-pointer'
+				>
+					Mostrar texto legible
+				</Label>
 				<Switch
+					id='showBarcodeText'
 					checked={element.showText}
 					onCheckedChange={(showText) => onChange({ showText })}
 				/>
