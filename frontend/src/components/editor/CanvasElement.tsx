@@ -201,7 +201,7 @@ function ActionsButtons({ element, actions }: ActionsButtonsProps) {
 					e.stopPropagation();
 					actions.rotateElement(element.id);
 				}}
-				className='rounded px-1.5 text-xs hover:bg-app-border'
+				className='rounded px-1.5 text-xs hover:bg-app-border cursor-pointer'
 			>
 				⟳
 			</button>
@@ -212,7 +212,7 @@ function ActionsButtons({ element, actions }: ActionsButtonsProps) {
 					e.stopPropagation();
 					actions.duplicateElement(element.id);
 				}}
-				className='rounded px-1.5 text-xs hover:bg-app-border'
+				className='rounded px-1.5 text-xs hover:bg-app-border cursor-pointer'
 			>
 				⧉
 			</button>
@@ -223,7 +223,7 @@ function ActionsButtons({ element, actions }: ActionsButtonsProps) {
 					e.stopPropagation();
 					actions.removeElement(element.id);
 				}}
-				className='rounded px-1.5 text-xs text-red-400 hover:bg-app-border'
+				className='rounded px-1.5 text-xs text-red-400 hover:bg-app-border cursor-pointer'
 			>
 				✕
 			</button>

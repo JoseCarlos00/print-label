@@ -215,7 +215,7 @@ interface PrinterSelectProps extends Pick<EditorStore, 'setProfile'> {
 
 function PrinterSelect({ profiles, profile, setProfile }: PrinterSelectProps) {
 	const handleChange = (profileId: string | null) => {
-		const selectedProfile = profiles.find((item) => item.id === profileId);
+		const selectedProfile = profiles.find((item) => item.name === profileId);
 
 		setProfile(selectedProfile ?? null);
 	};
@@ -233,13 +233,13 @@ function PrinterSelect({ profiles, profile, setProfile }: PrinterSelectProps) {
 			<SelectContent>
 				{profiles.map((item) => (
 					<SelectItem
-						key={item.id}
-						value={item.id}
+						key={item.name}
+						value={item.name}
 					>
 						<div className='flex min-w-0 flex-col'>
 							<span className='truncate'>{item.name}</span>
 
-							<span className='truncate text-[10px] text-app-text-muted'>{item.label}</span>
+							<span className='truncate text-[11px] text-app-text-muted'>{item.label}</span>
 						</div>
 					</SelectItem>
 				))}
