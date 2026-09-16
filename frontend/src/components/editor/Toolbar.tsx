@@ -46,7 +46,7 @@ export function Toolbar() {
   return (
 		<div className='absolute left-3 top-2'>
 			{/* Desktop */}
-			<div className='hidden items-start rounded-lg border border-app-border bg-app-surface p-1 shadow-md lg:flex lg:flex-col'>
+			<div className='w-20 hidden items-start rounded-lg border border-app-border bg-app-surface p-1 shadow-md lg:flex lg:flex-col'>
 				{BUTTONS.map(({ type, label, icon: Icon }, index) => (
 					<React.Fragment key={type}>
 						<button
@@ -54,9 +54,9 @@ export function Toolbar() {
 							disabled={disabled}
 							onClick={() => addElement(type)}
 							title={label}
-							className='flex cursor-pointer w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-app-text transition-colors hover:bg-app-bg disabled:pointer-events-none disabled:opacity-50'
+							className='flex flex-col items-center cursor-pointer w-full gap-2 rounded-md px-0.5 py-2 text-xs text-app-text transition-colors hover:bg-app-bg disabled:pointer-events-none disabled:opacity-50'
 						>
-							<Icon className='size-4' />
+							<Icon className='size-5' />
 							<span>{label}</span>
 						</button>
 
