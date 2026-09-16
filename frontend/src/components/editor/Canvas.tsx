@@ -2,15 +2,32 @@ import { useEditorStore } from '@/store/useEditorStore';
 import { CanvasElement } from './CanvasElement';
 import { mmToPx } from '@/utils/scale';
 
-export function Canvas() {
+interface CanvasProps {
+	loadError?: string | null;
+}
+
+export function Canvas({ loadError }: CanvasProps) {
 	const profile = useEditorStore((s) => s.profile);
 	const elements = useEditorStore((s) => s.elements);
 	const selectedElementId = useEditorStore((s) => s.selectedElementId);
 	const selectElement = useEditorStore((s) => s.selectElement);
 	const resetEditor = useEditorStore((s) => s.resetEditor);
 
+	if (loadError) {
+		return (
+			<div className='flex flex-1 items-center justify-center bg-app-bg p-8'>
+				<p className='text-sm text-red-400'>{loadError}</p>
+			</div>
+		);
+	}
 
-	if (!profile) return null;
+	if (!profile) {
+		return (
+			<div className='flex flex-1 items-center justify-center bg-app-bg p-8'>
+				<p className='text-sm text-app-text-muted'>Cargando lienzo...</p>
+			</div>
+		);
+	}
 
 	return (
 		<div className='flex min-w-0 flex-1 flex-col items-center justify-center bg-app-bg p-8 overflow-auto thin-scrollbar'>

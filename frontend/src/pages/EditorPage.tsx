@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { usePrinterProfiles } from '@/hooks/usePrinterProfiles';
 import { useTemplate } from '@/hooks/useTemplate';
@@ -7,18 +7,10 @@ import { getSavedPrinterId } from '@/utils/printerPreference';
 import { TopBar } from '@/components/editor/TopBar';
 import { Toolbar } from '@/components/editor/Toolbar';
 import { Canvas } from '@/components/editor/Canvas';
-import { PropertiesPanel } from '@/components/editor/panel-editor/PropertiesPanel';
-import { QuickTemplatesPanel } from '@/components/editor/QuickTemplatesPanel'
-
+import { EditorPanelTabs } from '@/components/editor/EditorPanelTabs';
 
 // Wrapper que fuerza un remount COMPLETO de EditorPage cada vez que cambia
 // el :id de la ruta (incluido pasar de "sin id" a "con id" o viceversa).
-// Sin esto, al navegar entre rutas hermanas que renderizan el mismo
-// componente (`/` y `/editor/:id`), React reutiliza la instancia existente
-// en vez de montarla de nuevo — y como el store de Zustand vive afuera del
-// ciclo de vida de React, eso puede dejar una carrera entre el render viejo
-// y los efectos que todavía no corrieron. Forzar el remount con `key`
-// elimina esa clase entera de bugs de timing.
 export function EditorRoute() {
 	const { id } = useParams<{ id: string }>();
 	return <EditorPage key={id ?? 'new'} />;
@@ -28,9 +20,7 @@ function EditorPage() {
 	const { id } = useParams<{ id: string }>();
 
 	const { profiles, loading: loadingProfiles, error: profilesError } = usePrinterProfiles();
-	const { template, loading: loadingTemplate, error: templateError } = useTemplate(id);
-
-	const [fallbackProfileId, setFallbackProfileId] = useState<string>('');
+	const { template, error: templateError } = useTemplate(id);
 
 	const profile = useEditorStore((s) => s.profile);
 	const templateId = useEditorStore((s) => s.templateId);
@@ -43,90 +33,44 @@ function EditorPage() {
 	useEffect(() => {
 		if (templateId !== (id ?? null)) {
 			resetEditor();
-			setFallbackProfileId('');
 		}
 	}, [id, templateId, resetEditor]);
 
-	const matchingProfile = useMemo(
-		() => (template ? profiles.find((p) => p.id === template.profileId) : undefined),
-		[template, profiles],
-	);
-
-	const needsProfileSelection = Boolean(id && template && profiles.length > 0 && !matchingProfile && !profile);
-
-	// Caso: plantilla existente cuya impresora SÍ está disponible -> carga directa
+	// El perfil/impresora es una preferencia del LIENZO, independiente de
+	// qué plantilla esté cargada: se define una sola vez (preferencia
+	// guardada en localStorage, o el primero disponible) y abrir una
+	// plantilla nunca lo pisa. Corre tanto en editor nuevo como en uno
+	// con :id.
 	useEffect(() => {
-		if (!id || !template || !matchingProfile || profile) return;
-		loadTemplate(template, matchingProfile);
-	}, [id, template, matchingProfile, profile, loadTemplate]);
-
-	// Caso: editor en blanco -> perfil guardado en localStorage, o el primero
-	useEffect(() => {
-		if (id || loadingProfiles || profiles.length === 0 || profile) return;
+		if (loadingProfiles || profiles.length === 0 || profile) return;
 		const savedId = getSavedPrinterId();
 		const defaultProfile = profiles.find((p) => p.id === savedId) ?? profiles[0];
 		setProfile(defaultProfile!);
-	}, [id, loadingProfiles, profiles, profile, setProfile]);
+	}, [loadingProfiles, profiles, profile, setProfile]);
 
-	const handleConfirmFallbackProfile = () => {
-		const chosen = profiles.find((p) => p.id === fallbackProfileId);
-		if (chosen && template) loadTemplate(template, chosen);
-	};
+	// Carga los elements de la plantilla apenas llegan, sin esperar al
+	// perfil y sin tocarlo.
+	useEffect(() => {
+		if (!id || !template || templateId === template.id) return;
+		loadTemplate(template);
+	}, [id, template, templateId, loadTemplate]);
 
-	if (loadingProfiles || (id && loadingTemplate)) {
-		return <p className='p-6 text-sm text-app-text-muted'>Cargando editor...</p>;
-	}
-
-	if (profilesError) return <p className='p-6 text-sm text-red-400'>{profilesError}</p>;
-	if (id && templateError) return <p className='p-6 text-sm text-red-400'>{templateError}</p>;
-
-	if (needsProfileSelection) {
-		return (
-			<div className='mx-auto mt-20 max-w-sm space-y-4 p-6'>
-				<p className='text-sm text-amber-300'>
-					La impresora original de esta plantilla ya no está disponible. Elegí una impresora para continuar editando "
-					{template!.name}".
-				</p>
-				<select
-					className='w-full rounded-md border border-app-border bg-app-surface p-2 text-app-text'
-					value={fallbackProfileId}
-					onChange={(e) => setFallbackProfileId(e.target.value)}
-				>
-					<option
-						value=''
-						disabled
-					>
-						Selecciona una impresora
-					</option>
-					{profiles.map((p) => (
-						<option
-							key={p.id}
-							value={p.id}
-						>
-							{p.name} ({p.ip})
-						</option>
-					))}
-				</select>
-				<button
-					disabled={!fallbackProfileId}
-					onClick={handleConfirmFallbackProfile}
-					className='rounded-md bg-app-accent-500 px-3 py-1.5 text-sm font-medium text-app-accent-contrast disabled:opacity-50'
-				>
-					Continuar
-				</button>
-			</div>
-		);
-	}
+	// Prioridad: si estamos viendo una plantilla puntual y falló, ese es
+	// el error relevante. Si no, y encima no hay NINGÚN perfil activo,
+	// mostramos el error de impresoras (si ya hay un perfil activo de
+	// antes, un error transitorio de refetch no debería tapar el lienzo).
+	const loadError = id ? templateError : !profile ? profilesError : null;
 
 	return (
 		<div className='flex h-full flex-col'>
-			<TopBar profiles={profiles} />
-			<Toolbar />
-
+			<TopBar
+				profiles={profiles}
+				profilesError={profilesError}
+			/>
 			<div className='flex flex-1 overflow-hidden'>
-				<QuickTemplatesPanel />
-				<Canvas />
-				<PropertiesPanel />
+				<Toolbar />
+				<Canvas loadError={loadError} />
+				<EditorPanelTabs />
 			</div>
 		</div>
 	);

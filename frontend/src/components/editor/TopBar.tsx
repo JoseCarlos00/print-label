@@ -1,15 +1,26 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ChevronDown, LogIn, LogOut } from 'lucide-react';
 import type { PrinterProfile, Template } from 'shared';
 import { useAuth } from '@/context/AuthContext';
 import { useEditorStore } from '@/store/useEditorStore';
 import { api, ApiError } from '@/api/client';
 import { SaveTemplateModal } from './SaveTemplateModal';
+import { Badge } from '@/components/ui/badge';
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface TopBarProps {
 	profiles: PrinterProfile[];
+	profilesError: string | null;
 }
 
-export function TopBar({ profiles }: TopBarProps) {
+export function TopBar({ profiles, profilesError }: TopBarProps) {
 	const { isAdmin } = useAuth();
 	const profile = useEditorStore((s) => s.profile);
 	const setProfile = useEditorStore((s) => s.setProfile);
@@ -59,16 +70,21 @@ export function TopBar({ profiles }: TopBarProps) {
 
 	return (
 		<div className='flex flex-wrap items-center justify-between gap-2 border-b border-app-border p-2'>
-			<h1 className='text-lg font-semibold'>{templateName || 'Nueva etiqueta'}</h1>
+			<div className='flex items-center gap-3'>
+				<LogoMenu />
+				<h1 className='text-sm font-medium text-app-text-muted'>{templateName || 'Nueva etiqueta'}</h1>
+			</div>
 
 			<div className='flex items-center gap-2'>
-				<label className='flex items-center gap-2 text-sm text-app-text-muted'>
+				{profilesError ? (
+					<p className='text-xs text-red-400'>{profilesError}</p>
+				) : (
 					<PrinterSelect
 						profiles={profiles}
 						profile={profile}
 						setProfile={setProfile}
 					/>
-				</label>
+				)}
 
 				<button
 					onClick={handlePrint}
@@ -101,6 +117,55 @@ export function TopBar({ profiles }: TopBarProps) {
 	);
 }
 
+function LogoMenu() {
+	const { isAdmin, logout } = useAuth();
+	const navigate = useNavigate();
+
+	const handleLogout = async () => {
+		await logout();
+		navigate('/');
+	};
+
+	return (
+		<div className='flex flex-col items-start gap-1'>
+			<DropdownMenu>
+				<DropdownMenuTrigger className='flex items-center gap-1 text-sm font-semibold text-app-text cursor-pointer'>
+					PrintLabel
+					<ChevronDown className='size-3.5 text-app-text-muted' />
+				</DropdownMenuTrigger>
+				<DropdownMenuContent align='start'>
+					<DropdownMenuItem onClick={() => navigate('/galeria')}>Galería</DropdownMenuItem>
+					{isAdmin && <DropdownMenuItem onClick={() => navigate('/staging')}>Staging</DropdownMenuItem>}
+					<DropdownMenuSeparator />
+					{isAdmin ? (
+						<DropdownMenuItem
+							variant='destructive'
+							onClick={handleLogout}
+						>
+							<LogOut className='size-4' />
+							Cerrar sesión
+						</DropdownMenuItem>
+					) : (
+						<DropdownMenuItem onClick={() => navigate('/login')}>
+							<LogIn className='size-4' />
+							Login admin
+						</DropdownMenuItem>
+					)}
+				</DropdownMenuContent>
+			</DropdownMenu>
+
+			{isAdmin && (
+				<Badge
+					variant='outline'
+					className='border-amber-700 text-amber-400'
+				>
+					Modo admin
+				</Badge>
+			)}
+		</div>
+	);
+}
+
 interface PrinterSelectProps {
 	profiles: PrinterProfile[];
 	profile: PrinterProfile | null;
@@ -109,22 +174,18 @@ interface PrinterSelectProps {
 
 function PrinterSelect({ profiles, profile, setProfile }: PrinterSelectProps) {
 	const [open, setOpen] = useState(false);
+	const containerRef = useRef<HTMLDivElement>(null);
 
-		const containerRef = useRef<HTMLDivElement>(null);
+	useEffect(() => {
+		const handleClickOutside = (e: MouseEvent) => {
+			if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+				setOpen(false);
+			}
+		};
 
-		useEffect(() => {
-			const handleClickOutside = (e: MouseEvent) => {
-				if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-					setOpen(false);
-				}
-			};
-
-			document.addEventListener('mousedown', handleClickOutside);
-
-			return () => {
-				document.removeEventListener('mousedown', handleClickOutside);
-			};
-		}, []);
+		document.addEventListener('mousedown', handleClickOutside);
+		return () => document.removeEventListener('mousedown', handleClickOutside);
+	}, []);
 
 	return (
 		<div
@@ -138,7 +199,6 @@ function PrinterSelect({ profiles, profile, setProfile }: PrinterSelectProps) {
 			>
 				<div className='min-w-0'>
 					<div className='truncate text-sm'>{profile?.name ?? 'Seleccionar impresora'}</div>
-
 					{profile?.ip && <div className='text-[10px] text-app-text-muted'>{profile.label}</div>}
 				</div>
 
@@ -177,7 +237,6 @@ function PrinterSelect({ profiles, profile, setProfile }: PrinterSelectProps) {
 						className='w-full px-3 py-2 text-left hover:bg-app-border cursor-pointer'
 					>
 						<div className='text-sm text-app-text'>{p.name}</div>
-
 						<div className='text-[10px] text-app-text-muted'>{p.label}</div>
 					</button>
 				))}

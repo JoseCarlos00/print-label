@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
-import type { LabelElement, PrinterProfile, Rotation, Template } from 'shared';
+import type { LabelElement, Rotation, Template } from 'shared';
 import { createDefaultElement } from '@/config/elementDefaults';
 import type { EditorState, EditorStore } from './editorStore.types';
 import { savePrinterId } from '@/utils/printerPreference'
@@ -103,14 +103,13 @@ export const useEditorStore = create<EditorStore>()((set, get) => ({
 
 	setTemplateMeta: (meta) => set(meta),
 
-	loadTemplate: (template: Template, profile: PrinterProfile) =>
+	loadTemplate: (template: Template) =>
 		set({
 			templateId: template.id,
 			templateName: template.name,
 			isPublic: template.public,
 			positionLocked: template.positionLocked,
 			loadedTemplateState: template.state,
-			profile,
 			elements: template.elements,
 			selectedElementId: null,
 		}),

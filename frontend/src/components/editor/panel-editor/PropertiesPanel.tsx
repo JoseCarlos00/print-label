@@ -37,7 +37,7 @@ export function PropertiesPanel() {
 
 	if (!selectedElementId || !element) {
 		return (
-			<div className='w-70 border-l border-app-border p-4'>
+			<div className='p-4'>
 				<p className='text-sm text-app-text-muted'>Selecciona un elemento para editar sus propiedades.</p>
 			</div>
 		);
@@ -47,7 +47,7 @@ export function PropertiesPanel() {
 	const Icon = TYPE_ICON[element.type];
 
 	return (
-		<div className='flex w-70 flex-col gap-3 overflow-y-auto border-l border-app-border p-3 thin-scrollbar'>
+		<div className='flex flex-col gap-3 overflow-y-auto p-3 thin-scrollbar'>
 			<div className='flex items-center gap-2 rounded-md border border-app-border bg-app-surface px-3 py-2'>
 				<Icon className='size-4 text-app-accent-500' />
 				<span className='text-sm font-medium text-app-text'>{TYPE_LABEL[element.type]}</span>

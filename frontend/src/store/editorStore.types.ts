@@ -39,7 +39,7 @@ export interface EditorActions {
 	toggleElementLock: (id: string) => void;
 	selectElement: (id: string | null) => void;
 	setTemplateMeta: (meta: Partial<Pick<EditorState, 'templateName' | 'isPublic' | 'positionLocked'>>) => void;
-	loadTemplate: (template: Template, profile: PrinterProfile) => void;
+	loadTemplate: (template: Template) => void;
 	resetEditor: () => void;
 	requestContentFocus: () => void;
 	copyElement: (id: string) => void;

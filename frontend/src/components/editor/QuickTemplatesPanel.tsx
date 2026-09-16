@@ -12,7 +12,7 @@ export function QuickTemplatesPanel() {
 	};
 
 	return (
-		<div className='flex w-56 shrink-0 flex-col gap-2 overflow-y-auto border-r border-app-border p-4'>
+		<div className='flex flex-col gap-2 overflow-y-auto p-4'>
 			<div className='flex items-center justify-between'>
 				<p className='text-xs font-medium uppercase text-app-text-muted'>Plantillas</p>
 				<Link
