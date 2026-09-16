@@ -1,62 +1,68 @@
+import React from 'react';
 import { Barcode, Plus, QrCode, Type, type LucideIcon } from 'lucide-react';
 
 import { useEditorStore } from '@/store/useEditorStore';
 import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 
 interface ToolbarButton {
-	type: 'text' | 'barcode' | 'qr';
-	label: string;
-	icon: LucideIcon;
+  type: 'text' | 'barcode' | 'qr';
+  label: string;
+  icon: LucideIcon;
 }
 
 const BUTTONS: ToolbarButton[] = [
-	{
-		type: 'text',
-		label: 'Texto',
-		icon: Type,
-	},
-	{
-		type: 'barcode',
-		label: 'Código de barras',
-		icon: Barcode,
-	},
-	{
-		type: 'qr',
-		label: 'Código QR',
-		icon: QrCode,
-	},
+  {
+    type: 'text',
+    label: 'Texto',
+    icon: Type,
+  },
+  {
+    type: 'barcode',
+    label: 'Código de barras',
+    icon: Barcode,
+  },
+  {
+    type: 'qr',
+    label: 'Código QR',
+    icon: QrCode,
+  },
 ];
 
 export function Toolbar() {
-	const addElement = useEditorStore((s) => s.addElement);
-	const positionLocked = useEditorStore((s) => s.positionLocked);
-	const profile = useEditorStore((s) => s.profile);
+  const addElement = useEditorStore((s) => s.addElement);
+  const positionLocked = useEditorStore((s) => s.positionLocked);
+  const profile = useEditorStore((s) => s.profile);
 
-	const disabled = positionLocked || !profile;
+  const disabled = positionLocked || !profile;
 
-	return (
+  return (
 		<div className='absolute left-3 top-2'>
 			{/* Desktop */}
-			<div className='hidden items-start gap-1 rounded-lg border border-app-border bg-app-surface p-1 shadow-md lg:flex lg:flex-col'>
-				{BUTTONS.map(({ type, label, icon: Icon }) => (
-					<button
-						key={type}
-						type='button'
-						disabled={disabled}
-						onClick={() => addElement(type)}
-						title={label}
-						className='flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm text-app-text transition-colors hover:bg-app-bg disabled:pointer-events-none disabled:opacity-50'
-					>
-						<Icon className='size-4' />
-						<span>{label}</span>
-					</button>
+			<div className='hidden items-start rounded-lg border border-app-border bg-app-surface p-1 shadow-md lg:flex lg:flex-col'>
+				{BUTTONS.map(({ type, label, icon: Icon }, index) => (
+					<React.Fragment key={type}>
+						<button
+							type='button'
+							disabled={disabled}
+							onClick={() => addElement(type)}
+							title={label}
+							className='flex cursor-pointer w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-app-text transition-colors hover:bg-app-bg disabled:pointer-events-none disabled:opacity-50'
+						>
+							<Icon className='size-4' />
+							<span>{label}</span>
+						</button>
+
+						{/* Separador entre botones */}
+						{index < BUTTONS.length - 1 && <Separator className='my-1 w-full bg-app-border' />}
+					</React.Fragment>
 				))}
 			</div>
 
@@ -64,8 +70,7 @@ export function Toolbar() {
 			<div className='lg:hidden'>
 				<DropdownMenu>
 					<DropdownMenuTrigger
-						render=
-						{
+						render={
 							<Button
 								type='button'
 								disabled={disabled}
@@ -79,14 +84,19 @@ export function Toolbar() {
 					/>
 
 					<DropdownMenuContent align='center'>
-						{BUTTONS.map(({ type, label, icon: Icon }) => (
-							<DropdownMenuItem
-								key={type}
-								onClick={() => addElement(type)}
-							>
-								<Icon />
-								{label}
-							</DropdownMenuItem>
+						{BUTTONS.map(({ type, label, icon: Icon }, index) => (
+							<React.Fragment key={type}>
+								<DropdownMenuItem
+									className='w-full gap-2 cursor-pointer'
+									onClick={() => addElement(type)}
+								>
+									<Icon className='size-4' />
+									{label}
+								</DropdownMenuItem>
+
+								{/* Imprime el separador solo entre elementos (no después del último) */}
+								{index < BUTTONS.length - 1 && <DropdownMenuSeparator />}
+							</React.Fragment>
 						))}
 
 						{positionLocked && (

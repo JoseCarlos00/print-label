@@ -80,7 +80,7 @@ function EditorPage() {
 							type='button'
 							onClick={() => setMobilePanelOpen(true)}
 							aria-label='Abrir panel de propiedades'
-							className='absolute top-1 right-4 z-30 flex size-9 items-center justify-center rounded-full bg-app-accent-500 text-app-accent-contrast shadow-lg active:bg-app-accent-700 lg:hidden'
+							className='absolute cursor-pointer top-1 right-4 z-30 flex size-9 items-center justify-center rounded-full bg-app-accent-500 text-app-accent-contrast shadow-lg active:bg-app-accent-700 lg:hidden'
 						>
 							<PanelRight className='size-5' />
 						</button>

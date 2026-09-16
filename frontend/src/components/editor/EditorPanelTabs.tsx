@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { X } from 'lucide-react';
+import { useState } from 'react';
+import { List, Settings2, X } from 'lucide-react';
 import { cn } from 'cn';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useEditorStore } from '@/store/useEditorStore';
@@ -19,11 +19,19 @@ interface EditorPanelTabsProps {
 // de eso, lg:* nunca aplica y se comporta 100% como drawer.
 export function EditorPanelTabs({ mobileOpen, onCloseMobile }: EditorPanelTabsProps) {
 	const selectedElementId = useEditorStore((s) => s.selectedElementId);
-	const [tab, setTab] = useState<PanelTab>(selectedElementId ? 'panel' : 'templates');
 
-	useEffect(() => {
-		setTab(selectedElementId ? 'panel' : 'templates');
-	}, [selectedElementId]);
+	// Tab inicial siempre en 'templates'
+	const [tab, setTab] = useState<PanelTab>('templates');
+	const [prevSelectedId, setPrevSelectedId] = useState(selectedElementId);
+
+	// Sincronización en render: solo cambia a 'panel' cuando se SELECCIONA un nuevo elemento
+	if (prevSelectedId !== selectedElementId) {
+		setPrevSelectedId(selectedElementId);
+		
+		if (selectedElementId) {
+			setTab('panel');
+		}
+	}
 
 	return (
 		<>
@@ -58,9 +66,52 @@ export function EditorPanelTabs({ mobileOpen, onCloseMobile }: EditorPanelTabsPr
 					onValueChange={(value) => setTab(value as PanelTab)}
 					className='flex h-full flex-col gap-0'
 				>
-					<TabsList className='m-2'>
-						<TabsTrigger value='panel'>Panel</TabsTrigger>
-						<TabsTrigger value='templates'>Plantillas</TabsTrigger>
+					<TabsList className='m-0 grid h-16 w-full grid-cols-2 gap-0 rounded-none border-b border-app-border bg-transparent p-0'>
+						<TabsTrigger
+							value='panel'
+							className='
+								h-full
+								cursor-pointer
+								rounded-none
+								border-0
+								px-4
+								text-app-text-muted
+								transition-colors
+
+							data-active:bg-app-surface!
+    					data-active:text-app-accent-500!
+
+								after:bottom-0
+								after:h-0.5
+								after:bg-app-accent-500
+							'
+						>
+							<Settings2 className='size-5' />
+							<span>Propiedades</span>
+						</TabsTrigger>
+
+						<TabsTrigger
+							value='templates'
+							className='
+								h-full
+								cursor-pointer
+								rounded-none
+								border-0
+								px-4
+								text-app-text-muted
+								transition-colors
+
+								data-active:bg-app-surface!
+    						data-active:text-app-accent-500!
+							
+								after:bottom-0
+								after:h-0.5
+								after:bg-app-accent-500
+							'
+						>
+							<List className='size-5' />
+							<span>Plantillas</span>
+						</TabsTrigger>
 					</TabsList>
 
 					<TabsContent
