@@ -5,6 +5,7 @@ import {
   useState,
 } from 'react';
 import { Field } from './Field';
+import { beginHistoryTransaction, commitHistoryTransaction } from '@/store/history';
 
 interface TextAreaFieldProps {
   label: string;
@@ -57,15 +58,20 @@ export const TextAreaField = forwardRef<
   }, [inputValue, debounceMs, onChange]);
 
   return (
-    <Field label={label} disabled={disabled}>
-      <textarea
-        ref={ref}
-        value={inputValue}
-        rows={rows}
-        disabled={disabled}
-        onChange={(e) => setInputValue(e.target.value)}
-        className='mt-1 w-full rounded-md border border-app-border bg-app-surface p-1 text-app-text'
-      />
-    </Field>
-  );
+		<Field
+			label={label}
+			disabled={disabled}
+		>
+			<textarea
+				ref={ref}
+				value={inputValue}
+				rows={rows}
+				disabled={disabled}
+				onChange={(e) => setInputValue(e.target.value)}
+				onFocus={beginHistoryTransaction}
+				onBlur={commitHistoryTransaction}
+				className='mt-1 w-full rounded-md border border-app-border bg-app-surface p-1 text-app-text'
+			/>
+		</Field>
+	);
 });

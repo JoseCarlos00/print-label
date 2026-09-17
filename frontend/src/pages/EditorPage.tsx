@@ -9,6 +9,7 @@ import { TopBar } from '@/components/editor/TopBar';
 import { Toolbar } from '@/components/editor/Toolbar';
 import { Canvas } from '@/components/editor/Canvas';
 import { EditorPanelTabs } from '@/components/editor/EditorPanelTabs';
+import { FloatingActionBar } from '@/components/editor/FloatingActionBar';
 
 // Wrapper que fuerza un remount COMPLETO de EditorPage cada vez que cambia
 // el :id de la ruta (incluido pasar de "sin id" a "con id" o viceversa).
@@ -74,6 +75,7 @@ function EditorPage() {
 				<main className='relative min-w-0 flex-1 overflow-hidden pl-2 sm:pl-0 pt-4 sm:pt-0'>
 					<Toolbar />
 					<Canvas loadError={loadError} />
+					<FloatingActionBar />
 
 					{!mobilePanelOpen && (
 						<button

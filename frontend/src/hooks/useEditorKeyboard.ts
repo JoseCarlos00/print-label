@@ -43,6 +43,21 @@ export function useEditorKeyboard() {
 				return;
 			}
 
+			// Ctrl/Cmd + Z / Ctrl/Cmd + Y — deshacer/rehacer. Van antes del check
+			// de selectedElementId a propósito: no dependen de tener algo
+			// seleccionado.
+			if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+				e.preventDefault();
+				useEditorStore.temporal.getState().undo();
+				return;
+			}
+
+			if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+				e.preventDefault();
+				useEditorStore.temporal.getState().redo();
+				return;
+			}
+
 			if (!selectedElementId) {
 				return;
 			}
@@ -126,7 +141,7 @@ export function useEditorKeyboard() {
 					});
 					break;
 			}
-		};;;
+		};;;;
 
 		window.addEventListener('keydown', handleKeyDown);
 

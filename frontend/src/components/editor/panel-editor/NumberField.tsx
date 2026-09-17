@@ -1,4 +1,5 @@
 import { Field } from './Field';
+import { beginHistoryTransaction, commitHistoryTransaction } from '@/store/history';
 import {
 	NumberFieldRoot,
 	NumberFieldGroup,
@@ -49,10 +50,18 @@ export function NumberField({
 					<NumberFieldInput
 						placeholder={placeholder}
 						className={inputClassName}
+						onFocus={beginHistoryTransaction}
+						onBlur={commitHistoryTransaction}
 					/>
 					<NumberFieldStepper>
-						<NumberFieldIncrement />
-						<NumberFieldDecrement />
+						<NumberFieldIncrement
+							onPointerDown={beginHistoryTransaction}
+							onPointerUp={commitHistoryTransaction}
+						/>
+						<NumberFieldDecrement
+							onPointerDown={beginHistoryTransaction}
+							onPointerUp={commitHistoryTransaction}
+						/>
 					</NumberFieldStepper>
 				</NumberFieldGroup>
 			</NumberFieldRoot>

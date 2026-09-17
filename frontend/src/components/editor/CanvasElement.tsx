@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState, type PointerEvent } from 'react';
 import type { LabelElement } from 'shared';
 import { useEditorStore } from '@/store/useEditorStore';
+import { beginHistoryTransaction, commitHistoryTransaction } from '@/store/history';
 import { mmToPx, pxToMm } from '@/utils/scale';
 
 import { BarcodePreview } from './previews/BarcodePreview';
@@ -49,18 +50,20 @@ export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeight
 		return { x: pxToMm(e.clientX - canvasRect.left), y: pxToMm(e.clientY - canvasRect.top) };
 	};
 
-	const handlePointerDown = (e: PointerEvent<HTMLDivElement>) => {
-		e.stopPropagation();
+		const handlePointerDown = (e: PointerEvent<HTMLDivElement>) => {
+			e.stopPropagation();
 
-		if ((e.target as HTMLElement).closest('[data-element-toolbar]')) return;
+			if ((e.target as HTMLElement).closest('[data-element-toolbar]')) return;
 
-		selectElement(element.id);
-		if (!draggable) return;
+			selectElement(element.id);
+			if (!draggable) return;
 
-		e.currentTarget.setPointerCapture(e.pointerId);
-		const cursor = cursorToMm(e);
-		dragOffsetMm.current = { dx: cursor.x - element.x, dy: cursor.y - element.y };
-	};
+			beginHistoryTransaction();
+
+			e.currentTarget.setPointerCapture(e.pointerId);
+			const cursor = cursorToMm(e);
+			dragOffsetMm.current = { dx: cursor.x - element.x, dy: cursor.y - element.y };
+		};
 
 	const handlePointerMove = (e: PointerEvent<HTMLDivElement>) => {
 		if (!draggable || !dragOffsetMm.current) return;
@@ -73,6 +76,7 @@ export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeight
 
 	const handlePointerUp = () => {
 		dragOffsetMm.current = null;
+		commitHistoryTransaction();
 	};
 
 	const handleDoubleClick = (e: PointerEvent<HTMLDivElement>) => {
@@ -129,6 +133,7 @@ export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeight
 				onPointerDown={handlePointerDown}
 				onPointerMove={handlePointerMove}
 				onPointerUp={handlePointerUp}
+				onPointerCancel={handlePointerUp}
 				onDoubleClick={handleDoubleClick}
 				style={{
 					position: 'absolute',

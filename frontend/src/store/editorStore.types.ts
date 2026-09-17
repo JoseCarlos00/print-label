@@ -36,6 +36,7 @@ export interface EditorActions {
 	removeElement: (id: string) => void;
 	duplicateElement: (id: string) => void;
 	rotateElement: (id: string) => void;
+	clearElements: () => void;
 	toggleElementLock: (id: string) => void;
 	selectElement: (id: string | null) => void;
 	setTemplateMeta: (meta: Partial<Pick<EditorState, 'templateName' | 'isPublic' | 'positionLocked'>>) => void;
