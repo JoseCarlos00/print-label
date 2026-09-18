@@ -30,6 +30,8 @@ export function EditorPanelTabs({ mobileOpen, onCloseMobile }: EditorPanelTabsPr
 		
 		if (selectedElementId) {
 			setTab('panel');
+		} else {
+			setTab('templates')
 		}
 	}
 
