@@ -4,6 +4,7 @@ import { PanelRight } from 'lucide-react';
 import { usePrinterProfiles } from '@/hooks/usePrinterProfiles';
 import { useTemplate } from '@/hooks/useTemplate';
 import { useEditorStore } from '@/store/useEditorStore';
+import { clearHistory } from '@/store/history';
 import { getSavedPrinterId } from '@/utils/printerPreference';
 import { TopBar } from '@/components/editor/TopBar';
 import { Toolbar } from '@/components/editor/Toolbar';
@@ -34,8 +35,14 @@ function EditorPage() {
 	// Si cambia el :id (o pasamos de una plantilla a "nueva"), reseteamos
 	// el store antes de que los efectos de abajo vuelvan a poblarlo.
 	useEffect(() => {
-		if (templateId !== (id ?? null)) {
+		if (!id) {
+			clearHistory();
+			return;
+		}
+
+		if (templateId !== id) {
 			resetEditor();
+			clearHistory();
 		}
 	}, [id, templateId, resetEditor]);
 
@@ -55,7 +62,9 @@ function EditorPage() {
 	// perfil y sin tocarlo.
 	useEffect(() => {
 		if (!id || !template || templateId === template.id) return;
+
 		loadTemplate(template);
+		clearHistory();
 	}, [id, template, templateId, loadTemplate]);
 
 	// Prioridad: si estamos viendo una plantilla puntual y falló, ese es

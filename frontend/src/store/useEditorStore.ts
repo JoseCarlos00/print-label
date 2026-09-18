@@ -177,9 +177,10 @@ export const useEditorStore = create<EditorStore>()(
 
 			markSaved: () => set({ isDirty: false }),
 		}),
-		
+
 		{
 			partialize: (state) => ({ elements: state.elements }),
+			equality: (past, current) => past.elements === current.elements,
 			limit: 100,
 		},
 	),
