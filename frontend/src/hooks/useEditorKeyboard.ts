@@ -55,12 +55,22 @@ export function useEditorKeyboard() {
 			// seleccionado.
 			if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
 				e.preventDefault();
+
+				if (isTextInput(e.target)) {
+					(e.target as HTMLElement).blur();
+				}
+
 				useEditorStore.temporal.getState().undo();
 				return;
 			}
 
 			if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
 				e.preventDefault();
+
+				if (isTextInput(e.target)) {
+					(e.target as HTMLElement).blur();
+				}
+
 				useEditorStore.temporal.getState().redo();
 				return;
 			}
