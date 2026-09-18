@@ -168,21 +168,24 @@ function ElementPreview({ element }: { element: LabelElement }) {
 	switch (element.type) {
 		case 'text':
 			return (
-				<PreviewErrorBoundary>
+				<PreviewErrorBoundary resetKey={element}>
 					<TextPreview element={element} />
 				</PreviewErrorBoundary>
 			);
 
 		case 'barcode':
 			return (
-				<PreviewErrorBoundary fallback={<InvalidPreview message={`Contenido inválido para ${element.symbology}`} />}>
+				<PreviewErrorBoundary
+					resetKey={element}
+					fallback={<InvalidPreview message={`Contenido inválido para ${element.symbology}`} />}
+				>
 					<BarcodePreview element={element} />
 				</PreviewErrorBoundary>
 			);
 
 		case 'qr':
 			return (
-				<PreviewErrorBoundary>
+				<PreviewErrorBoundary resetKey={element}>
 					<QrPreview element={element} />
 				</PreviewErrorBoundary>
 			);

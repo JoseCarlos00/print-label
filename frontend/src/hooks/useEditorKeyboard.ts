@@ -34,6 +34,13 @@ export function useEditorKeyboard() {
 
 			// Escape
 			if (e.key === 'Escape') {
+				const target = e.target;
+
+				if (isTextInput(target)) {
+					(target as HTMLElement).blur();
+					return;
+				}
+
 				selectElement(null);
 				return;
 			}
