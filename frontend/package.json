@@ -17,7 +17,6 @@
 		"class-variance-authority": "^0.7.1",
 		"cn": "^0.3.0",
 		"lucide-react": "^1.46.0",
-		"qrcode.react": "^4.2.0",
 		"react": "^19.2.8",
 		"react-barcode": "^1.6.1",
 		"react-dom": "^19.2.8",
