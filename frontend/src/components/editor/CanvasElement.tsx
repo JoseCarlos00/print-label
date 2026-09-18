@@ -9,7 +9,6 @@ import { QrPreview } from './previews/QrPreview';
 import { PreviewErrorBoundary } from './previews/PreviewErrorBoundary';
 import { TextPreview } from './previews/TextPreview';
 import { OutOfBoundsWarning } from './OutOfBoundsWarning';
-import { InvalidPreview } from './previews/InvalidPreview'
 
 interface CanvasElementProps {
 	element: LabelElement;
@@ -175,10 +174,7 @@ function ElementPreview({ element }: { element: LabelElement }) {
 
 		case 'barcode':
 			return (
-				<PreviewErrorBoundary
-					resetKey={element}
-					fallback={<InvalidPreview message={`Contenido inválido para ${element.symbology}`} />}
-				>
+				<PreviewErrorBoundary resetKey={element}>
 					<BarcodePreview element={element} />
 				</PreviewErrorBoundary>
 			);

@@ -4,7 +4,7 @@ import type { BarcodeElement } from '../../types.js';
 import { barsToBitmap, drawBitmap, type GraphicBitmap } from '../renderers/graphic.js';
 import { fontSizeMmToOpenType, renderText } from '../fonts/rasterizeText.js';
 import type { Font } from 'opentype.js';
-import { escapeZplField, mmToDots, resolveBarcodeTextSize } from '../units.js';
+import { escapeZplField, mmToDots, resolveBarcodeTextSize, ZplValidationError } from '../units.js';
 
 export interface Code128Encoded {
 	bars: string;
@@ -31,10 +31,14 @@ export function encodeCode128(content: string): Code128Encoded {
 }
 
 export function createCode128Bitmap(
-	el: Pick<BarcodeElement, 'content' | 'width' | 'height' | 'showText'>,
+	el: Pick<BarcodeElement, 'id' | 'content' | 'width' | 'height' | 'showText'>,
 	dpi: number,
 	font: Font,
 ): GraphicBitmap {
+	if (!el.content.trim()) {
+		throw new ZplValidationError('El código Code 128 no puede estar vacío', el.id);
+	}
+
 	const content = escapeZplField(el.content);
 	const encoded = encodeCode128(content);
 

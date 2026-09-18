@@ -1,6 +1,6 @@
-import type { BarcodeElement, Symbology } from '../../types.js';
+import type { BarcodeElement } from '../../types.js';
 import type { Font } from 'opentype.js';
-import { mmToDots, ZplValidationError } from '../units.js';
+import { mmToDots } from '../units.js';
 import { createCode128Bitmap } from '../barcode/code128.js';
 import { buildGraphicCommand, clipBitmapToLabel, type GraphicBitmap, rotateBitmap } from './graphic.js';
 import { createEan13Bitmap } from '../barcode/ean13.js';
@@ -9,32 +9,6 @@ import { createEan13Bitmap } from '../barcode/ean13.js';
 // Código de barras
 // ──────────────────────────────────────────────────────────────────────────
 
-const BARCODE_LABELS: Record<Symbology, string> = {
-	code128: 'Code 128',
-	ean13: 'EAN-13',
-};
-
-function validateBarcodeContent(el: BarcodeElement): void {
-	const { symbology, content } = el;
-
-	switch (symbology) {
-		case 'ean13':
-			if (!/^\d{12,13}$/.test(content)) {
-				throw new ZplValidationError(
-					`El código ${BARCODE_LABELS.ean13} debe tener 12 o 13 dígitos numéricos (recibido: "${content}")`,
-					el.id,
-				);
-			}
-			break;
-
-		case 'code128':
-			if (content.trim().length === 0) {
-				throw new ZplValidationError(`El código ${BARCODE_LABELS.code128} no puede estar vacío`, el.id);
-			}
-			break;
-	}
-}
-
 export function buildBarcodeCommand(
 	el: BarcodeElement,
 	dpi: number,
@@ -42,8 +16,6 @@ export function buildBarcodeCommand(
 	labelWidthDots: number,
 	labelHeightDots: number,
 ): string | null {
-	validateBarcodeContent(el);
-
 	const xDots = mmToDots(el.x, dpi);
 	const yDots = mmToDots(el.y, dpi);
 

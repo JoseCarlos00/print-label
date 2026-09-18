@@ -2,9 +2,13 @@ import type { Font } from 'opentype.js';
 import type { TextElement } from '../../types.js';
 import { fontSizeMmToOpenType, renderText } from '../fonts/rasterizeText.js';
 import { buildGraphicCommand, clipBitmapToLabel, type GraphicBitmap, rotateBitmap } from './graphic.js';
-import { mmToDots } from '../units.js';
+import { mmToDots, ZplValidationError } from '../units.js';
 
 export function createTextBitmap(el: TextElement, dpi: number, font: Font): GraphicBitmap {
+	if (!el.content.trim()) {
+		throw new ZplValidationError('El texto no puede estar vacío', el.id);
+	}
+
 	const fontSize = fontSizeMmToOpenType(font, el.fontSize, dpi);
 
 	const wrapWidthDots = el.wrapWidth != null ? mmToDots(el.wrapWidth, dpi) : undefined;

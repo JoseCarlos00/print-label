@@ -1,8 +1,8 @@
 import { Component, type ReactNode } from 'react';
+import { ZplValidationError } from 'shared/zpl';
 import { InvalidPreview } from './InvalidPreview';
 
 interface Props {
-	fallback?: ReactNode;
 	children: ReactNode;
 	/**
 	 * Cuando este valor cambia de referencia, el boundary vuelve a
@@ -16,18 +16,19 @@ interface Props {
 
 interface State {
 	hasError: boolean;
+	error: Error | null;
 }
 
 export class PreviewErrorBoundary extends Component<Props, State> {
-	state: State = { hasError: false };
+	state: State = { hasError: false, error: null };
 
-	static getDerivedStateFromError() {
-		return { hasError: true };
+	static getDerivedStateFromError(error: Error) {
+		return { hasError: true, error };
 	}
 
 	componentDidUpdate(prevProps: Props) {
 		if (this.state.hasError && prevProps.resetKey !== this.props.resetKey) {
-			this.setState({ hasError: false });
+			this.setState({ hasError: false, error: null });
 		}
 	}
 
@@ -36,6 +37,10 @@ export class PreviewErrorBoundary extends Component<Props, State> {
 			return this.props.children;
 		}
 
-		return this.props.fallback ?? <InvalidPreview />;
+		if (this.state.error instanceof ZplValidationError) {
+			return <InvalidPreview message={this.state.error.message} />;
+		}
+
+		return <InvalidPreview />;
 	}
 }

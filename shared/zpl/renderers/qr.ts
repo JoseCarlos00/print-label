@@ -2,7 +2,7 @@ import QRCode from 'qrcode/lib/core/qrcode.js';
 
 import type { Font } from 'opentype.js';
 import type { QrElement, QrErrorCorrection, TextElement } from '../../types.js';
-import { mmToDots } from '../units.js';
+import { mmToDots, ZplValidationError } from '../units.js';
 import { buildGraphicCommand, clipBitmapToLabel, drawBitmap, rotateBitmap, type GraphicBitmap } from './graphic.js';
 import { createTextBitmap } from '../renderers/text.js';
 
@@ -43,7 +43,7 @@ function createQrLabelBitmap(qrBitmap: GraphicBitmap, textBitmap: GraphicBitmap,
 }
 
 function getQrMatrix(content: string, errorCorrection: QrErrorCorrection): boolean[][] {
-	const qr = QRCode.create(content || ' ', {
+	const qr = QRCode.create(content, {
 		errorCorrectionLevel: errorCorrection,
 	});
 
@@ -116,6 +116,10 @@ function createQrGraphicBitmap(matrix: boolean[][], requestedSizeDots: number): 
 }
 
 export function createQrBitmap(el: QrElement, dpi: number, font: Font): GraphicBitmap {
+	if (!el.content.trim()) {
+		throw new ZplValidationError('El código QR no puede estar vacío', el.id);
+	}
+
 	const errorCorrection = el.errorCorrection ?? QR_ERROR_CORRECTION_DEFAULT;
 
 	const matrix = getQrMatrix(el.content, errorCorrection);

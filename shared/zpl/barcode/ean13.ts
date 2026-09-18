@@ -2,7 +2,7 @@ import { Ean13 } from '@ashaffah/barcodes';
 import type { Font } from 'opentype.js'
 import type { BarcodeElement } from '../../types.js';
 import { drawBitmap, setPixel, type GraphicBitmap } from '../renderers/graphic.js';
-import { mmToDots, resolveBarcodeTextSize } from '../units.js';
+import { mmToDots, resolveBarcodeTextSize, ZplValidationError } from '../units.js';
 import { fontSizeMmToOpenType, renderText } from '../fonts/rasterizeText.js'
 
 export interface Ean13Encoded {
@@ -31,10 +31,17 @@ export function encodeEan13(content: string): Ean13Encoded {
 }
 
 export function createEan13Bitmap(
-	el: Pick<BarcodeElement, 'content' | 'width' | 'height' | 'showText'>,
+	el: Pick<BarcodeElement, 'id' | 'content' | 'width' | 'height' | 'showText'>,
 	dpi: number,
 	font: Font,
 ): GraphicBitmap {
+	if (!/^\d{12,13}$/.test(el.content)) {
+		throw new ZplValidationError(
+			`El código EAN-13 debe tener 12 o 13 dígitos numéricos (recibido: "${el.content}")`,
+			el.id,
+		);
+	}
+
 	const encoded = encodeEan13(el.content);
 
 	const widthDots = mmToDots(el.width, dpi);
