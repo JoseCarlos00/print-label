@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Field } from './Field';
 import { beginHistoryTransaction, commitHistoryTransaction } from '@/store/history';
 
@@ -9,14 +9,20 @@ interface TextAreaFieldProps {
 	disabled?: boolean;
 	rows?: number;
 	debounceMs?: number;
+	ref?: React.Ref<HTMLTextAreaElement>;
 }
 
 const DEFAULT_DEBOUNCE_MS = 120;
 
-export const TextAreaField = forwardRef<HTMLTextAreaElement, TextAreaFieldProps>(function TextAreaField(
-	{ label, value, onChange, disabled = false, rows = 2, debounceMs = DEFAULT_DEBOUNCE_MS },
+export function TextAreaField({
+label,
+	value,
+	onChange,
+	disabled = false,
+	rows = 2,
+	debounceMs = DEFAULT_DEBOUNCE_MS,
 	ref,
-) {
+}: TextAreaFieldProps) {
 	const [inputValue, setInputValue] = useState(value);
 	const lastCommittedValue = useRef(value);
 
@@ -59,4 +65,4 @@ export const TextAreaField = forwardRef<HTMLTextAreaElement, TextAreaFieldProps>
 			/>
 		</Field>
 	);
-});
+}
