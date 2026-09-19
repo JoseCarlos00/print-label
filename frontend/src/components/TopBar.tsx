@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { ChevronDown, LogIn, LogOut, Printer } from 'lucide-react';
 
 import type { PrinterProfile, Template } from 'shared';
@@ -9,7 +8,7 @@ import { useEditorStore } from '@/store/useEditorStore';
 import { api, ApiError } from '@/api/client';
 
 import { SaveTemplateModal } from './editor/SaveTemplateModal';
-
+import { useLoginDialog } from '@/hooks/useLoginDialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
@@ -23,6 +22,7 @@ import {
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { EditorStore } from '@/store/editorStore.types'
+import { useNavigate } from 'react-router-dom'
 
 interface TopBarProps {
 	profiles: PrinterProfile[];
@@ -149,6 +149,7 @@ export function TopBar({ profiles, profilesError }: TopBarProps) {
 
 function LogoMenu() {
 	const { isAdmin, logout } = useAuth();
+	const { openLogin } = useLoginDialog();
 	const navigate = useNavigate();
 
 	const handleLogout = async () => {
@@ -188,9 +189,9 @@ function LogoMenu() {
 							Cerrar sesión
 						</DropdownMenuItem>
 					) : (
-						<DropdownMenuItem onClick={() => navigate('/login')}>
+						<DropdownMenuItem onClick={openLogin}>
 							<LogIn />
-							Login admin
+							Iniciar sesión
 						</DropdownMenuItem>
 					)}
 				</DropdownMenuContent>

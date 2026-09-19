@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { usePrinterProfiles } from '@/hooks/usePrinterProfiles';
 import { useTemplates } from '@/hooks/useTemplates';
 import { TemplateCard } from '@/components/gallery/TemplateCard';
