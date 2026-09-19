@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
-import { AuthProvider } from '@/context/AuthContext';
+import { AuthProvider } from '@/context/AuthProvider';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { NavBar } from '@/components/NavBar';
 import { EditorRoute } from '@/pages/EditorPage';

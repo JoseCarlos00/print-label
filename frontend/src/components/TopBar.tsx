@@ -4,7 +4,7 @@ import { ChevronDown, LogIn, LogOut, Printer } from 'lucide-react';
 
 import type { PrinterProfile, Template } from 'shared';
 
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { useEditorStore } from '@/store/useEditorStore';
 import { api, ApiError } from '@/api/client';
 
