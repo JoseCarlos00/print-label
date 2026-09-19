@@ -3,6 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { usePrinterProfiles } from '@/hooks/usePrinterProfiles';
 import { useTemplates } from '@/hooks/useTemplates';
 import { TemplateCard } from '@/components/gallery/TemplateCard';
+import { api, ApiError } from '@/api/client';
 import { useState } from 'react';
 
 export function GalleryPage() {
@@ -11,7 +12,20 @@ export function GalleryPage() {
 
 	const [showAll, setShowAll] = useState(true);
 	const { profiles } = usePrinterProfiles();
-	const { templates, loading, error } = useTemplates(isAdmin && showAll);
+	const { templates, loading, error, refetch } = useTemplates(isAdmin && showAll);
+	const [deleteError, setDeleteError] = useState<string | null>(null);
+
+	const handleDelete = async (id: string, name: string) => {
+		if (!window.confirm(`Eliminar "${name}"? Esta acción no se puede deshacer.`)) return;
+
+		setDeleteError(null);
+		try {
+			await api.delete(`/templates/${id}`);
+			refetch();
+		} catch (err) {
+			setDeleteError(err instanceof ApiError ? err.message : 'Error al eliminar la plantilla');
+		}
+	};
 
 	return (
 		<div className='h-full overflow-y-auto p-6'>
@@ -34,6 +48,9 @@ export function GalleryPage() {
 			</div>
 
 			{error && <p className='mt-4 rounded-md border border-red-800 bg-red-950 p-3 text-sm text-red-300'>{error}</p>}
+			{deleteError && (
+				<p className='mt-4 rounded-md border border-red-800 bg-red-950 p-3 text-sm text-red-300'>{deleteError}</p>
+			)}
 
 			{loading ? (
 				<p className='mt-6 text-sm text-app-text-muted'>Cargando...</p>
@@ -47,6 +64,7 @@ export function GalleryPage() {
 							template={template}
 							profile={profiles.find((p) => p.id === template.profileId)}
 							onUse={() => navigate(`/editor/${template.id}`)}
+							onDelete={isAdmin ? () => handleDelete(template.id, template.name) : undefined}
 						/>
 					))}
 				</div>
