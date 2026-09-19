@@ -1,8 +1,10 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useLoginDialog } from '@/hooks/useLoginDialog'
 
 export function NavBar() {
 	const { isAdmin, logout } = useAuth();
+	const { openLogin } = useLoginDialog();
 	const navigate = useNavigate();
 
 	const handleLogout = async () => {
@@ -33,7 +35,7 @@ export function NavBar() {
 				>
 					Galería
 				</Link>
-				
+
 				{isAdmin && (
 					<Link
 						to='/staging'
@@ -49,17 +51,18 @@ export function NavBar() {
 				{isAdmin ? (
 					<button
 						onClick={handleLogout}
-						className='text-sm text-app-text-muted hover:text-app-text'
+						className='text-sm text-app-text-muted hover:text-app-text cursor-pointer'
 					>
 						Cerrar sesión
 					</button>
 				) : (
-					<Link
-						to='/login'
-						className='text-sm text-app-text-muted hover:text-app-text'
+					<button
+						type='button'
+						onClick={openLogin}
+						className='text-sm text-app-text-muted hover:text-app-text cursor-pointer'
 					>
-						Login admin
-					</Link>
+						Iniciar sesión
+					</button>
 				)}
 			</div>
 		</nav>
