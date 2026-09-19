@@ -42,9 +42,7 @@ export function createTemplate(input: CreateTemplateInput, state: StateTemplate)
 		elements: input.elements,
 		public: input.public,
 		state,
-		requestedBy: state === 'pending'
-						? input.requestedBy ?? null
-						: null,
+		requestedBy: state === 'pending' ? (input.requestedBy ?? null) : null,
 		positionLocked: input.positionLocked ?? false,
 		createOn: now,
 		updateOn: now,
@@ -158,7 +156,6 @@ export function rejectTemplate(id: string): Template | undefined {
 	return getById(id);
 }
 
-
 export function updateTemplate(id: string, input: UpdateTemplateInput): Template | undefined {
 	const now = new Date().toISOString();
 
@@ -191,4 +188,9 @@ export function updateTemplate(id: string, input: UpdateTemplateInput): Template
 	}
 
 	return getById(id);
+}
+
+export function deleteTemplate(id: string): boolean {
+	const result = db.prepare(`DELETE FROM templates WHERE id = ?`).run(id);
+	return result.changes > 0;
 }

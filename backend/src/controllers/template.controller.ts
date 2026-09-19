@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import type { CreateTemplateInput, UpdateTemplateInput } from 'shared';
 import {
 	createTemplate,
+	deleteTemplate,
 	getById,
 	listAllApproved,
 	listApprovedPublics,
@@ -143,5 +144,27 @@ export const update = (req: Request, res: Response) => {
 		return res.status(500).json({
 			message: 'Error interno del servidor',
 		});
+	}
+};
+
+export const remove = (req: Request, res: Response) => {
+	const { id } = req.params;
+
+	if (typeof id !== 'string' || id.length === 0) {
+		return res.status(400).json({ message: 'Falta el id de la plantilla' });
+	}
+
+	try {
+		const deleted = deleteTemplate(id);
+
+		if (!deleted) {
+			return res.status(404).json({ message: 'Plantilla no encontrada' });
+		}
+
+		console.info(`Plantilla eliminada: ${id}`);
+		return res.status(204).send();
+	} catch (error) {
+		console.error(`Error eliminando plantilla: ${error}`);
+		return res.status(500).json({ message: 'Error interno del servidor' });
 	}
 };

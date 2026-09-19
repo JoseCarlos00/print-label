@@ -6,6 +6,7 @@ import {
 	getOne,
 	listAll,
 	listPublic,
+	remove,
 	update,
 } from '../controllers/template.controller.js';
 
@@ -23,5 +24,6 @@ router.get('/', listPublic);
 router.get('/:id', getOne);
 
 router.put('/:id', requireAdmin, update);
+router.delete('/:id', requireAdmin, remove);
 
 export default router;
