@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react';
 import { Field } from './Field';
 import {
 	NumberFieldRoot,
@@ -8,7 +8,7 @@ import {
 	NumberFieldIncrement,
 	NumberFieldDecrement,
 } from '@/components/ui/number-field';
-import { beginHistoryTransaction, commitHistoryTransaction } from '@/store/history'
+import { beginHistoryTransaction, commitHistoryTransaction } from '@/store/history';
 
 interface NumberFieldProps {
 	label: string;
@@ -20,7 +20,10 @@ interface NumberFieldProps {
 	step?: number;
 	placeholder?: string;
 	inputClassName?: string;
+	debounceMs?: number;
 }
+
+const DEFAULT_DEBOUNCE_MS = 120;
 
 export function NumberField({
 	label,
@@ -32,32 +35,97 @@ export function NumberField({
 	step = 1,
 	placeholder,
 	inputClassName,
+	debounceMs = DEFAULT_DEBOUNCE_MS,
 }: NumberFieldProps) {
-	const isEditing = useRef(false);
+	const [localValue, setLocalValue] = useState<number | undefined>(value);
 
-	const handleChange = (nextValue: number | undefined) => {
+	const isEditing = useRef(false);
+	const lastCommittedValue = useRef(value);
+	const debounceTimer = useRef<number | null>(null);
+
+	const stepperHeldRef = useRef(false);
+
+	useEffect(() => {
+		if (value === lastCommittedValue.current) return;
+		setLocalValue(value);
+		lastCommittedValue.current = value;
+	}, [value]);
+
+	const commitValue = (nextValue: number) => {
+		if (debounceTimer.current !== null) {
+			window.clearTimeout(debounceTimer.current);
+			debounceTimer.current = null;
+		}
+		if (nextValue === lastCommittedValue.current) return;
+		lastCommittedValue.current = nextValue;
+		onChange(nextValue);
+	};
+
+	const handleValueChange = (next: number | null) => {
 		if (!isEditing.current) {
 			isEditing.current = true;
 			beginHistoryTransaction();
 		}
 
-		onChange(nextValue ?? undefined);
+		setLocalValue(next ?? undefined);
+
+		if (debounceTimer.current !== null) {
+			window.clearTimeout(debounceTimer.current);
+			debounceTimer.current = null;
+		}
+
+		if (next === null) return;
+
+		debounceTimer.current = window.setTimeout(() => {
+			commitValue(next);
+		}, debounceMs);
 	};
 
+	const handleValueCommitted = (committed: number | null) => {
+		if (stepperHeldRef.current) {
+			if (committed !== null) commitValue(committed);
+			return;
+		}
 
-	const handleBlur = () => {
-		if (!isEditing.current) return;
+		if (committed === null) {
+			setLocalValue(lastCommittedValue.current);
+		} else {
+			commitValue(committed);
+		}
 
+		if (isEditing.current) {
 			isEditing.current = false;
 			commitHistoryTransaction();
+		}
 	};
 
-	const handlePointerUp = () => {
-		if (!isEditing.current) return;
+	const handleStepperPointerDown = () => {
+		stepperHeldRef.current = true;
+		if (!isEditing.current) {
+			isEditing.current = true;
+			beginHistoryTransaction();
+		}
+	};
 
-		isEditing.current = false;
-		commitHistoryTransaction();
-	}
+	const handleStepperPointerUp = () => {
+		stepperHeldRef.current = false;
+		if (isEditing.current) {
+			isEditing.current = false;
+			commitHistoryTransaction();
+		}
+	};
+
+	useEffect(() => {
+		return () => {
+			if (debounceTimer.current !== null) {
+				window.clearTimeout(debounceTimer.current);
+			}
+			if (isEditing.current) {
+				isEditing.current = false;
+				commitHistoryTransaction();
+			}
+		};
+	}, []);
 
 	return (
 		<Field
@@ -65,9 +133,9 @@ export function NumberField({
 			disabled={disabled}
 		>
 			<NumberFieldRoot
-				value={value ?? null}
-				onValueChange={(next) => handleChange(next ?? undefined)}
-				onBlur={handleBlur}
+				value={localValue ?? null}
+				onValueChange={handleValueChange}
+				onValueCommitted={handleValueCommitted}
 				min={min}
 				max={max}
 				step={step}
@@ -80,8 +148,14 @@ export function NumberField({
 						className={inputClassName}
 					/>
 					<NumberFieldStepper>
-						<NumberFieldIncrement onPointerUp={handlePointerUp} />
-						<NumberFieldDecrement onPointerUp={handlePointerUp} />
+						<NumberFieldIncrement
+							onPointerDown={handleStepperPointerDown}
+							onPointerUp={handleStepperPointerUp}
+						/>
+						<NumberFieldDecrement
+							onPointerDown={handleStepperPointerDown}
+							onPointerUp={handleStepperPointerUp}
+						/>
 					</NumberFieldStepper>
 				</NumberFieldGroup>
 			</NumberFieldRoot>
