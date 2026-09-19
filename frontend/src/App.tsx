@@ -3,11 +3,11 @@ import { AuthProvider } from '@/context/AuthProvider';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { NavBar } from '@/components/NavBar';
 import { EditorRoute } from '@/pages/EditorPage';
-import { LoginPage } from '@/pages/LoginPage';
 import { StagingPage } from '@/pages/StagingPage';
 import { GalleryPage } from '@/pages/GalleryPage';
 import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
 import { useEditorKeyboard } from '@/hooks/useEditorKeyboard';
+import { LoginDialogProvider } from './context/LoginDialogProvider'
 
 // El editor tiene su propia barra (TopBar: logo+dropdown, impresora,
 // guardar/imprimir); mostrar además la NavBar global ahí duplicaría
@@ -18,6 +18,7 @@ function isEditorPath(pathname: string): boolean {
 
 function AppShell() {
 	const location = useLocation();
+
 	const showNavBar = !isEditorPath(location.pathname);
 
 	return (
@@ -36,10 +37,6 @@ function AppShell() {
 					<Route
 						path='/galeria'
 						element={<GalleryPage />}
-					/>
-					<Route
-						path='/login'
-						element={<LoginPage />}
 					/>
 
 					<Route
@@ -62,11 +59,12 @@ function App() {
 
 	return (
 		<AuthProvider>
-			<BrowserRouter>
-				<AppShell />
-			</BrowserRouter>
+			<LoginDialogProvider>
+				<BrowserRouter>
+					<AppShell />
+				</BrowserRouter>
+			</LoginDialogProvider>
 		</AuthProvider>
 	);
 }
-
 export default App;

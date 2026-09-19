@@ -165,7 +165,7 @@ function LogoMenu() {
 						<Button
 							variant='ghost'
 							size='sm'
-							className='gap-1 px-2 text-sm font-semibold text-app-text'
+							className='gap-1 px-2 text-sm font-semibold text-app-text cursor-pointer'
 						>
 							PrintLabel
 							<ChevronDown className='size-3.5 text-app-text-muted' />
@@ -174,14 +174,27 @@ function LogoMenu() {
 				/>
 
 				<DropdownMenuContent align='start'>
-					<DropdownMenuItem onClick={() => navigate('/galeria')}>Galería</DropdownMenuItem>
+					<DropdownMenuItem
+						className='cursor-pointer'
+						onClick={() => navigate('/galeria')}
+					>
+						Galería
+					</DropdownMenuItem>
 
-					{isAdmin && <DropdownMenuItem onClick={() => navigate('/staging')}>Staging</DropdownMenuItem>}
+					{isAdmin && (
+						<DropdownMenuItem
+							className='cursor-pointer'
+							onClick={() => navigate('/staging')}
+						>
+							Staging
+						</DropdownMenuItem>
+					)}
 
 					<DropdownMenuSeparator />
 
 					{isAdmin ? (
 						<DropdownMenuItem
+							className='cursor-pointer'
 							variant='destructive'
 							onClick={handleLogout}
 						>
@@ -189,7 +202,10 @@ function LogoMenu() {
 							Cerrar sesión
 						</DropdownMenuItem>
 					) : (
-						<DropdownMenuItem onClick={openLogin}>
+						<DropdownMenuItem
+							className='cursor-pointer'
+							onClick={openLogin}
+						>
 							<LogIn />
 							Iniciar sesión
 						</DropdownMenuItem>
