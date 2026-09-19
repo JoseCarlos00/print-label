@@ -1,5 +1,5 @@
+import { useRef } from 'react'
 import { Field } from './Field';
-import { beginHistoryTransaction, commitHistoryTransaction } from '@/store/history';
 import {
 	NumberFieldRoot,
 	NumberFieldGroup,
@@ -8,6 +8,7 @@ import {
 	NumberFieldIncrement,
 	NumberFieldDecrement,
 } from '@/components/ui/number-field';
+import { beginHistoryTransaction, commitHistoryTransaction } from '@/store/history'
 
 interface NumberFieldProps {
 	label: string;
@@ -32,6 +33,32 @@ export function NumberField({
 	placeholder,
 	inputClassName,
 }: NumberFieldProps) {
+	const isEditing = useRef(false);
+
+	const handleChange = (nextValue: number | undefined) => {
+		if (!isEditing.current) {
+			isEditing.current = true;
+			beginHistoryTransaction();
+		}
+
+		onChange(nextValue ?? undefined);
+	};
+
+
+	const handleBlur = () => {
+		if (!isEditing.current) return;
+
+			isEditing.current = false;
+			commitHistoryTransaction();
+	};
+
+	const handlePointerUp = () => {
+		if (!isEditing.current) return;
+
+		isEditing.current = false;
+		commitHistoryTransaction();
+	}
+
 	return (
 		<Field
 			label={label}
@@ -39,7 +66,8 @@ export function NumberField({
 		>
 			<NumberFieldRoot
 				value={value ?? null}
-				onValueChange={(next) => onChange(next ?? undefined)}
+				onValueChange={(next) => handleChange(next ?? undefined)}
+				onBlur={handleBlur}
 				min={min}
 				max={max}
 				step={step}
@@ -50,18 +78,10 @@ export function NumberField({
 					<NumberFieldInput
 						placeholder={placeholder}
 						className={inputClassName}
-						onFocus={beginHistoryTransaction}
-						onBlur={commitHistoryTransaction}
 					/>
 					<NumberFieldStepper>
-						<NumberFieldIncrement
-							onPointerDown={beginHistoryTransaction}
-							onPointerUp={commitHistoryTransaction}
-						/>
-						<NumberFieldDecrement
-							onPointerDown={beginHistoryTransaction}
-							onPointerUp={commitHistoryTransaction}
-						/>
+						<NumberFieldIncrement onPointerUp={handlePointerUp} />
+						<NumberFieldDecrement onPointerUp={handlePointerUp} />
 					</NumberFieldStepper>
 				</NumberFieldGroup>
 			</NumberFieldRoot>
