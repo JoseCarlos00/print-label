@@ -24,6 +24,7 @@ export function TextAreaField({
 	ref,
 }: TextAreaFieldProps) {
 	const [inputValue, setInputValue] = useState(value);
+	const isEditing = useRef(false);
 
 	// Último valor que realmente fue aceptado/guardado.
 	const lastCommittedValue = useRef(value);
@@ -62,23 +63,25 @@ export function TextAreaField({
 	const handleChange = (nextValue: string) => {
 		setInputValue(nextValue);
 
-		if (debounceTimer.current !== null) {
-			window.clearTimeout(debounceTimer.current);
-		}
+		if (nextValue.trim()) {
+			if (!isEditing.current) {
+				isEditing.current = true;
+				beginHistoryTransaction();
+			}
 
-		if (!nextValue.trim()) {
-			return;
-		}
+			if (debounceTimer.current !== null) {
+				window.clearTimeout(debounceTimer.current);
+			}
 
-		debounceTimer.current = window.setTimeout(() => {
-			commitValue(nextValue);
-			debounceTimer.current = null;
-		}, debounceMs);
+			debounceTimer.current = window.setTimeout(() => {
+				commitValue(nextValue);
+				debounceTimer.current = null;
+			}, debounceMs);
+		}
 	};
 
 	const handleFocus = () => {
 		previousValue.current = lastCommittedValue.current;
-		beginHistoryTransaction();
 	};
 
 	const handleBlur = () => {
@@ -90,18 +93,24 @@ export function TextAreaField({
 		if (!inputValue.trim()) {
 			setInputValue(previousValue.current);
 		} else {
-			// Si el debounce todavía estaba pendiente, guardamos
-			// inmediatamente al perder el focus.
 			commitValue(inputValue);
 		}
 
-		commitHistoryTransaction();
+		if (isEditing.current) {
+			isEditing.current = false;
+			commitHistoryTransaction();
+		}
 	};
 
 	useEffect(() => {
 		return () => {
 			if (debounceTimer.current !== null) {
 				window.clearTimeout(debounceTimer.current);
+			}
+
+			if (isEditing.current) {
+				isEditing.current = false;
+				commitHistoryTransaction();
 			}
 		};
 	}, []);
