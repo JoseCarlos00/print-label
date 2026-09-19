@@ -8,7 +8,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useEditorStore } from '@/store/useEditorStore';
 import { api, ApiError } from '@/api/client';
 
-import { SaveTemplateModal } from './SaveTemplateModal';
+import { SaveTemplateModal } from './editor/SaveTemplateModal';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

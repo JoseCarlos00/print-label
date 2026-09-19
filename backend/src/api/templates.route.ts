@@ -22,6 +22,6 @@ router.post('/', requireAdmin, createApproved);
 router.get('/', listPublic);
 router.get('/:id', getOne);
 
-router.put('/:id', update);
+router.put('/:id', requireAdmin, update);
 
 export default router;
