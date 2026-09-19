@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useEditorStore } from '@/store/useEditorStore';
 import { api, ApiError } from '@/api/client';
 import { markHistorySaved } from '@/store/history';
+import { bumpTemplatesVersion } from '@/store/templatesCache';
 
 interface SaveTemplateModalProps {
 	onClose: () => void;
@@ -95,8 +96,7 @@ export function SaveTemplateModal({ onClose, onSaved }: SaveTemplateModalProps) 
 				loadedTemplateState: saved.state,
 			});
 			markHistorySaved();
-			onSaved(saved, mode);
-			onClose();
+			bumpTemplatesVersion();
 			onSaved(saved, mode);
 			onClose();
 		} catch (err) {

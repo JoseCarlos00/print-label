@@ -1,18 +1,19 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { Template } from 'shared';
 import { api, ApiError } from '@/api/client';
+import { useTemplatesVersion } from '@/store/templatesCache';
 
 interface UseTemplatesResult {
 	templates: Template[];
 	loading: boolean;
 	error: string | null;
-	refetch: () => void;
 }
 
 export function useTemplates(includeNonPublic: boolean): UseTemplatesResult {
 	const [templates, setTemplates] = useState<Template[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
+	const version = useTemplatesVersion();
 
 	const load = useCallback(() => {
 		setLoading(true);
@@ -27,7 +28,7 @@ export function useTemplates(includeNonPublic: boolean): UseTemplatesResult {
 
 	useEffect(() => {
 		load();
-	}, [load]);
+	}, [load, version]);
 
-	return { templates, loading, error, refetch: load };
+	return { templates, loading, error };
 }

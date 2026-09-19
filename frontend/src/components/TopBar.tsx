@@ -109,7 +109,7 @@ export function TopBar({ profiles, profilesError }: TopBarProps) {
 					type='button'
 					onClick={handlePrint}
 					disabled={printState === 'printing' || !canEdit}
-					className='bg-app-accent-500 text-app-accent-contrast hover:bg-app-accent-700'
+					className='bg-app-accent-500 text-app-accent-contrast hover:bg-app-accent-700 cursor-pointer'
 				>
 					<Printer />
 					<span className='hidden sm:inline'>{printState === 'printing' ? 'Imprimiendo...' : 'Imprimir'}</span>
@@ -118,6 +118,7 @@ export function TopBar({ profiles, profilesError }: TopBarProps) {
 				<Button
 					type='button'
 					variant='outline'
+					className='cursor-pointer'
 					onClick={() => setSaveModalOpen(true)}
 					disabled={!canEdit}
 				>

@@ -1,10 +1,11 @@
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { usePrinterProfiles } from '@/hooks/usePrinterProfiles';
 import { useTemplates } from '@/hooks/useTemplates';
 import { TemplateCard } from '@/components/gallery/TemplateCard';
 import { api, ApiError } from '@/api/client';
-import { useState } from 'react';
+import { bumpTemplatesVersion } from '@/store/templatesCache';
 
 export function GalleryPage() {
 	const { isAdmin } = useAuth();
@@ -12,7 +13,7 @@ export function GalleryPage() {
 
 	const [showAll, setShowAll] = useState(true);
 	const { profiles } = usePrinterProfiles();
-	const { templates, loading, error, refetch } = useTemplates(isAdmin && showAll);
+	const { templates, loading, error } = useTemplates(isAdmin && showAll);
 	const [deleteError, setDeleteError] = useState<string | null>(null);
 
 	const handleDelete = async (id: string, name: string) => {
@@ -21,7 +22,7 @@ export function GalleryPage() {
 		setDeleteError(null);
 		try {
 			await api.delete(`/templates/${id}`);
-			refetch();
+			bumpTemplatesVersion();
 		} catch (err) {
 			setDeleteError(err instanceof ApiError ? err.message : 'Error al eliminar la plantilla');
 		}
