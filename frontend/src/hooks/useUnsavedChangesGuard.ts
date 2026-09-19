@@ -1,21 +1,15 @@
 import { useEffect } from 'react';
-import { useEditorStore } from '@/store/useEditorStore';
+import { useIsDirty } from '@/store/history';
 
-/**
- * Registra el diálogo nativo del navegador al cerrar/recargar la pestaña
- * mientras haya cambios sin guardar. Se monta UNA sola vez en App.tsx —
- * separado de confirmLeaveEditor(), que cubre la navegación DENTRO de la
- * app (esto solo cubre cerrar/recargar).
- */
 export function useUnsavedChangesGuard() {
-	const isDirty = useEditorStore((s) => s.isDirty);
+	const isDirty = useIsDirty();
 
 	useEffect(() => {
 		if (!isDirty) return;
 
 		const handler = (e: BeforeUnloadEvent) => {
 			e.preventDefault();
-			e.returnValue = ''; // algunos navegadores lo requieren para mostrar el diálogo
+			e.returnValue = '';
 		};
 
 		window.addEventListener('beforeunload', handler);

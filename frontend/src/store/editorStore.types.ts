@@ -39,13 +39,16 @@ export interface EditorActions {
 	clearElements: () => void;
 	toggleElementLock: (id: string) => void;
 	selectElement: (id: string | null) => void;
-	setTemplateMeta: (meta: Partial<Pick<EditorState, 'templateName' | 'isPublic' | 'positionLocked'>>) => void;
+	setTemplateMeta: (
+		meta: Partial<
+			Pick<EditorState, 'templateId' | 'templateName' | 'isPublic' | 'positionLocked' | 'loadedTemplateState'>
+		>,
+	) => void;
 	loadTemplate: (template: Template) => void;
 	resetEditor: () => void;
 	requestContentFocus: () => void;
 	copyElement: (id: string) => void;
 	pasteElement: () => void;
-	markSaved: () => void;
 }
 
 export type EditorStore = EditorState & EditorActions;

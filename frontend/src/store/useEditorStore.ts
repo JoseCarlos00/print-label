@@ -174,8 +174,6 @@ export const useEditorStore = create<EditorStore>()(
 					focusContentRequest: state.focusContentRequest + 1,
 				}));
 			},
-
-			markSaved: () => set({ isDirty: false }),
 		}),
 
 		{

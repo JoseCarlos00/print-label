@@ -3,6 +3,7 @@ import type { CreateTemplateInput, Template, UpdateTemplateInput } from 'shared'
 import { useAuth } from '@/hooks/useAuth';
 import { useEditorStore } from '@/store/useEditorStore';
 import { api, ApiError } from '@/api/client';
+import { markHistorySaved } from '@/store/history';
 
 interface SaveTemplateModalProps {
 	onClose: () => void;
@@ -13,7 +14,6 @@ export function SaveTemplateModal({ onClose, onSaved }: SaveTemplateModalProps) 
 	const { isAdmin } = useAuth();
 
 	const templateId = useEditorStore((s) => s.templateId);
-	const loadedTemplateState = useEditorStore((s) => s.loadedTemplateState);
 	const elements = useEditorStore((s) => s.elements);
 	const profile = useEditorStore((s) => s.profile);
 	const templateName = useEditorStore((s) => s.templateName);
@@ -26,7 +26,7 @@ export function SaveTemplateModal({ onClose, onSaved }: SaveTemplateModalProps) 
 	// es 'approved'. Cualquier otro caso (admin desde cero, admin con una
 	// plantilla pending/rejected cargada, o cualquier usuario libre) crea
 	// una plantilla nueva — nunca se sobrescribe nada sin ser admin+approved.
-	const isUpdating = isAdmin && Boolean(templateId) //&& loadedTemplateState === 'approved';
+	const isUpdating = isAdmin && Boolean(templateId); //&& loadedTemplateState === 'approved';
 
 	const [name, setName] = useState(templateName);
 	const [isPub, setIsPub] = useState(isPublic);
@@ -35,8 +35,6 @@ export function SaveTemplateModal({ onClose, onSaved }: SaveTemplateModalProps) 
 	const [submitting, setSubmitting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
-	console.log({ loadedTemplateState, templateId, isUpdating });
-	
 	const canSubmit =
 		name.trim().length > 0 && Boolean(profile) && elements.length > 0 && (isAdmin || requestedBy.trim().length > 0);
 
@@ -89,8 +87,16 @@ export function SaveTemplateModal({ onClose, onSaved }: SaveTemplateModalProps) 
 				mode = 'requested';
 			}
 
-
-			setTemplateMeta({ templateName: saved.name, isPublic: saved.public, positionLocked: saved.positionLocked });
+			setTemplateMeta({
+				templateId: saved.id,
+				templateName: saved.name,
+				isPublic: saved.public,
+				positionLocked: saved.positionLocked,
+				loadedTemplateState: saved.state,
+			});
+			markHistorySaved();
+			onSaved(saved, mode);
+			onClose();
 			onSaved(saved, mode);
 			onClose();
 		} catch (err) {

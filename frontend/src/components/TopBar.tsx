@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { ChevronDown, LogIn, LogOut, Printer } from 'lucide-react';
+import { ChevronDown, FilePlus, LogIn, LogOut, Printer, BookImage, ClipboardClock} from 'lucide-react';
+import { confirmLeaveEditor } from '@/utils/navigationGuard';
+import { clearHistory } from '@/store/history';
 
 import type { PrinterProfile, Template } from 'shared';
 
@@ -151,11 +153,26 @@ function LogoMenu() {
 	const { isAdmin, logout } = useAuth();
 	const { openLogin } = useLoginDialog();
 	const navigate = useNavigate();
+	const resetEditor = useEditorStore((s) => s.resetEditor);
 
 	const handleLogout = async () => {
 		await logout();
 		navigate('/');
 	};
+
+	const handleNewDocument = () => {
+		if (!confirmLeaveEditor()) return;
+
+		if (location.pathname === '/') {
+			// Ya estamos en el editor en blanco — navegar a la misma ruta
+			// no remonta nada (mismo `key`), así que reseteamos a mano.
+			resetEditor();
+			clearHistory();
+		} else {
+			navigate('/');
+		}
+	};
+
 
 	return (
 		<div className='flex items-center gap-2'>
@@ -174,10 +191,18 @@ function LogoMenu() {
 				/>
 
 				<DropdownMenuContent align='start'>
+					<DropdownMenuItem onClick={handleNewDocument}>
+						<FilePlus className='size-4' />
+						Nueva etiqueta
+					</DropdownMenuItem>
+
+					<DropdownMenuSeparator />
+
 					<DropdownMenuItem
 						className='cursor-pointer'
 						onClick={() => navigate('/galeria')}
 					>
+						<BookImage className='size-4' />
 						Galería
 					</DropdownMenuItem>
 
@@ -186,6 +211,7 @@ function LogoMenu() {
 							className='cursor-pointer'
 							onClick={() => navigate('/staging')}
 						>
+							<ClipboardClock className='size-4' />
 							Staging
 						</DropdownMenuItem>
 					)}
@@ -196,7 +222,7 @@ function LogoMenu() {
 						<DropdownMenuItem
 							className='cursor-pointer'
 							variant='destructive'
-							onClick={handleLogout}
+							onClick={handleLogout}	
 						>
 							<LogOut />
 							Cerrar sesión
