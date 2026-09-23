@@ -104,13 +104,17 @@ export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeight
 
 	const bounds = getElementBounds(element, naturalSize);
 
-
-	// Evita falso positivo antes de que ResizeObserver mida por primera vez
 	const hasMeasured = naturalSize.width > 0 && naturalSize.height > 0;
 
 	const isOutOfBounds =
 		hasMeasured &&
 		(bounds.left < 0 || bounds.top < 0 || bounds.right > canvasWidthMm || bounds.bottom > canvasHeightMm);
+
+	const isSideways = element.rotation === 90 || element.rotation === 270;
+
+	const offsetXPx = isSideways ? (naturalSize.height - naturalSize.width) / 2 : 0;
+
+	const offsetYPx = isSideways ? (naturalSize.width - naturalSize.height) / 2 : 0;
 
 	return (
 		<>
@@ -123,8 +127,8 @@ export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeight
 				onDoubleClick={handleDoubleClick}
 				style={{
 					position: 'absolute',
-					left: mmToPx(bounds.left),
-					top: mmToPx(bounds.top),
+					left: mmToPx(element.x) + offsetXPx,
+					top: mmToPx(element.y) + offsetYPx,
 					transform: `rotate(${element.rotation}deg)`,
 					cursor: draggable ? 'move' : 'default',
 				}}
