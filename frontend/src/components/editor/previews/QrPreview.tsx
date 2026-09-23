@@ -8,11 +8,12 @@ import { loadSwiss721 } from 'shared/zpl/font';
 
 const font = await loadSwiss721();
 
-export function QrPreview({ element }: { element: QrElement }) {
+export function QrPreview({ element, dpi }: { element: QrElement; dpi?: number }) {
 	return (
 		<QrBitmapPreview
 			element={element}
 			createBitmap={createQrBitmap}
+			dpi={dpi}
 		/>
 	);
 }
@@ -20,6 +21,7 @@ export function QrPreview({ element }: { element: QrElement }) {
 interface QrBitmapPreviewProps {
 	element: QrElement;
 	createBitmap: (element: QrElement, dpi: number, font: Font) => GraphicBitmap;
+	dpi?: number;
 }
 
 type BitmapSize = {
@@ -31,11 +33,11 @@ function dotsToMm(dots: number, dpi: number): number {
 	return (dots * 25.4) / dpi;
 }
 
-function QrBitmapPreview({ element, createBitmap }: QrBitmapPreviewProps) {
+function QrBitmapPreview({ element, createBitmap, dpi: dpiOverride }: QrBitmapPreviewProps) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 
 	const profile = useEditorStore((s) => s.profile);
-	const dpi = profile?.dpi ?? 203;
+	const dpi = dpiOverride ?? profile?.dpi ?? 203;
 
 	const [size, setSize] = useState<BitmapSize>({
 		width: mmToPx(element.size),
@@ -64,13 +66,9 @@ function QrBitmapPreview({ element, createBitmap }: QrBitmapPreviewProps) {
 		for (let y = 0; y < bitmap.heightDots; y++) {
 			for (let x = 0; x < bitmap.widthDots; x++) {
 				const byteIndex = y * bitmap.bytesPerRow + Math.floor(x / 8);
-
 				const bitIndex = 7 - (x % 8);
-
 				const isBlack = (bitmap.data[byteIndex] & (1 << bitIndex)) !== 0;
-
 				const pixelIndex = (y * bitmap.widthDots + x) * 4;
-
 				const value = isBlack ? 0 : 255;
 
 				imageData.data[pixelIndex] = value;

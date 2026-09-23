@@ -10,13 +10,14 @@ const font = await loadSwiss721();
 interface BarcodeBitmapPreviewProps {
 	element: BarcodeElement;
 	createBitmap: (element: BarcodeElement, dpi: number, font: Font) => GraphicBitmap;
+	dpi?: number;
 }
 
-export function BarcodeBitmapPreview({ element, createBitmap }: BarcodeBitmapPreviewProps) {
+export function BarcodeBitmapPreview({ element, createBitmap, dpi: dpiOverride }: BarcodeBitmapPreviewProps) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 
 	const profile = useEditorStore((s) => s.profile);
-	const dpi = profile?.dpi ?? 203;
+	const dpi = dpiOverride ?? profile?.dpi ?? 203;
 
 	useEffect(() => {
 		const canvas = canvasRef.current;

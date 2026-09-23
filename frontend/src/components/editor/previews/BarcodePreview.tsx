@@ -2,14 +2,14 @@ import type { BarcodeElement, Symbology } from 'shared';
 import { BarcodeBitmapPreview } from './BarcodeBitmapPreview';
 import { createEan13Bitmap, createCode128Bitmap } from 'shared/zpl';
 
-
-export function BarcodePreview({ element }: { element: BarcodeElement }) {
+export function BarcodePreview({ element, dpi }: { element: BarcodeElement; dpi?: number }) {
 	switch (element.symbology) {
 		case 'code128':
 			return (
 				<BarcodeBitmapPreview
 					element={element}
 					createBitmap={createCode128Bitmap}
+					dpi={dpi}
 				/>
 			);
 
@@ -18,6 +18,7 @@ export function BarcodePreview({ element }: { element: BarcodeElement }) {
 				<BarcodeBitmapPreview
 					element={element}
 					createBitmap={createEan13Bitmap}
+					dpi={dpi}
 				/>
 			);
 	}
