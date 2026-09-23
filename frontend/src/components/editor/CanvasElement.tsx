@@ -184,7 +184,7 @@ function ActionsButtons({ element, actions }: ActionsButtonsProps) {
 	return (
 		<div
 			data-element-toolbar
-			className='absolute -top-8 left-0 flex gap-1 rounded-md bg-app-surface p-1 shadow'
+			className='absolute -top-8 left-0 flex gap-1 rounded-md bg-app-bg p-1 shadow'
 		>
 			<button
 				title='Rotar'

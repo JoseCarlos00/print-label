@@ -32,8 +32,15 @@ export function Canvas({ loadError }: CanvasProps) {
 		<div className='flex min-w-0 flex-1 flex-col items-center justify-center bg-app-bg p-8 overflow-auto thin-scrollbar'>
 			<div
 				onPointerDown={() => selectElement(null)}
-				style={{ width: mmToPx(profile.widthMm), height: mmToPx(profile.heightMm) }}
-				className='relative border border-app-border bg-gray-300 zebra-font-emulated'
+				style={{
+					width: mmToPx(profile.widthMm),
+					height: mmToPx(profile.heightMm),
+					backgroundImage: `
+						linear-gradient(to right, rgba(120,120,120,.2) 1px, transparent 1px),
+						linear-gradient(to bottom, rgba(120,120,120,.2) 1px, transparent 1px)`,
+					backgroundSize: '12px 12px',
+				}}
+				className='relative border border-app-border bg-app-surface zebra-font-emulated'
 			>
 				{elements.map((el) => (
 					<CanvasElement
