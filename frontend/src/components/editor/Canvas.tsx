@@ -36,9 +36,17 @@ export function Canvas({ loadError }: CanvasProps) {
 					width: mmToPx(profile.widthMm),
 					height: mmToPx(profile.heightMm),
 					backgroundImage: `
-						linear-gradient(to right, rgba(120,120,120,.2) 1px, transparent 1px),
-						linear-gradient(to bottom, rgba(120,120,120,.2) 1px, transparent 1px)`,
-					backgroundSize: '12px 12px',
+						linear-gradient(to right, rgba(100, 100, 100, 0.12) 1px, transparent 1px),
+						linear-gradient(to bottom, rgba(100, 100, 100, 0.12) 1px, transparent 1px),
+						linear-gradient(to right, rgba(80, 80, 80, 0.28) 1px, transparent 1px),
+						linear-gradient(to bottom, rgba(80, 80, 80, 0.28) 1px, transparent 1px)
+					`,
+						backgroundSize: `
+							10px 10px,
+							10px 10px,
+							50px 50px,
+							50px 50px
+					`,
 				}}
 				className='relative border border-app-border bg-app-surface zebra-font-emulated'
 			>
