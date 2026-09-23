@@ -274,7 +274,7 @@ function PrinterSelect({ profiles, profile, setProfile }: PrinterSelectProps) {
 				<SelectValue placeholder='Seleccionar impresora' />
 			</SelectTrigger>
 
-			<SelectContent>
+			<SelectContent className="max-h-150">
 				{profiles.map((item) => (
 					<SelectItem
 						key={item.name}
