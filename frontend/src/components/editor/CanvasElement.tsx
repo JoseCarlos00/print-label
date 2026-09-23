@@ -9,6 +9,7 @@ import { QrPreview } from './previews/QrPreview';
 import { PreviewErrorBoundary } from './previews/PreviewErrorBoundary';
 import { TextPreview } from './previews/TextPreview';
 import { OutOfBoundsWarning } from './OutOfBoundsWarning';
+import { getElementBounds } from '@/utils/geometry/elementBounds'
 
 interface CanvasElementProps {
 	element: LabelElement;
@@ -101,29 +102,15 @@ export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeight
 		return () => observer.disconnect();
 	}, [element.type]);
 
-	// ...dragOffsetMm, cursorToMm, handlePointerDown/Move/Up SIN CAMBIOS
-	// (no dependen de la rotación visual, así que siguen funcionando igual)...
+	const bounds = getElementBounds(element, naturalSize);
 
-	// A 90°/270° el bounding box visual intercambia ancho y alto. Rotando
-	// sobre el centro (default de CSS), a 0°/180° la caja no se mueve —
-	// pero a 90°/270° queda centrada en un punto distinto al esperado, así
-	// que corregimos left/top para que la esquina superior izquierda del
-	// elemento YA ROTADO caiga siempre en (x,y), igual que a 0°/180°.
-	const isSideways = element.rotation === 90 || element.rotation === 270;
-	const offsetXPx = isSideways ? (naturalSize.height - naturalSize.width) / 2 : 0;
-	const offsetYPx = isSideways ? (naturalSize.width - naturalSize.height) / 2 : 0;
-
-	const widthPx = isSideways ? naturalSize.height : naturalSize.width;
-	const heightPx = isSideways ? naturalSize.width : naturalSize.height;
-	const leftPx = mmToPx(element.x) + offsetXPx;
-	const topPx = mmToPx(element.y) + offsetYPx;
 
 	// Evita falso positivo antes de que ResizeObserver mida por primera vez
 	const hasMeasured = naturalSize.width > 0 && naturalSize.height > 0;
 
 	const isOutOfBounds =
 		hasMeasured &&
-		(leftPx < 0 || topPx < 0 || leftPx + widthPx > mmToPx(canvasWidthMm) || topPx + heightPx > mmToPx(canvasHeightMm));
+		(bounds.left < 0 || bounds.top < 0 || bounds.right > canvasWidthMm || bounds.bottom > canvasHeightMm);
 
 	return (
 		<>
@@ -136,8 +123,8 @@ export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeight
 				onDoubleClick={handleDoubleClick}
 				style={{
 					position: 'absolute',
-					left: mmToPx(element.x) + offsetXPx,
-					top: mmToPx(element.y) + offsetYPx,
+					left: mmToPx(bounds.left),
+					top: mmToPx(bounds.top),
 					transform: `rotate(${element.rotation}deg)`,
 					cursor: draggable ? 'move' : 'default',
 				}}
@@ -155,8 +142,8 @@ export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeight
 
 			{isOutOfBounds && (
 				<OutOfBoundsWarning
-					x={leftPx + widthPx / 2}
-					y={topPx + heightPx / 2}
+					x={mmToPx(bounds.centerX)}
+					y={mmToPx(bounds.centerY)}
 				/>
 			)}
 		</>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { Template } from 'shared';
 import { api, ApiError } from '@/api/client';
+import { bumpTemplatesVersion } from '@/store/templatesCache'
 
 type ActionState = 'idle' | 'approving' | 'rejecting';
 
@@ -30,6 +31,7 @@ export function StagingPage() {
 		try {
 			await api.post(`/staging/${id}/${action}`);
 			setTemplates((prev) => prev.filter((t) => t.id !== id));
+			bumpTemplatesVersion();
 		} catch (err) {
 			setError(err instanceof ApiError ? err.message : `Error al ${action} la plantilla`);
 			setActionState((prev) => {
