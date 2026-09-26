@@ -17,7 +17,7 @@ export function QuickTemplatesPanel() {
 				<p className='text-xs font-medium uppercase text-app-text-muted'>Plantillas</p>
 				<Link
 					to='/galeria'
-					className='text-xs text-app-accent hover:underline'
+					className='text-xs text-app-accent hover:underline cursor-pointer'
 				>
 					Ver todas
 				</Link>
@@ -33,7 +33,7 @@ export function QuickTemplatesPanel() {
 				<button
 					key={t.id}
 					onClick={() => handleUse(t.id)}
-					className='rounded-md border border-app-border px-3 py-2 text-left text-sm text-app-text hover:bg-app-surface'
+					className='rounded-md border border-app-border px-3 py-2 text-left text-sm text-app-text hover:bg-app-surface cursor-pointer'
 				>
 					{t.name}
 				</button>

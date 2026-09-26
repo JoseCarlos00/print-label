@@ -14,14 +14,6 @@ export function FloatingActionBar() {
 	const canUndo = pastStates.length > 0;
 	const canRedo = futureStates.length > 0;
 
-	const isTracking = useStore(useEditorStore.temporal, (s) => s.isTracking);
-
-	console.log('HISTORY', {
-		pastStates,
-		futureStates,
-		isTracking,
-	});
-
 	return (
 		<div className='fixed bottom-4 left-1/2 z-30 flex -translate-x-1/2 items-center gap-1 rounded-lg border border-app-border bg-app-surface p-1 shadow-lg'>
 			<button

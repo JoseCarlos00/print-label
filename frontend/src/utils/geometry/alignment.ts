@@ -144,3 +144,31 @@ function findClosest<SourcePoint extends string, TargetPoint extends string>(
 
 	return closest;
 }
+
+export function getSnapOffset(match: AlignmentMatch, source: AlignmentPoints): number {
+	const sourcePosition = getSourcePosition(match, source);
+
+	return match.position - sourcePosition;
+}
+
+function getSourcePosition(match: AlignmentMatch, source: AlignmentPoints): number {
+	switch (match.source) {
+		case 'left':
+			return source.left;
+
+		case 'centerX':
+			return source.centerX;
+
+		case 'right':
+			return source.right;
+
+		case 'top':
+			return source.top;
+
+		case 'centerY':
+			return source.centerY;
+
+		case 'bottom':
+			return source.bottom;
+	}
+}

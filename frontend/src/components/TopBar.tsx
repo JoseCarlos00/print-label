@@ -192,7 +192,10 @@ function LogoMenu() {
 				/>
 
 				<DropdownMenuContent align='start'>
-					<DropdownMenuItem onClick={handleNewDocument}>
+					<DropdownMenuItem
+						className='cursor-pointer'
+						onClick={handleNewDocument}
+					>
 						<FilePlus className='size-4' />
 						Nueva etiqueta
 					</DropdownMenuItem>
@@ -223,7 +226,7 @@ function LogoMenu() {
 						<DropdownMenuItem
 							className='cursor-pointer'
 							variant='destructive'
-							onClick={handleLogout}	
+							onClick={handleLogout}
 						>
 							<LogOut />
 							Cerrar sesión

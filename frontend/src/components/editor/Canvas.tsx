@@ -4,7 +4,7 @@ import { CanvasElement } from './CanvasElement';
 import { GuidesOverlay } from './GuidesOverlay';
 import { mmToPx } from '@/utils/scale';
 import { getAlignmentPoints, getElementBounds } from '@/utils/geometry/elementBounds';
-import { findAlignmentMatches } from '@/utils/geometry/alignment';
+import { findAlignmentMatches, getSnapOffset } from '@/utils/geometry/alignment';
 
 interface CanvasProps {
 	loadError?: string | null;
@@ -107,9 +107,24 @@ export function Canvas({ loadError }: CanvasProps) {
 				})),
 			);
 
+			let snappedX = x;
+			let snappedY = y;
+
+			const verticalMatch = matches.find((match) => match.orientation === 'vertical');
+
+			const horizontalMatch = matches.find((match) => match.orientation === 'horizontal');
+
+			if (verticalMatch) {
+				snappedX += getSnapOffset(verticalMatch, sourcePoints);
+			}
+
+			if (horizontalMatch) {
+				snappedY += getSnapOffset(horizontalMatch, sourcePoints);
+			}
+
 			updateElement(elementId, {
-				x,
-				y,
+				x: snappedX,
+				y: snappedY,
 			});
 		},
 		[elements, naturalSizes, profile, updateElement],
