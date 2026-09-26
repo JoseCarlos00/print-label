@@ -49,6 +49,8 @@ export interface EditorActions {
 	requestContentFocus: () => void;
 	copyElement: (id: string) => void;
 	pasteElement: () => void;
+	bringToFront: (id: string) => void;
+	sendToBack: (id: string) => void;
 }
 
 export type EditorStore = EditorState & EditorActions;

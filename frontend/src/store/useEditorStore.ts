@@ -174,6 +174,28 @@ export const useEditorStore = create<EditorStore>()(
 					focusContentRequest: state.focusContentRequest + 1,
 				}));
 			},
+
+			bringToFront: (id) =>
+				set((state) => {
+					const index = state.elements.findIndex((el) => el.id === id);
+					if (index === -1 || index === state.elements.length - 1) return {};
+
+					const elements = [...state.elements];
+					const [el] = elements.splice(index, 1);
+					elements.push(el);
+					return { elements };
+				}),
+
+			sendToBack: (id) =>
+				set((state) => {
+					const index = state.elements.findIndex((el) => el.id === id);
+					if (index <= 0) return {};
+
+					const elements = [...state.elements];
+					const [el] = elements.splice(index, 1);
+					elements.unshift(el);
+					return { elements };
+				}),
 		}),
 
 		{

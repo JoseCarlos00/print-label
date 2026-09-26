@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, useState, type PointerEvent } from 'react';
+import { BringToFront, SendToBack, RotateCw, Copy, Trash } from 'lucide-react';
 import type { LabelElement } from 'shared';
 import { useEditorStore } from '@/store/useEditorStore';
 import { beginHistoryTransaction, commitHistoryTransaction } from '@/store/history';
@@ -33,6 +34,8 @@ interface Actions {
 	rotateElement: (id: string) => void;
 	duplicateElement: (id: string) => void;
 	removeElement: (id: string) => void;
+	bringToFront: (id: string) => void;
+	sendToBack: (id: string) => void;
 }
 
 export function CanvasElement({
@@ -50,11 +53,15 @@ export function CanvasElement({
 	const duplicateElement = useEditorStore((s) => s.duplicateElement);
 	const removeElement = useEditorStore((s) => s.removeElement);
 	const requestContentFocus = useEditorStore((s) => s.requestContentFocus);
+	const bringToFront = useEditorStore((s) => s.bringToFront);
+	const sendToBack = useEditorStore((s) => s.sendToBack);
 
 	const actions: Actions = {
 		rotateElement,
 		duplicateElement,
 		removeElement,
+		bringToFront,
+		sendToBack,
 	};
 
 	const dragOffsetMm = useRef<{ dx: number; dy: number } | null>(null);
@@ -218,6 +225,28 @@ function ActionsButtons({ element, actions }: ActionsButtonsProps) {
 			className='absolute -top-8 left-0 flex gap-1 rounded-md bg-app-bg p-1 shadow'
 		>
 			<button
+				title='Traer al frente'
+				onClick={(e) => {
+					e.stopPropagation();
+					actions.bringToFront(element.id);
+				}}
+				className='rounded px-1.5 text-xs hover:bg-app-border cursor-pointer'
+			>
+				<BringToFront className='size-3.5' />
+			</button>
+
+			<button
+				title='Enviar atrás'
+				onClick={(e) => {
+					e.stopPropagation();
+					actions.sendToBack(element.id);
+				}}
+				className='rounded px-1.5 text-xs hover:bg-app-border cursor-pointer'
+			>
+				<SendToBack className='size-3.5' />
+			</button>
+
+			<button
 				title='Rotar'
 				onClick={(e) => {
 					e.stopPropagation();
@@ -225,7 +254,7 @@ function ActionsButtons({ element, actions }: ActionsButtonsProps) {
 				}}
 				className='rounded px-1.5 text-xs hover:bg-app-border cursor-pointer'
 			>
-				⟳
+				<RotateCw className='size-3.5' />
 			</button>
 
 			<button
@@ -236,7 +265,7 @@ function ActionsButtons({ element, actions }: ActionsButtonsProps) {
 				}}
 				className='rounded px-1.5 text-xs hover:bg-app-border cursor-pointer'
 			>
-				⧉
+				<Copy className='size-3.5' />
 			</button>
 
 			<button
@@ -247,7 +276,7 @@ function ActionsButtons({ element, actions }: ActionsButtonsProps) {
 				}}
 				className='rounded px-1.5 text-xs text-red-400 hover:bg-app-border cursor-pointer'
 			>
-				✕
+				<Trash className='size-3.5' />
 			</button>
 		</div>
 	);
