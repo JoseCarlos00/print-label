@@ -70,29 +70,6 @@ export function EditorPanelTabs({ mobileOpen, onCloseMobile }: EditorPanelTabsPr
 				>
 					<TabsList className='m-0 grid h-16 w-full grid-cols-2 gap-0 rounded-none border-b border-app-border bg-transparent p-0'>
 						<TabsTrigger
-							value='panel'
-							className='
-								h-full
-								cursor-pointer
-								rounded-none
-								border-0
-								px-4
-								text-app-text-muted
-								transition-colors
-
-							data-active:bg-app-surface!
-    					data-active:text-app-accent-500!
-
-								after:bottom-0
-								after:h-0.5
-								after:bg-app-accent-500
-							'
-						>
-							<Settings2 className='size-5' />
-							<span>Propiedades</span>
-						</TabsTrigger>
-
-						<TabsTrigger
 							value='templates'
 							className='
 								h-full
@@ -113,6 +90,29 @@ export function EditorPanelTabs({ mobileOpen, onCloseMobile }: EditorPanelTabsPr
 						>
 							<List className='size-5' />
 							<span>Plantillas</span>
+						</TabsTrigger>
+
+						<TabsTrigger
+							value='panel'
+							className='
+								h-full
+								cursor-pointer
+								rounded-none
+								border-0
+								px-4
+								text-app-text-muted
+								transition-colors
+
+							data-active:bg-app-surface!
+    					data-active:text-app-accent-500!
+
+								after:bottom-0
+								after:h-0.5
+								after:bg-app-accent-500
+							'
+						>
+							<Settings2 className='size-5' />
+							<span>Propiedades</span>
 						</TabsTrigger>
 					</TabsList>
 
