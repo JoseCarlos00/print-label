@@ -9,13 +9,24 @@ import { QrPreview } from './previews/QrPreview';
 import { PreviewErrorBoundary } from './previews/PreviewErrorBoundary';
 import { TextPreview } from './previews/TextPreview';
 import { OutOfBoundsWarning } from './OutOfBoundsWarning';
-import { getElementBounds } from '@/utils/geometry/elementBounds'
+import { getElementBounds } from '@/utils/geometry/elementBounds';
 
 interface CanvasElementProps {
 	element: LabelElement;
 	isSelected: boolean;
 	canvasWidthMm: number;
 	canvasHeightMm: number;
+
+	onNaturalSizeChange: (
+		elementId: string,
+		size: {
+			width: number;
+			height: number;
+		},
+	) => void;
+
+	onDragPositionChange: (elementId: string, x: number, y: number) => void;
+	onDragEnd: () => void;
 }
 
 interface Actions {
@@ -24,10 +35,17 @@ interface Actions {
 	removeElement: (id: string) => void;
 }
 
-export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeightMm }: CanvasElementProps) {
+export function CanvasElement({
+	element,
+	isSelected,
+	canvasWidthMm,
+	canvasHeightMm,
+	onNaturalSizeChange,
+	onDragPositionChange,
+	onDragEnd,
+}: CanvasElementProps) {
 	const positionLocked = useEditorStore((s) => s.positionLocked);
 	const selectElement = useEditorStore((s) => s.selectElement);
-	const updateElement = useEditorStore((s) => s.updateElement);
 	const rotateElement = useEditorStore((s) => s.rotateElement);
 	const duplicateElement = useEditorStore((s) => s.duplicateElement);
 	const removeElement = useEditorStore((s) => s.removeElement);
@@ -50,33 +68,36 @@ export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeight
 		return { x: pxToMm(e.clientX - canvasRect.left), y: pxToMm(e.clientY - canvasRect.top) };
 	};
 
-		const handlePointerDown = (e: PointerEvent<HTMLDivElement>) => {
-			e.stopPropagation();
+	const handlePointerDown = (e: PointerEvent<HTMLDivElement>) => {
+		e.stopPropagation();
 
-			if ((e.target as HTMLElement).closest('[data-element-toolbar]')) return;
+		if ((e.target as HTMLElement).closest('[data-element-toolbar]')) return;
 
-			selectElement(element.id);
-			if (!draggable) return;
+		selectElement(element.id);
+		if (!draggable) return;
 
-			beginHistoryTransaction();
+		beginHistoryTransaction();
 
-			e.currentTarget.setPointerCapture(e.pointerId);
-			const cursor = cursorToMm(e);
-			dragOffsetMm.current = { dx: cursor.x - element.x, dy: cursor.y - element.y };
-		};
+		e.currentTarget.setPointerCapture(e.pointerId);
+		const cursor = cursorToMm(e);
+		dragOffsetMm.current = { dx: cursor.x - element.x, dy: cursor.y - element.y };
+	};
 
 	const handlePointerMove = (e: PointerEvent<HTMLDivElement>) => {
 		if (!draggable || !dragOffsetMm.current) return;
 
 		const cursor = cursorToMm(e);
+
 		const xMm = cursor.x - dragOffsetMm.current.dx;
 		const yMm = cursor.y - dragOffsetMm.current.dy;
-		updateElement(element.id, { x: xMm, y: yMm });
+
+		onDragPositionChange(element.id, xMm, yMm);
 	};
 
 	const handlePointerUp = () => {
 		dragOffsetMm.current = null;
 		commitHistoryTransaction();
+		onDragEnd();
 	};
 
 	const handleDoubleClick = (e: PointerEvent<HTMLDivElement>) => {
@@ -96,11 +117,17 @@ export function CanvasElement({ element, isSelected, canvasWidthMm, canvasHeight
 		if (!node) return;
 
 		const observer = new ResizeObserver(() => {
-			setNaturalSize({ width: node.offsetWidth, height: node.offsetHeight });
+			const size = {
+				width: node.offsetWidth,
+				height: node.offsetHeight,
+			};
+
+			setNaturalSize(size);
+			onNaturalSizeChange(element.id, size);
 		});
 		observer.observe(node);
 		return () => observer.disconnect();
-	}, [element.type]);
+	}, [element.id, onNaturalSizeChange]);
 
 	const bounds = getElementBounds(element, naturalSize);
 

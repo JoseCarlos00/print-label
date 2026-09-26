@@ -5,15 +5,8 @@ export const GUIDE_THRESHOLD_MM = 2;
 type VerticalPoint = 'left' | 'centerX' | 'right';
 type HorizontalPoint = 'top' | 'centerY' | 'bottom';
 
-export interface AlignmentMatch {
-	orientation: 'vertical' | 'horizontal';
-	position: number;
-	source: VerticalPoint | HorizontalPoint;
-	target: VerticalPoint | HorizontalPoint;
-	distance: number;
-}
-
-interface AlignmentTarget {
+export interface AlignmentTarget {
+	elementId: string;
 	points: AlignmentPoints;
 }
 
@@ -26,13 +19,20 @@ interface CanvasAlignmentPoints {
 	bottom: number;
 }
 
+export interface AlignmentMatch {
+	orientation: 'vertical' | 'horizontal';
+	position: number;
+	source: VerticalPoint | HorizontalPoint;
+	target: VerticalPoint | HorizontalPoint;
+	targetElementId: string | null;
+	distance: number;
+}
+
 export function findAlignmentMatches(
 	source: AlignmentPoints,
 	targets: AlignmentTarget[],
 	canvas: CanvasAlignmentPoints,
 ): AlignmentMatch[] {
-	const matches: AlignmentMatch[] = [];
-
 	const verticalSources: Array<[VerticalPoint, number]> = [
 		['left', source.left],
 		['centerX', source.centerX],
@@ -45,29 +45,29 @@ export function findAlignmentMatches(
 		['bottom', source.bottom],
 	];
 
-	const verticalTargets: Array<[VerticalPoint, number]> = [
-		['left', canvas.left],
-		['centerX', canvas.centerX],
-		['right', canvas.right],
+	const verticalTargets: Array<[VerticalPoint, number, string | null]> = [
+		['left', canvas.left, null],
+		['centerX', canvas.centerX, null],
+		['right', canvas.right, null],
 	];
 
-	const horizontalTargets: Array<[HorizontalPoint, number]> = [
-		['top', canvas.top],
-		['centerY', canvas.centerY],
-		['bottom', canvas.bottom],
+	const horizontalTargets: Array<[HorizontalPoint, number, string | null]> = [
+		['top', canvas.top, null],
+		['centerY', canvas.centerY, null],
+		['bottom', canvas.bottom, null],
 	];
 
 	for (const target of targets) {
 		verticalTargets.push(
-			['left', target.points.left],
-			['centerX', target.points.centerX],
-			['right', target.points.right],
+			['left', target.points.left, target.elementId],
+			['centerX', target.points.centerX, target.elementId],
+			['right', target.points.right, target.elementId],
 		);
 
 		horizontalTargets.push(
-			['top', target.points.top],
-			['centerY', target.points.centerY],
-			['bottom', target.points.bottom],
+			['top', target.points.top, target.elementId],
+			['centerY', target.points.centerY, target.elementId],
+			['bottom', target.points.bottom, target.elementId],
 		);
 	}
 
@@ -75,41 +75,53 @@ export function findAlignmentMatches(
 
 	const closestHorizontal = findClosest(horizontalSources, horizontalTargets);
 
+	const matches: AlignmentMatch[] = [];
+
 	if (closestVertical) {
 		matches.push({
 			orientation: 'vertical',
-			...closestVertical,
+			source: closestVertical.source,
+			target: closestVertical.target,
+			position: closestVertical.position,
+			targetElementId: closestVertical.targetElementId,
+			distance: closestVertical.distance,
 		});
 	}
 
 	if (closestHorizontal) {
 		matches.push({
 			orientation: 'horizontal',
-			...closestHorizontal,
+			source: closestHorizontal.source,
+			target: closestHorizontal.target,
+			position: closestHorizontal.position,
+			targetElementId: closestHorizontal.targetElementId,
+			distance: closestHorizontal.distance,
 		});
 	}
 
 	return matches;
 }
 
-function findClosest<T extends string>(
-	sources: Array<[T, number]>,
-	targets: Array<[T, number]>,
+function findClosest<SourcePoint extends string, TargetPoint extends string>(
+	sources: Array<[SourcePoint, number]>,
+	targets: Array<[TargetPoint, number, string | null]>,
 ): {
 	position: number;
-	source: T;
-	target: T;
+	source: SourcePoint;
+	target: TargetPoint;
+	targetElementId: string | null;
 	distance: number;
 } | null {
 	let closest: {
 		position: number;
-		source: T;
-		target: T;
+		source: SourcePoint;
+		target: TargetPoint;
+		targetElementId: string | null;
 		distance: number;
 	} | null = null;
 
 	for (const [source, sourcePosition] of sources) {
-		for (const [target, targetPosition] of targets) {
+		for (const [target, targetPosition, targetElementId] of targets) {
 			const distance = Math.abs(sourcePosition - targetPosition);
 
 			if (distance > GUIDE_THRESHOLD_MM) {
@@ -124,6 +136,7 @@ function findClosest<T extends string>(
 				position: targetPosition,
 				source,
 				target,
+				targetElementId,
 				distance,
 			};
 		}
