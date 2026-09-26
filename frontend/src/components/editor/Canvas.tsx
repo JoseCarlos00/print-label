@@ -2,8 +2,9 @@ import { useCallback, useState } from 'react';
 import { useEditorStore } from '@/store/useEditorStore';
 import { CanvasElement } from './CanvasElement';
 import { GuidesOverlay } from './GuidesOverlay';
+import { SelectionHandles } from './SelectionHandles';
 import { mmToPx } from '@/utils/scale';
-import { getAlignmentPoints, getElementBounds } from '@/utils/geometry/elementBounds';
+import { getAlignmentPoints, getElementBounds, getSelectionCorners } from '@/utils/geometry/elementBounds';
 import { findAlignmentMatches, getSnapOffset } from '@/utils/geometry/alignment';
 
 interface CanvasProps {
@@ -29,6 +30,8 @@ export function Canvas({ loadError }: CanvasProps) {
 	const selectedElementId = useEditorStore((s) => s.selectedElementId);
 	const selectElement = useEditorStore((s) => s.selectElement);
 	const updateElement = useEditorStore((s) => s.updateElement);
+
+	const selectedElement = elements.find((element) => element.id === selectedElementId);
 
 	const handleNaturalSizeChange = useCallback((elementId: string, size: NaturalSize) => {
 		setNaturalSizes((current) => {
@@ -134,6 +137,16 @@ export function Canvas({ loadError }: CanvasProps) {
 		setGuides([]);
 	}, []);
 
+	const selectedCorners =
+  selectedElement && naturalSizes[selectedElement.id]
+    ? getSelectionCorners(
+        getElementBounds(
+          selectedElement,
+          naturalSizes[selectedElement.id],
+        ),
+      )
+    : null;
+
 	if (loadError) {
 		return (
 			<div className='flex flex-1 items-center justify-center bg-app-bg p-8'>
@@ -190,6 +203,8 @@ export function Canvas({ loadError }: CanvasProps) {
 						onDragEnd={handleDragEnd}
 					/>
 				))}
+
+				{selectedCorners && <SelectionHandles corners={selectedCorners} />}
 			</div>
 		</div>
 	);

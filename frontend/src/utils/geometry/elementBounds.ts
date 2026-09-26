@@ -63,3 +63,43 @@ export function getAlignmentPoints(bounds: ElementBounds): AlignmentPoints {
 		bottom: bounds.bottom,
 	};
 }
+
+export interface SelectionCorners {
+	topLeft: {
+		x: number;
+		y: number;
+	};
+	topRight: {
+		x: number;
+		y: number;
+	};
+	bottomLeft: {
+		x: number;
+		y: number;
+	};
+	bottomRight: {
+		x: number;
+		y: number;
+	};
+}
+
+export function getSelectionCorners(bounds: ElementBounds): SelectionCorners {
+	return {
+		topLeft: {
+			x: bounds.left,
+			y: bounds.top,
+		},
+		topRight: {
+			x: bounds.right,
+			y: bounds.top,
+		},
+		bottomLeft: {
+			x: bounds.left,
+			y: bounds.bottom,
+		},
+		bottomRight: {
+			x: bounds.right,
+			y: bounds.bottom,
+		},
+	};
+}
