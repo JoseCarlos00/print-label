@@ -43,3 +43,23 @@ export function getElementBounds(element: LabelElement, naturalSize: NaturalSize
 		height,
 	};
 }
+
+export interface AlignmentPoints {
+	left: number;
+	centerX: number;
+	right: number;
+	top: number;
+	centerY: number;
+	bottom: number;
+}
+
+export function getAlignmentPoints(bounds: ElementBounds): AlignmentPoints {
+	return {
+		left: bounds.left,
+		centerX: bounds.centerX,
+		right: bounds.right,
+		top: bounds.top,
+		centerY: bounds.centerY,
+		bottom: bounds.bottom,
+	};
+}
