@@ -138,14 +138,9 @@ export function Canvas({ loadError }: CanvasProps) {
 	}, []);
 
 	const selectedCorners =
-  selectedElement && naturalSizes[selectedElement.id]
-    ? getSelectionCorners(
-        getElementBounds(
-          selectedElement,
-          naturalSizes[selectedElement.id],
-        ),
-      )
-    : null;
+		selectedElement && naturalSizes[selectedElement.id]
+			? getSelectionCorners(getElementBounds(selectedElement, naturalSizes[selectedElement.id]))
+			: null;
 
 	if (loadError) {
 		return (
