@@ -3,7 +3,7 @@
 ## 1. Qué hace la aplicación
 
 Es un editor visual (WYSIWYG) para diseñar etiquetas que se imprimen en impresoras
-Zebra (inicialmente 4"x4", con soporte planeado para 70x32mm). El usuario coloca,
+Zebra, con soporte para dos tamaños de etiqueta: 4"x4" y 70x32mm. El usuario coloca,
 mueve, edita y elimina elements —texto, códigos de barras, códigos QR— dentro de
 un área que representa físicamente el tamaño de la etiqueta.
 
@@ -24,7 +24,7 @@ causaba depender del motor de impresión del navegador.
 
 ### Admin (usuario único, con login)
 - Inicia sesión con usuario/contraseña fijos (definidos en `.env`, no hay tabla
-  de usuarios ni roles).
+  de usuarios ni roles). El login es un modal, no una página aparte.
 - Ve el mismo editor, pero con un **indicador visual de "modo admin"**.
 - Al guardar, la plantilla se guarda **directo como `"approved"`** (no pasa por
   staging).
@@ -77,7 +77,7 @@ razonar:
 
 1. Al hacer login correcto, el backend genera un **token aleatorio**
    (`crypto.randomBytes`), lo guarda en una tabla `sessions` de SQLite junto con
-   su fecha de expiración (**7 días**, según lo que definimos).
+   su fecha de expiración (**7 días**, según lo que definido).
 2. Ese token se manda al navegador como **cookie `httpOnly`** — no es accesible
    desde JavaScript del navegador, lo que protege contra robo de sesión vía XSS.
    En producción se marca además como `secure` (solo viaja por HTTPS) y
@@ -109,28 +109,54 @@ sesión) y evita la complejidad de firmar/verificar tokens.
 - **SQLite** vía `better-sqlite3`, un solo archivo de base de datos.
 - El archivo vive en `backend/data/`, **fuera** de `dist/`, para sobrevivir a
   los redespliegues (donde se reemplaza `dist/` completo).
-- Tablas: `templates` y  `sessions`.
+- Tablas: `templates`, `sessions` y `printer_profiles`.
 
 ## 8. Generación e impresión ZPL
 
-- Una función pura vive en `shared`: recibe `LabelElement[]` +
-  `PrinterProfile`, devuelve un `string` con el ZPL completo (`^XA ... ^XZ`).
-- Cada elemento se convierte a su comando ZPL correspondiente (`^A` texto, `^BC`
-  barcode, `^BQ` QR), con posición convertida de mm a dots según el DPI del
-  perfil (`dots = mm * (dpi / 25.4)`).
-- El backend recibe `{ elements, profileId }` en `POST /api/print`, genera el
-  ZPL, abre un socket TCP a la IP del perfil, y lo envía crudo — la impresora
-  lo interpreta directo, sin pasar por el navegador.
+**Decisión de arquitectura:** en vez de generar comandos ZPL nativos por tipo
+de elemento (`^A` para texto, `^BC` para barcode, `^BQ` para QR), cada elemento
+se **rasteriza a un bitmap monocromo** con `opentype.js` (para el trazado de
+glyphs de texto y de los dígitos legibles del barcode) y se envía como un único
+comando gráfico `^GFA` por elemento. Es intencional, no un desvío accidental:
+
+- Da control **pixel-perfect** sobre fuente, kerning, negrita emulada, wrap de
+  texto y justificado — cosas que los comandos ZPL nativos no permiten
+  controlar con esa precisión.
+- El resultado es **determinístico** entre impresoras/firmwares distintos: la
+  impresora solo dibuja el bitmap ya calculado, no interpreta la fuente ella
+  misma.
+- El costo es más CPU al generar el ZPL (rasterizado + hex-encode del bitmap)
+  y un payload más pesado en bytes que el de comandos nativos equivalentes.
+
+Flujo real (vive en `shared/zpl/`):
+
+1. Por cada `LabelElement`, se genera un bitmap (`createTextBitmap`,
+   `createCode128Bitmap` / `createEan13Bitmap`, `createQrBitmap`), con
+   posición y tamaño convertidos de mm a dots según el DPI del perfil
+   (`dots = mm * (dpi / 25.4)`).
+2. El bitmap se rota (0/90/180/270°) y se recorta contra el área imprimible
+   de la etiqueta (`clipBitmapToLabel`) — un elemento total o parcialmente
+   fuera de los límites se recorta o se omite, no rompe la impresión.
+3. Se arma el ZPL completo (`^XA ... ^XZ`) con un comando `^FO` (posición) +
+   `^GFA` (gráfico) por elemento.
+4. El backend recibe `{ elements, profileId }` en `POST /api/print`, genera
+   el ZPL, abre un socket TCP a la IP del perfil, y lo envía crudo — la
+   impresora lo interpreta directo, sin pasar por el navegador.
+
+Un contenido de elemento inválido para su tipo (ej. un EAN-13 sin 12-13
+dígitos numéricos, o texto/QR vacío) lanza `ZplValidationError`, que el
+controller traduce a `400` — es un error de datos del usuario, no de
+conexión con la impresora.
 
 ## 9. Arquitectura de carpetas (monorepo con npm workspaces)
 
 ```
 frontend/   → Vite + React + TypeScript + Tailwind (modo oscuro)
-              React Router para las vistas: editor, login admin, panel de staging
+              React Router para las vistas: editor, galería, staging
 backend/    → Express + TypeScript
               tsx en desarrollo, esbuild bundle a dist/server.js en build
               (shared se inlinea, express/dotenv/etc. quedan como dependencias externas)
-shared/     → Tipos TypeScript compartidos, TS fuente sin compilar
+shared/     → Tipos TypeScript compartidos + generador de ZPL, TS fuente sin compilar
 ```
 
 ## 10. Despliegue
@@ -144,3 +170,24 @@ shared/     → Tipos TypeScript compartidos, TS fuente sin compilar
 - El servidor Express **no debe exponerse a internet** — solo accesible dentro
   de la red local, dado que no hay autenticación para el uso general (libre) de
   la app.
+
+## 11. Estado actual y pendientes
+
+Esta sección se actualiza a medida que avanza el proyecto, para que la spec
+no quede desincronizada del código real.
+
+**Implementado y en línea con esta spec:** todo lo descrito en §1 a §10.
+
+**Pendiente:**
+- **Resize de elementos con el mouse.** Hoy el tamaño de cada elemento
+  (ancho/alto de barcode, tamaño de fuente, tamaño de QR) solo se edita
+  numéricamente desde el panel de propiedades, en mm. Falta el handle
+  visual para redimensionar arrastrando directo en el lienzo.
+- **Importación de imágenes.** Aún no implementado. Falta decidir qué
+  formatos soportar y confirmar el approach de conversión — lo más
+  consistente con §8 sería rasterizar la imagen a bitmap monocromo y
+  enviarla como `^GFA`, igual que el resto de los elementos.
+- **Primera prueba de despliegue a producción del backend:** en curso.
+  Puntos a validar: cierre ordenado del proceso bajo el servicio de
+  Windows, conectividad real a las impresoras desde la máquina servidor,
+  y persistencia de `backend/data/` entre redeploys.
