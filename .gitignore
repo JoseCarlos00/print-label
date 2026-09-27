@@ -25,3 +25,4 @@ dist-ssr
 .env
 backend/data/*
 test.ts
+*.debug.ts*
