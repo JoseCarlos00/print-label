@@ -35,8 +35,10 @@ function dotsToMm(dots: number, dpi: number): number {
 
 function QrBitmapPreview({ element, createBitmap, dpi: dpiOverride }: QrBitmapPreviewProps) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
+	const frameRef = useRef<number | null>(null);
 
 	const profile = useEditorStore((s) => s.profile);
+
 	const dpi = dpiOverride ?? profile?.dpi ?? 203;
 
 	const [size, setSize] = useState<BitmapSize>({
@@ -46,39 +48,72 @@ function QrBitmapPreview({ element, createBitmap, dpi: dpiOverride }: QrBitmapPr
 
 	useEffect(() => {
 		const canvas = canvasRef.current;
+
 		if (!canvas) return;
 
-		const bitmap = createBitmap(element, dpi, font);
-
-		setSize({
-			width: mmToPx(dotsToMm(bitmap.widthDots, dpi)),
-			height: mmToPx(dotsToMm(bitmap.heightDots, dpi)),
-		});
-
-		canvas.width = bitmap.widthDots;
-		canvas.height = bitmap.heightDots;
-
-		const ctx = canvas.getContext('2d');
-		if (!ctx) return;
-
-		const imageData = ctx.createImageData(bitmap.widthDots, bitmap.heightDots);
-
-		for (let y = 0; y < bitmap.heightDots; y++) {
-			for (let x = 0; x < bitmap.widthDots; x++) {
-				const byteIndex = y * bitmap.bytesPerRow + Math.floor(x / 8);
-				const bitIndex = 7 - (x % 8);
-				const isBlack = (bitmap.data[byteIndex] & (1 << bitIndex)) !== 0;
-				const pixelIndex = (y * bitmap.widthDots + x) * 4;
-				const value = isBlack ? 0 : 255;
-
-				imageData.data[pixelIndex] = value;
-				imageData.data[pixelIndex + 1] = value;
-				imageData.data[pixelIndex + 2] = value;
-				imageData.data[pixelIndex + 3] = 255;
-			}
+		/*
+		 * Si durante el resize llegan varios cambios de element.size
+		 * antes del siguiente frame, solo procesamos el último.
+		 */
+		if (frameRef.current !== null) {
+			cancelAnimationFrame(frameRef.current);
 		}
 
-		ctx.putImageData(imageData, 0, 0);
+		frameRef.current = requestAnimationFrame(() => {
+			frameRef.current = null;
+
+			const bitmap = createBitmap(element, dpi, font);
+
+			const nextSize = {
+				width: mmToPx(dotsToMm(bitmap.widthDots, dpi)),
+				height: mmToPx(dotsToMm(bitmap.heightDots, dpi)),
+			};
+
+			setSize((previousSize) => {
+				if (previousSize.width === nextSize.width && previousSize.height === nextSize.height) {
+					return previousSize;
+				}
+
+				return nextSize;
+			});
+
+			canvas.width = bitmap.widthDots;
+			canvas.height = bitmap.heightDots;
+
+			const ctx = canvas.getContext('2d');
+
+			if (!ctx) return;
+
+			const imageData = ctx.createImageData(bitmap.widthDots, bitmap.heightDots);
+
+			for (let y = 0; y < bitmap.heightDots; y++) {
+				for (let x = 0; x < bitmap.widthDots; x++) {
+					const byteIndex = y * bitmap.bytesPerRow + Math.floor(x / 8);
+
+					const bitIndex = 7 - (x % 8);
+
+					const isBlack = (bitmap.data[byteIndex] & (1 << bitIndex)) !== 0;
+
+					const pixelIndex = (y * bitmap.widthDots + x) * 4;
+
+					const value = isBlack ? 0 : 255;
+
+					imageData.data[pixelIndex] = value;
+					imageData.data[pixelIndex + 1] = value;
+					imageData.data[pixelIndex + 2] = value;
+					imageData.data[pixelIndex + 3] = 255;
+				}
+			}
+
+			ctx.putImageData(imageData, 0, 0);
+		});
+
+		return () => {
+			if (frameRef.current !== null) {
+				cancelAnimationFrame(frameRef.current);
+				frameRef.current = null;
+			}
+		};
 	}, [element, dpi, createBitmap]);
 
 	return (

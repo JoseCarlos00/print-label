@@ -44,6 +44,30 @@ export function getElementBounds(element: LabelElement, naturalSize: NaturalSize
 	};
 }
 
+export function getResizeBounds(element: LabelElement, naturalSize: NaturalSize): ElementBounds {
+	if (element.type !== 'qr') {
+		return getElementBounds(element, naturalSize);
+	}
+
+	const size = element.size;
+
+	const left = element.x;
+	const top = element.y;
+	const right = left + size;
+	const bottom = top + size;
+
+	return {
+		left,
+		top,
+		right,
+		bottom,
+		centerX: left + size / 2,
+		centerY: top + size / 2,
+		width: size,
+		height: size,
+	};
+}
+
 export interface AlignmentPoints {
 	left: number;
 	centerX: number;

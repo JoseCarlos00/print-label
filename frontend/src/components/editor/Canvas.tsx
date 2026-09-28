@@ -4,7 +4,7 @@ import { CanvasElement } from './CanvasElement';
 import { GuidesOverlay } from './GuidesOverlay';
 import { SelectionHandles } from './SelectionHandles';
 import { mmToPx, pxToMm } from '@/utils/scale';
-import { getAlignmentPoints, getElementBounds, getSelectionCorners } from '@/utils/geometry/elementBounds';
+import { getAlignmentPoints, getElementBounds, getResizeBounds, getSelectionCorners } from '@/utils/geometry/elementBounds';
 import { findAlignmentMatches, getSnapOffset } from '@/utils/geometry/alignment';
 import { calculateResize, type ResizeHandle } from '@/utils/geometry/resize';
 import { applyResizeToElement } from '@/utils/geometry/applyResize';
@@ -152,7 +152,7 @@ export function Canvas({ loadError }: CanvasProps) {
 
 	const selectedCorners =
 		selectedElement && naturalSizes[selectedElement.id]
-			? getSelectionCorners(getElementBounds(selectedElement, naturalSizes[selectedElement.id]))
+			? getSelectionCorners(getResizeBounds(selectedElement, naturalSizes[selectedElement.id]))
 			: null;
 
 	const handleBottomRightPointerDown = useCallback(
@@ -170,7 +170,7 @@ export function Canvas({ loadError }: CanvasProps) {
 
 			if (!naturalSize) return;
 
-			const bounds = getElementBounds(selectedElement, naturalSize);
+			const bounds = getResizeBounds(selectedElement, naturalSize);
 
 			beginHistoryTransaction();
 
