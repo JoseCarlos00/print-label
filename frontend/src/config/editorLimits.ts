@@ -5,8 +5,8 @@ export const EDITOR_LIMITS = {
 	},
 
 	fontSizeMm: {
-		min: 1,
-		max: 100,
+		min: 3,
+		max: 200,
 	},
 
 	lineSpacingMm: {
@@ -16,7 +16,7 @@ export const EDITOR_LIMITS = {
 
 	qrSizeMm: {
 		min: 1,
-		max: 500,
+		max: 120,
 	},
 
 	positionMm: {

@@ -1,11 +1,15 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type PointerEvent } from 'react';
 import { useEditorStore } from '@/store/useEditorStore';
 import { CanvasElement } from './CanvasElement';
 import { GuidesOverlay } from './GuidesOverlay';
 import { SelectionHandles } from './SelectionHandles';
-import { mmToPx } from '@/utils/scale';
+import { mmToPx, pxToMm } from '@/utils/scale';
 import { getAlignmentPoints, getElementBounds, getSelectionCorners } from '@/utils/geometry/elementBounds';
 import { findAlignmentMatches, getSnapOffset } from '@/utils/geometry/alignment';
+import { calculateResize, type ResizeHandle } from '@/utils/geometry/resize';
+import { applyResizeToElement } from '@/utils/geometry/applyResize';
+import { beginHistoryTransaction, commitHistoryTransaction } from '@/store/history'
+import type { LabelElement } from 'shared'
 
 interface CanvasProps {
 	loadError?: string | null;
@@ -22,14 +26,23 @@ interface Guide {
 }
 
 export function Canvas({ loadError }: CanvasProps) {
+	const canvasRef = useRef<HTMLDivElement>(null);
+
 	const [naturalSizes, setNaturalSizes] = useState<Record<string, NaturalSize>>({});
 	const [guides, setGuides] = useState<Guide[]>([]);
+	const [resizeState, setResizeState] = useState<{
+		elementId: string;
+		handle: ResizeHandle;
+		bounds: ReturnType<typeof getElementBounds>;
+		element: LabelElement;
+	} | null>(null);
 
 	const profile = useEditorStore((s) => s.profile);
 	const elements = useEditorStore((s) => s.elements);
 	const selectedElementId = useEditorStore((s) => s.selectedElementId);
 	const selectElement = useEditorStore((s) => s.selectElement);
 	const updateElement = useEditorStore((s) => s.updateElement);
+	const positionLocked = useEditorStore((s) => s.positionLocked);
 
 	const selectedElement = elements.find((element) => element.id === selectedElementId);
 
@@ -142,6 +155,88 @@ export function Canvas({ loadError }: CanvasProps) {
 			? getSelectionCorners(getElementBounds(selectedElement, naturalSizes[selectedElement.id]))
 			: null;
 
+	const handleBottomRightPointerDown = useCallback(
+		(event: PointerEvent<HTMLDivElement>) => {
+			event.stopPropagation();
+			event.preventDefault();
+
+			if (positionLocked) return;
+			if (!selectedElement) return;
+
+			// Por ahora probamos únicamente rotación 0°.
+			if (selectedElement.rotation !== 0) return;
+
+			const naturalSize = naturalSizes[selectedElement.id];
+
+			if (!naturalSize) return;
+
+			const bounds = getElementBounds(selectedElement, naturalSize);
+
+			beginHistoryTransaction();
+
+			setResizeState({
+				elementId: selectedElement.id,
+				handle: 'bottomRight',
+				bounds,
+				element: selectedElement,
+			});
+		},
+		[positionLocked, selectedElement, naturalSizes],
+	);
+
+	useEffect(() => {
+		if (!resizeState) return;
+
+		const handlePointerMove = (event: globalThis.PointerEvent) => {
+			const canvas = canvasRef.current;
+
+			if (!canvas) return;
+
+			const element = resizeState.element;
+
+			const canvasRect = canvas.getBoundingClientRect();
+
+			const cursorX = pxToMm(event.clientX - canvasRect.left);
+
+			const cursorY = pxToMm(event.clientY - canvasRect.top);
+
+			const keepAspectRatio = element.type === 'barcode' ? element.lockAspectRatio : true;
+
+			const result = calculateResize({
+				bounds: resizeState.bounds,
+				handle: resizeState.handle,
+				cursorX,
+				cursorY,
+				keepAspectRatio,
+			});
+
+			const resizedElement = applyResizeToElement(element, resizeState.bounds, result);
+
+			updateElement(element.id, resizedElement);
+		};
+
+		window.addEventListener('pointermove', handlePointerMove);
+
+		return () => {
+			window.removeEventListener('pointermove', handlePointerMove);
+		};
+	}, [resizeState, elements, updateElement]);
+
+	useEffect(() => {
+		if (!resizeState) return;
+
+		const handlePointerUp = () => {
+			commitHistoryTransaction();
+			setResizeState(null);
+		};
+
+		window.addEventListener('pointerup', handlePointerUp);
+
+		return () => {
+			window.removeEventListener('pointerup', handlePointerUp);
+		};
+	}, [resizeState]);
+
 	if (loadError) {
 		return (
 			<div className='flex flex-1 items-center justify-center bg-app-bg p-8'>
@@ -161,7 +256,7 @@ export function Canvas({ loadError }: CanvasProps) {
 	return (
 		<div className='flex min-w-0 flex-1 flex-col items-center justify-center bg-app-bg p-8 overflow-auto thin-scrollbar'>
 			<div
-				onPointerDown={() => selectElement(null)}
+				ref={canvasRef}
 				style={{
 					width: mmToPx(profile.widthMm),
 					height: mmToPx(profile.heightMm),
@@ -199,7 +294,12 @@ export function Canvas({ loadError }: CanvasProps) {
 					/>
 				))}
 
-				{selectedCorners && <SelectionHandles corners={selectedCorners} />}
+				{selectedCorners && (
+					<SelectionHandles
+						corners={selectedCorners}
+						onBottomRightPointerDown={handleBottomRightPointerDown}
+					/>
+				)}
 			</div>
 		</div>
 	);

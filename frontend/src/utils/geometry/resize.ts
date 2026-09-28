@@ -72,6 +72,13 @@ export function calculateResize({
 	return getBoundsFromFixedPoint(fixedPoint, handle, width, height);
 }
 
+export function getResizeScale(bounds: ElementBounds, result: ResizeResult): number {
+	const scaleX = result.width / bounds.width;
+	const scaleY = result.height / bounds.height;
+
+	return (scaleX + scaleY) / 2;
+}
+
 function getFixedPoint(bounds: ElementBounds, handle: ResizeHandle): { x: number; y: number } {
 	switch (handle) {
 		case 'topLeft':
