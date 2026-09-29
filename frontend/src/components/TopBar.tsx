@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom'
 import { ChevronDown, FilePlus, LogIn, LogOut, Printer, BookImage, ClipboardClock} from 'lucide-react';
 
@@ -49,7 +49,7 @@ export function TopBar({ profiles, profilesError }: TopBarProps) {
 
 	const handleNewDocument = useNewDocument();
 
-	const handlePrint = async () => {
+	const handlePrint = useCallback(async () => {
 		if (!profile) return;
 
 		setPrintState('printing');
@@ -68,7 +68,7 @@ export function TopBar({ profiles, profilesError }: TopBarProps) {
 		} finally {
 			setPrintState('idle');
 		}
-	};
+	}, [profile, elements]);
 
 	const handleSaved = (saved: Template, mode: 'created' | 'updated' | 'requested') => {
 		const messages = {
@@ -83,6 +83,26 @@ export function TopBar({ profiles, profilesError }: TopBarProps) {
 	const isUpdating = isAdmin && Boolean(templateId) && loadedTemplateState === 'approved';
 
 	const canEdit = Boolean(profile) && elements.length > 0;
+
+	useEffect(() => {
+		const handleKeyDown = (event: KeyboardEvent) => {
+			const isPrintShortcut = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'p';
+
+			if (!isPrintShortcut) return;
+
+			event.preventDefault();
+
+			if (printState !== 'printing' && canEdit) {
+				void handlePrint();
+			}
+		};
+
+		window.addEventListener('keydown', handleKeyDown);
+
+		return () => {
+			window.removeEventListener('keydown', handleKeyDown);
+		};
+	}, [handlePrint, printState, canEdit]);
 
 	return (
 		<header className='flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-app-border p-2'>
@@ -111,6 +131,7 @@ export function TopBar({ profiles, profilesError }: TopBarProps) {
 					type='button'
 					onClick={handlePrint}
 					disabled={printState === 'printing' || !canEdit}
+					title='Imprimir (Ctrl+P)'
 					className='bg-app-accent-500 text-app-accent-contrast hover:bg-app-accent-700 cursor-pointer'
 				>
 					<Printer />
