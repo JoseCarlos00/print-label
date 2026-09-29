@@ -44,6 +44,7 @@ export function SelectionHandles({ corners, onPointerDown }: SelectionHandlesPro
 			{handles.map(({ handle, position, cursor }) => (
 				<div
 					key={handle}
+					data-selection-handle
 					onPointerDown={(event) => onPointerDown(handle, event)}
 					className='absolute z-40 size-2 -translate-x-1/2 -translate-y-1/2 rounded-sm border border-app-accent-500 bg-app-bg'
 					style={{

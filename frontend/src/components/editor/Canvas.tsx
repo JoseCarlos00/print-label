@@ -313,6 +313,16 @@ export function Canvas({ loadError }: CanvasProps) {
 		hasInitialCentered.current = true;
 	}, [profile]);
 
+	const handleViewportPointerDown = (event: PointerEvent<HTMLDivElement>) => {
+		const target = event.target as HTMLElement;
+
+		if (target.closest('[data-canvas-element]') || target.closest('[data-selection-handle]')) {
+			return;
+		}
+
+		selectElement(null);
+	};
+
 	if (loadError) {
 		return (
 			<div className='flex flex-1 items-center justify-center bg-app-bg p-8'>
@@ -332,16 +342,18 @@ export function Canvas({ loadError }: CanvasProps) {
 	return (
 		<div
 			ref={viewportRef}
+			onPointerDown={handleViewportPointerDown}
 			className='min-h-0 min-w-0 flex-1 overflow-auto bg-app-bg thin-scrollbar'
 		>
 			<div
-				className='relative shrink-0'
+				className='relative w-max shrink-0'	
 				style={{
 					padding: mmToPx(WORKSPACE_MARGIN_MM),
 				}}
 			>
 				<div
 					ref={canvasRef}
+					data-canvas-element
 					onPointerDown={handleCanvasPointerDown}
 					style={{
 						width: mmToPx(profile.widthMm),
