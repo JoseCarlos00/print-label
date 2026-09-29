@@ -10,6 +10,7 @@ import { calculateResize, type ResizeHandle } from '@/utils/geometry/resize';
 import { applyResizeToElement } from '@/utils/geometry/applyResize';
 import { beginHistoryTransaction, commitHistoryTransaction } from '@/store/history'
 import type { LabelElement } from 'shared'
+import { EDITOR_LIMITS } from '@/config/editorLimits'
 
 interface CanvasProps {
 	loadError?: string | null;
@@ -189,7 +190,6 @@ export function Canvas({ loadError }: CanvasProps) {
 
 		const handlePointerMove = (event: globalThis.PointerEvent) => {
 			const canvas = canvasRef.current;
-
 			if (!canvas) return;
 
 			const element = resizeState.element;
@@ -197,10 +197,42 @@ export function Canvas({ loadError }: CanvasProps) {
 			const canvasRect = canvas.getBoundingClientRect();
 
 			const cursorX = pxToMm(event.clientX - canvasRect.left);
-
 			const cursorY = pxToMm(event.clientY - canvasRect.top);
 
 			const keepAspectRatio = element.type === 'barcode' ? element.lockAspectRatio : true;
+
+			let minWidth: number | undefined;
+			let minHeight: number | undefined;
+			let maxWidth: number | undefined;
+			let maxHeight: number | undefined;
+
+			if (element.type === 'text') {
+				const minScale = EDITOR_LIMITS.fontSizeMm.min / element.fontSize;
+
+				const maxScale = EDITOR_LIMITS.fontSizeMm.max / element.fontSize;
+
+				minWidth = resizeState.bounds.width * minScale;
+				minHeight = resizeState.bounds.height * minScale;
+
+				maxWidth = resizeState.bounds.width * maxScale;
+				maxHeight = resizeState.bounds.height * maxScale;
+			}
+
+			if (element.type === 'qr') {
+				minWidth = EDITOR_LIMITS.qrSizeMm.min;
+				minHeight = EDITOR_LIMITS.qrSizeMm.min;
+
+				maxWidth = EDITOR_LIMITS.qrSizeMm.max;
+				maxHeight = EDITOR_LIMITS.qrSizeMm.max;
+			}
+
+			if (element.type === 'barcode') {
+				minWidth = EDITOR_LIMITS.dimensionMm.min;
+				minHeight = EDITOR_LIMITS.dimensionMm.min;
+
+				maxWidth = EDITOR_LIMITS.dimensionMm.max;
+				maxHeight = EDITOR_LIMITS.dimensionMm.max;
+			}
 
 			const result = calculateResize({
 				bounds: resizeState.bounds,
@@ -208,6 +240,10 @@ export function Canvas({ loadError }: CanvasProps) {
 				cursorX,
 				cursorY,
 				keepAspectRatio,
+				minWidth,
+				minHeight,
+				maxWidth,
+				maxHeight,
 			});
 
 			const resizedElement = applyResizeToElement(element, resizeState.bounds, result);

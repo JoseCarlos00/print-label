@@ -3,13 +3,15 @@ import type { ElementBounds } from './elementBounds';
 export type ResizeHandle = 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight';
 
 export interface ResizeOptions {
-	bounds: ElementBounds;
-	handle: ResizeHandle;
-	cursorX: number;
-	cursorY: number;
-	keepAspectRatio: boolean;
-	minWidth?: number;
-	minHeight?: number;
+  bounds: ElementBounds;
+  handle: ResizeHandle;
+  cursorX: number;
+  cursorY: number;
+  keepAspectRatio: boolean;
+  minWidth?: number;
+  minHeight?: number;
+  maxWidth?: number;
+  maxHeight?: number;
 }
 
 export interface ResizeResult {
@@ -20,6 +22,11 @@ export interface ResizeResult {
 }
 
 const DEFAULT_MIN_SIZE_MM = 1;
+const DEFAULT_MAX_SIZE_MM = 500;
+
+function clamp(value: number, min: number, max: number): number {
+	return Math.min(Math.max(value, min), max);
+}
 
 export function calculateResize({
 	bounds,
@@ -29,6 +36,8 @@ export function calculateResize({
 	keepAspectRatio,
 	minWidth = DEFAULT_MIN_SIZE_MM,
 	minHeight = DEFAULT_MIN_SIZE_MM,
+	maxWidth = DEFAULT_MAX_SIZE_MM,
+	maxHeight = DEFAULT_MAX_SIZE_MM,
 }: ResizeOptions): ResizeResult {
 	const fixedPoint = getFixedPoint(bounds, handle);
 
@@ -37,23 +46,23 @@ export function calculateResize({
 
 	switch (handle) {
 		case 'topLeft':
-			width = Math.max(fixedPoint.x - cursorX, minWidth);
-			height = Math.max(fixedPoint.y - cursorY, minHeight);
+			width = clamp(fixedPoint.x - cursorX, minWidth, maxWidth);
+			height = clamp(fixedPoint.y - cursorY, minHeight, maxHeight);
 			break;
 
 		case 'topRight':
-			width = Math.max(cursorX - fixedPoint.x, minWidth);
-			height = Math.max(fixedPoint.y - cursorY, minHeight);
+			width = clamp(cursorX - fixedPoint.x, minWidth, maxWidth);
+			height = clamp(fixedPoint.y - cursorY, minHeight, maxHeight);
 			break;
 
 		case 'bottomLeft':
-			width = Math.max(fixedPoint.x - cursorX, minWidth);
-			height = Math.max(cursorY - fixedPoint.y, minHeight);
+			width = clamp(fixedPoint.x - cursorX, minWidth, maxWidth);
+			height = clamp(cursorY - fixedPoint.y, minHeight, maxHeight);
 			break;
 
 		case 'bottomRight':
-			width = Math.max(cursorX - fixedPoint.x, minWidth);
-			height = Math.max(cursorY - fixedPoint.y, minHeight);
+			width = clamp(cursorX - fixedPoint.x, minWidth, maxWidth);
+			height = clamp(cursorY - fixedPoint.y, minHeight, maxHeight);
 			break;
 	}
 
@@ -63,7 +72,9 @@ export function calculateResize({
 
 		const minScale = Math.max(minWidth / bounds.width, minHeight / bounds.height);
 
-		const scale = Math.max(scaleX, scaleY, minScale);
+		const maxScale = Math.min(maxWidth / bounds.width, maxHeight / bounds.height);
+
+		const scale = Math.min(Math.max(scaleX, scaleY, minScale), maxScale);
 
 		width = bounds.width * scale;
 		height = bounds.height * scale;
@@ -71,6 +82,7 @@ export function calculateResize({
 
 	return getBoundsFromFixedPoint(fixedPoint, handle, width, height);
 }
+
 
 export function getResizeScale(bounds: ElementBounds, result: ResizeResult): number {
 	const scaleX = result.width / bounds.width;

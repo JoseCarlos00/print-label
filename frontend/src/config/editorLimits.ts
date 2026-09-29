@@ -1,7 +1,7 @@
 export const EDITOR_LIMITS = {
 	dimensionMm: {
-		min: 1,
-		max: 500,
+		min: 5,
+		max: 300,
 	},
 
 	fontSizeMm: {
@@ -15,7 +15,7 @@ export const EDITOR_LIMITS = {
 	},
 
 	qrSizeMm: {
-		min: 1,
+		min: 5,
 		max: 120,
 	},
 
