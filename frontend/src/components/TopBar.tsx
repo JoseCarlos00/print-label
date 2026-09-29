@@ -1,20 +1,22 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom'
 import { ChevronDown, FilePlus, LogIn, LogOut, Printer, BookImage, ClipboardClock} from 'lucide-react';
-import { confirmLeaveEditor } from '@/utils/navigationGuard';
-import { clearHistory } from '@/store/history';
 
 import type { PrinterProfile, Template } from 'shared';
+import { api, ApiError } from '@/api/client';
+import { useEditorStore } from '@/store/useEditorStore';
+import type { EditorStore } from '@/store/editorStore.types'
 
 import { useAuth } from '@/hooks/useAuth';
-import { useEditorStore } from '@/store/useEditorStore';
-import { api, ApiError } from '@/api/client';
+import { useNewDocument } from '@/hooks/useNewDocument';
+import { useLoginDialog } from '@/hooks/useLoginDialog';
+
 
 import { SaveTemplateModal } from './editor/SaveTemplateModal';
 import { DocumentChip } from './editor/DocumentChip';
-import { useLoginDialog } from '@/hooks/useLoginDialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -23,9 +25,6 @@ import {
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { EditorStore } from '@/store/editorStore.types'
-import { useNavigate } from 'react-router-dom'
 
 interface TopBarProps {
 	profiles: PrinterProfile[];
@@ -41,7 +40,6 @@ export function TopBar({ profiles, profilesError }: TopBarProps) {
 	const templateId = useEditorStore((s) => s.templateId);
 	const templateName = useEditorStore((s) => s.templateName);
 	const loadedTemplateState = useEditorStore((s) => s.loadedTemplateState);
-	const newDocument = useEditorStore((s) => s.newDocument);
 
 	const [printState, setPrintState] = useState<'idle' | 'printing'>('idle');
 	const [printError, setPrintError] = useState<string | null>(null);
@@ -49,18 +47,7 @@ export function TopBar({ profiles, profilesError }: TopBarProps) {
 	const [isSaveModalOpen, setSaveModalOpen] = useState(false);
 	const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
-	const navigate = useNavigate();
-
-	const handleNewDocument = () => {
-		if (!confirmLeaveEditor()) return;
-
-		if (location.pathname === '/') {
-			newDocument();
-			clearHistory();
-		} else {
-			navigate('/');
-		}
-	};
+	const handleNewDocument = useNewDocument();
 
 	const handlePrint = async () => {
 		if (!profile) return;
