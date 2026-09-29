@@ -6,7 +6,7 @@ import { createQrBitmap } from 'shared/zpl';
 import { loadSwiss721 } from 'shared/zpl/font';
 
 import { useEditorStore } from '@/store/useEditorStore';
-import { mmToPx } from '@/utils/scale';
+import { dotsToMm, mmToPx } from '@/utils/scale';
 import { bitmapToImageData } from '@/utils/bitmapToImageData';
 
 const font = await loadSwiss721();
@@ -31,10 +31,6 @@ type BitmapSize = {
 	width: number;
 	height: number;
 };
-
-function dotsToMm(dots: number, dpi: number): number {
-	return (dots * 25.4) / dpi;
-}
 
 function QrBitmapPreview({ element, createBitmap, dpi: dpiOverride }: QrBitmapPreviewProps) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);

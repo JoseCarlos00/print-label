@@ -4,7 +4,7 @@ import { CanvasElement } from './CanvasElement';
 import { GuidesOverlay } from './GuidesOverlay';
 import { SelectionHandles } from './SelectionHandles';
 import { mmToPx, pxToMm } from '@/utils/scale';
-import { getAlignmentPoints, getElementBounds, getResizeBounds, getSelectionCorners } from '@/utils/geometry/elementBounds';
+import { getAlignmentPoints, getElementBounds, getQrSelectionCorners, getResizeBounds, getSelectionCorners } from '@/utils/geometry/elementBounds';
 import { findAlignmentMatches, getSnapOffset } from '@/utils/geometry/alignment';
 import { calculateResize, type ResizeHandle } from '@/utils/geometry/resize';
 import { applyResizeToElement } from '@/utils/geometry/applyResize';
@@ -152,9 +152,20 @@ export function Canvas({ loadError }: CanvasProps) {
 	}, []);
 
 	const selectedCorners =
-		selectedElement && naturalSizes[selectedElement.id]
-			? getSelectionCorners(getResizeBounds(selectedElement, naturalSizes[selectedElement.id]))
-			: null;
+  selectedElement && naturalSizes[selectedElement.id]
+    ? selectedElement.type === 'qr'
+      ? getQrSelectionCorners(
+          selectedElement,
+          naturalSizes[selectedElement.id],
+          profile?.dpi ?? 203,
+        )
+      : getSelectionCorners(
+          getResizeBounds(
+            selectedElement,
+            naturalSizes[selectedElement.id],
+          ),
+        )
+    : null;
 
 	const handleResizePointerDown = useCallback(
 		(handle: ResizeHandle, event: PointerEvent<HTMLDivElement>) => {
@@ -163,9 +174,6 @@ export function Canvas({ loadError }: CanvasProps) {
 
 			if (positionLocked) return;
 			if (!selectedElement) return;
-
-			// Por ahora seguimos trabajando únicamente con rotación 0°.
-			if (selectedElement.rotation !== 0) return;
 
 			const naturalSize = naturalSizes[selectedElement.id];
 			if (!naturalSize) return;

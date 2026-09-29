@@ -9,3 +9,11 @@ export function mmToPx(mm: number): number {
 export function pxToMm(px: number): number {
 	return px / PX_PER_MM;
 }
+
+export function mmToDots(mm: number, dpi: number): number {
+	return (mm * dpi) / 25.4;
+}
+
+export function dotsToMm(dots: number, dpi: number): number {
+	return (dots * 25.4) / dpi;
+}

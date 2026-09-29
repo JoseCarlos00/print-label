@@ -1,5 +1,6 @@
 import type { LabelElement } from 'shared';
-import { pxToMm } from '@/utils/scale';
+import { getQrModuleCount } from 'shared/zpl';
+import { mmToDots, pxToMm } from '@/utils/scale';
 
 export interface ElementBounds {
 	left: number;
@@ -66,6 +67,104 @@ export function getResizeBounds(element: LabelElement, naturalSize: NaturalSize)
 		width: size,
 		height: size,
 	};
+}
+
+export function getQrSelectionCorners(element: LabelElement, naturalSize: NaturalSize, dpi: number): SelectionCorners {
+	if (element.type !== 'qr') {
+		return getSelectionCorners(getResizeBounds(element, naturalSize));
+	}
+
+	const naturalWidthMm = pxToMm(naturalSize.width);
+	const naturalHeightMm = pxToMm(naturalSize.height);
+
+	const qrSizeMm = getQrBitmapSizeMm(element, dpi);
+
+	/*
+	 * El QR empieza en (0, 0) dentro del bitmap compuesto.
+	 *
+	 * Por tanto, su centro antes de rotar es:
+	 *
+	 *   (qrSize / 2, qrSize / 2)
+	 *
+	 * mientras que el centro del bitmap completo es:
+	 *
+	 *   (naturalWidth / 2, naturalHeight / 2)
+	 */
+	const qrCenterX = qrSizeMm / 2;
+	const qrCenterY = qrSizeMm / 2;
+
+	const bitmapCenterX = naturalWidthMm / 2;
+	const bitmapCenterY = naturalHeightMm / 2;
+
+	const relativeX = qrCenterX - bitmapCenterX;
+	const relativeY = qrCenterY - bitmapCenterY;
+
+	let rotatedX = relativeX;
+	let rotatedY = relativeY;
+
+	switch (element.rotation) {
+		case 90:
+			rotatedX = -relativeY;
+			rotatedY = relativeX;
+			break;
+
+		case 180:
+			rotatedX = -relativeX;
+			rotatedY = -relativeY;
+			break;
+
+		case 270:
+			rotatedX = relativeY;
+			rotatedY = -relativeX;
+			break;
+	}
+
+	const rotatedNaturalWidth = element.rotation === 90 || element.rotation === 270 ? naturalHeightMm : naturalWidthMm;
+
+	const rotatedNaturalHeight = element.rotation === 90 || element.rotation === 270 ? naturalWidthMm : naturalHeightMm;
+
+	const centerX = element.x + rotatedNaturalWidth / 2 + rotatedX;
+
+	const centerY = element.y + rotatedNaturalHeight / 2 + rotatedY;
+
+	const halfSize = qrSizeMm / 2;
+
+	return {
+		topLeft: {
+			x: centerX - halfSize,
+			y: centerY - halfSize,
+		},
+		topRight: {
+			x: centerX + halfSize,
+			y: centerY - halfSize,
+		},
+		bottomLeft: {
+			x: centerX - halfSize,
+			y: centerY + halfSize,
+		},
+		bottomRight: {
+			x: centerX + halfSize,
+			y: centerY + halfSize,
+		},
+	};
+}
+
+function getQrBitmapSizeMm(element: Extract<LabelElement, { type: 'qr' }>, dpi: number): number {
+	try {
+		const moduleCount = getQrModuleCount(element.content, element.errorCorrection);
+
+		const requestedSizeDots = mmToDots(element.size, dpi);
+
+		const moduleSizeDots = Math.max(1, Math.floor(requestedSizeDots / moduleCount));
+
+		const actualSizeDots = moduleCount * moduleSizeDots;
+
+		return (actualSizeDots / dpi) * 25.4;
+	} catch {
+		// Si el contenido todavía es inválido,
+		// usamos el tamaño lógico como fallback.
+		return element.size;
+	}
 }
 
 export interface AlignmentPoints {
