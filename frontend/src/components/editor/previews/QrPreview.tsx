@@ -86,22 +86,33 @@ function QrBitmapPreview({ element, createBitmap, dpi: dpiOverride }: QrBitmapPr
 
 			const imageData = ctx.createImageData(bitmap.widthDots, bitmap.heightDots);
 
+			const pixels = imageData.data;
+
 			for (let y = 0; y < bitmap.heightDots; y++) {
-				for (let x = 0; x < bitmap.widthDots; x++) {
-					const byteIndex = y * bitmap.bytesPerRow + Math.floor(x / 8);
+				const sourceRowOffset = y * bitmap.bytesPerRow;
+				const targetRowOffset = y * bitmap.widthDots * 4;
 
-					const bitIndex = 7 - (x % 8);
+				for (let byteX = 0; byteX < bitmap.bytesPerRow; byteX++) {
+					const byte = bitmap.data[sourceRowOffset + byteX];
 
-					const isBlack = (bitmap.data[byteIndex] & (1 << bitIndex)) !== 0;
+					for (let bit = 0; bit < 8; bit++) {
+						const x = byteX * 8 + bit;
 
-					const pixelIndex = (y * bitmap.widthDots + x) * 4;
+						// Los últimos bits del último byte pueden quedar fuera del ancho real.
+						if (x >= bitmap.widthDots) {
+							break;
+						}
 
-					const value = isBlack ? 0 : 255;
+						const isBlack = (byte & (0x80 >> bit)) !== 0;
+						const value = isBlack ? 0 : 255;
 
-					imageData.data[pixelIndex] = value;
-					imageData.data[pixelIndex + 1] = value;
-					imageData.data[pixelIndex + 2] = value;
-					imageData.data[pixelIndex + 3] = 255;
+						const pixelIndex = targetRowOffset + x * 4;
+
+						pixels[pixelIndex] = value;
+						pixels[pixelIndex + 1] = value;
+						pixels[pixelIndex + 2] = value;
+						pixels[pixelIndex + 3] = 255;
+					}
 				}
 			}
 
