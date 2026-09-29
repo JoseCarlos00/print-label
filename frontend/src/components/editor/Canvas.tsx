@@ -156,19 +156,18 @@ export function Canvas({ loadError }: CanvasProps) {
 			? getSelectionCorners(getResizeBounds(selectedElement, naturalSizes[selectedElement.id]))
 			: null;
 
-	const handleBottomRightPointerDown = useCallback(
-		(event: PointerEvent<HTMLDivElement>) => {
+	const handleResizePointerDown = useCallback(
+		(handle: ResizeHandle, event: PointerEvent<HTMLDivElement>) => {
 			event.stopPropagation();
 			event.preventDefault();
 
 			if (positionLocked) return;
 			if (!selectedElement) return;
 
-			// Por ahora probamos únicamente rotación 0°.
+			// Por ahora seguimos trabajando únicamente con rotación 0°.
 			if (selectedElement.rotation !== 0) return;
 
 			const naturalSize = naturalSizes[selectedElement.id];
-
 			if (!naturalSize) return;
 
 			const bounds = getResizeBounds(selectedElement, naturalSize);
@@ -177,7 +176,7 @@ export function Canvas({ loadError }: CanvasProps) {
 
 			setResizeState({
 				elementId: selectedElement.id,
-				handle: 'bottomRight',
+				handle,
 				bounds,
 				element: selectedElement,
 			});
@@ -345,7 +344,7 @@ export function Canvas({ loadError }: CanvasProps) {
 				{selectedCorners && (
 					<SelectionHandles
 						corners={selectedCorners}
-						onBottomRightPointerDown={handleBottomRightPointerDown}
+						onPointerDown={handleResizePointerDown}
 					/>
 				)}
 			</div>

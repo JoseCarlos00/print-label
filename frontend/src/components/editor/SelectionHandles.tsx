@@ -2,44 +2,54 @@ import type { PointerEvent } from 'react';
 
 import { mmToPx } from '@/utils/scale';
 import type { SelectionCorners } from '@/utils/geometry/elementBounds';
+import type { ResizeHandle } from '@/utils/geometry/resize';
 
 interface SelectionHandlesProps {
 	corners: SelectionCorners;
-	onBottomRightPointerDown: (event: PointerEvent<HTMLDivElement>) => void;
+	onPointerDown: (handle: ResizeHandle, event: PointerEvent<HTMLDivElement>) => void;
 }
 
-export function SelectionHandles({ corners, onBottomRightPointerDown }: SelectionHandlesProps) {
-	const handles = [
+interface Handle {
+	handle: ResizeHandle;
+	position: { x: number; y: number };
+	cursor: string;
+}
+
+export function SelectionHandles({ corners, onPointerDown }: SelectionHandlesProps) {
+	const handles: Handle[] = [
 		{
+			handle: 'topLeft',
 			position: corners.topLeft,
-			interactive: false,
+			cursor: 'nwse-resize',
 		},
 		{
+			handle: 'topRight',
 			position: corners.topRight,
-			interactive: false,
+			cursor: 'nesw-resize',
 		},
 		{
+			handle: 'bottomLeft',
 			position: corners.bottomLeft,
-			interactive: false,
+			cursor: 'nesw-resize',
 		},
 		{
+			handle: 'bottomRight',
 			position: corners.bottomRight,
-			interactive: true,
+			cursor: 'nwse-resize',
 		},
 	];
 
 	return (
 		<>
-			{handles.map((handle, index) => (
+			{handles.map(({ handle, position, cursor }) => (
 				<div
-					key={index}
-					onPointerDown={handle.interactive ? onBottomRightPointerDown : undefined}
-					className={`absolute z-40 size-2 -translate-x-1/2 -translate-y-1/2 rounded-sm border border-app-accent-500 bg-app-bg ${
-						handle.interactive ? 'cursor-se-resize' : 'pointer-events-none'
-					}`}
+					key={handle}
+					onPointerDown={(event) => onPointerDown(handle, event)}
+					className='absolute z-40 size-2 -translate-x-1/2 -translate-y-1/2 rounded-sm border border-app-accent-500 bg-app-bg'
 					style={{
-						left: mmToPx(handle.position.x),
-						top: mmToPx(handle.position.y),
+						left: mmToPx(position.x),
+						top: mmToPx(position.y),
+						cursor,
 					}}
 				/>
 			))}
