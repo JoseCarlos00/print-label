@@ -15,7 +15,7 @@ export function FloatingActionBar() {
 	const canRedo = futureStates.length > 0;
 
 	return (
-		<div className='fixed bottom-4 left-1/2 z-30 flex -translate-x-1/2 items-center gap-1 rounded-lg border border-app-border bg-app-surface p-1 shadow-lg'>
+		<div className='absolute bottom-4 left-1/2 z-30 flex -translate-x-1/2 items-center gap-1 rounded-lg border border-app-border bg-app-surface p-1 shadow-lg'>
 			<button
 				type='button'
 				title='Deshacer (Ctrl+Z)'
@@ -38,7 +38,7 @@ export function FloatingActionBar() {
 
 			<Separator
 				orientation='vertical'
-				className='mx-1 h-5'
+				className='mx-1 h-6 mt-1'
 			/>
 
 			<button
@@ -50,8 +50,6 @@ export function FloatingActionBar() {
 			>
 				<Trash2 className='size-4' />
 			</button>
-
-			{/* Hueco para el próximo grupo: zoom, alinear, etc. */}
 		</div>
 	);
 }
