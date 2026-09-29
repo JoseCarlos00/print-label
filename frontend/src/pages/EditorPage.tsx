@@ -81,7 +81,7 @@ function EditorPage() {
 			/>
 
 			<div className='flex flex-1 overflow-hidden'>
-				<main className='relative min-w-0 flex-1 overflow-hidden pl-2 sm:pl-0 pt-4 sm:pt-0'>
+				<main className='relative min-w-0 flex flex-1 flex-col justify-center items-center overflow-hidden px-2 sm:px-0'>
 					<Toolbar />
 					<Canvas loadError={loadError} />
 					<FloatingActionBar />

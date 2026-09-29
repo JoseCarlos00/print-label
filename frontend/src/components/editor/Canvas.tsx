@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type PointerEvent } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type PointerEvent } from 'react';
 import { useEditorStore } from '@/store/useEditorStore';
 import { CanvasElement } from './CanvasElement';
 import { GuidesOverlay } from './GuidesOverlay';
@@ -26,8 +26,12 @@ interface Guide {
 	position: number;
 }
 
+const WORKSPACE_MARGIN_MM = 100;
+
 export function Canvas({ loadError }: CanvasProps) {
 	const canvasRef = useRef<HTMLDivElement>(null);
+	const viewportRef = useRef<HTMLDivElement>(null);
+	const hasInitialCentered = useRef(false);
 
 	const [naturalSizes, setNaturalSizes] = useState<Record<string, NaturalSize>>({});
 	const [guides, setGuides] = useState<Guide[]>([]);
@@ -291,6 +295,24 @@ export function Canvas({ loadError }: CanvasProps) {
 		[selectElement],
 	);
 
+	useLayoutEffect(() => {
+		if (!profile || hasInitialCentered.current) return;
+
+		const viewport = viewportRef.current;
+
+		if (!viewport) return;
+
+		const canvasWidth = mmToPx(profile.widthMm);
+		const canvasHeight = mmToPx(profile.heightMm);
+		const margin = mmToPx(WORKSPACE_MARGIN_MM);
+
+		viewport.scrollLeft = margin - (viewport.clientWidth - canvasWidth) / 2;
+
+		viewport.scrollTop = margin - (viewport.clientHeight - canvasHeight) / 2;
+
+		hasInitialCentered.current = true;
+	}, [profile]);
+
 	if (loadError) {
 		return (
 			<div className='flex flex-1 items-center justify-center bg-app-bg p-8'>
@@ -308,53 +330,63 @@ export function Canvas({ loadError }: CanvasProps) {
 	}
 
 	return (
-		<div className='flex min-w-0 flex-1 flex-col items-center justify-center bg-app-bg p-8 overflow-auto thin-scrollbar'>
+		<div
+			ref={viewportRef}
+			className='min-h-0 min-w-0 flex-1 overflow-auto bg-app-bg thin-scrollbar'
+		>
 			<div
-				ref={canvasRef}
-				onPointerDown={handleCanvasPointerDown}
+				className='relative shrink-0'
 				style={{
-					width: mmToPx(profile.widthMm),
-					height: mmToPx(profile.heightMm),
-					backgroundImage: `
+					padding: mmToPx(WORKSPACE_MARGIN_MM),
+				}}
+			>
+				<div
+					ref={canvasRef}
+					onPointerDown={handleCanvasPointerDown}
+					style={{
+						width: mmToPx(profile.widthMm),
+						height: mmToPx(profile.heightMm),
+						backgroundImage: `
 						linear-gradient(to right, rgba(100, 100, 100, 0.12) 1px, transparent 1px),
 						linear-gradient(to bottom, rgba(100, 100, 100, 0.12) 1px, transparent 1px),
 						linear-gradient(to right, rgba(80, 80, 80, 0.28) 1px, transparent 1px),
 						linear-gradient(to bottom, rgba(80, 80, 80, 0.28) 1px, transparent 1px)
 					`,
-					backgroundSize: `
+						backgroundSize: `
 							10px 10px,
 							10px 10px,
 							50px 50px,
 							50px 50px
 					`,
-				}}
-				className='relative border border-app-border bg-app-surface zebra-font-emulated'
-			>
-				<GuidesOverlay
-					guides={guides}
-					widthMm={profile.widthMm}
-					heightMm={profile.heightMm}
-				/>
-
-				{elements.map((el) => (
-					<CanvasElement
-						key={el.id}
-						element={el}
-						isSelected={el.id === selectedElementId}
-						canvasWidthMm={profile.widthMm}
-						canvasHeightMm={profile.heightMm}
-						onNaturalSizeChange={handleNaturalSizeChange}
-						onDragPositionChange={handleDragPositionChange}
-						onDragEnd={handleDragEnd}
+					}}
+					className='relative overflow-visible border border-app-border bg-app-surface zebra-font-emulated'
+				>
+					<GuidesOverlay
+						guides={guides}
+						widthMm={profile.widthMm}
+						heightMm={profile.heightMm}
 					/>
-				))}
 
-				{selectedCorners && (
-					<SelectionHandles
-						corners={selectedCorners}
-						onPointerDown={handleResizePointerDown}
-					/>
-				)}
+					{elements.map((el) => (
+						<CanvasElement
+							key={el.id}
+							element={el}
+							isSelected={el.id === selectedElementId}
+							canvasWidthMm={profile.widthMm}
+							canvasHeightMm={profile.heightMm}
+							onNaturalSizeChange={handleNaturalSizeChange}
+							onDragPositionChange={handleDragPositionChange}
+							onDragEnd={handleDragEnd}
+						/>
+					))}
+
+					{selectedCorners && (
+						<SelectionHandles
+							corners={selectedCorners}
+							onPointerDown={handleResizePointerDown}
+						/>
+					)}
+				</div>
 			</div>
 		</div>
 	);
