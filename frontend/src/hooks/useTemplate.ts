@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
+
 import type { Template } from 'shared';
+
 import { api, ApiError } from '@/api/client';
 
 interface UseTemplateResult {
@@ -14,21 +16,31 @@ export function useTemplate(id: string | undefined): UseTemplateResult {
 	const [error, setError] = useState<string | null>(null);
 
 	useEffect(() => {
-		if (!id) {
-			setTemplate(null);
-			setLoading(false);
-			setError(null);
-			return;
-		}
+		if (!id) return;
 
-		setLoading(true);
-		setError(null);
+		let cancelled = false;
 
 		api
 			.get<Template>(`/templates/${id}`)
-			.then(setTemplate)
-			.catch((err) => setError(err instanceof ApiError ? err.message : 'Error cargando la plantilla'))
-			.finally(() => setLoading(false));
+			.then((data) => {
+				if (!cancelled) {
+					setTemplate(data);
+				}
+			})
+			.catch((err) => {
+				if (!cancelled) {
+					setError(err instanceof ApiError ? err.message : 'Error cargando la plantilla');
+				}
+			})
+			.finally(() => {
+				if (!cancelled) {
+					setLoading(false);
+				}
+			});
+
+		return () => {
+			cancelled = true;
+		};
 	}, [id]);
 
 	return { template, loading, error };

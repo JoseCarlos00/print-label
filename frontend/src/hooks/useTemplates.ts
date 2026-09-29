@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Template } from 'shared';
 import { api, ApiError } from '@/api/client';
 import { useTemplatesVersion } from '@/store/templatesCache';
@@ -15,20 +15,36 @@ export function useTemplates(includeNonPublic: boolean): UseTemplatesResult {
 	const [error, setError] = useState<string | null>(null);
 	const version = useTemplatesVersion();
 
-	const load = useCallback(() => {
-		setLoading(true);
-		setError(null);
-
-		api
-			.get<Template[]>(includeNonPublic ? '/templates/all' : '/templates')
-			.then(setTemplates)
-			.catch((err) => setError(err instanceof ApiError ? err.message : 'Error cargando plantillas'))
-			.finally(() => setLoading(false));
-	}, [includeNonPublic]);
-
 	useEffect(() => {
-		load();
-	}, [load, version]);
+		let cancelled = false;
+
+		const load = async () => {
+			setLoading(true);
+			setError(null);
+
+			try {
+				const data = await api.get<Template[]>(includeNonPublic ? '/templates/all' : '/templates');
+
+				if (!cancelled) {
+					setTemplates(data);
+				}
+			} catch (err) {
+				if (!cancelled) {
+					setError(err instanceof ApiError ? err.message : 'Error cargando plantillas');
+				}
+			} finally {
+				if (!cancelled) {
+					setLoading(false);
+				}
+			}
+		};
+
+		void load();
+
+		return () => {
+			cancelled = true;
+		};
+	}, [includeNonPublic, version]);
 
 	return { templates, loading, error };
 }
