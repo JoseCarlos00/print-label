@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { List, Settings2, X } from 'lucide-react';
-import { cn } from 'cn';
+import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useEditorStore } from '@/store/useEditorStore';
 import { PropertiesPanel } from './panel-editor/PropertiesPanel';
