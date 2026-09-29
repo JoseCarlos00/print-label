@@ -1,10 +1,13 @@
-import type { QrElement } from 'shared';
-import { createQrBitmap } from 'shared/zpl';
 import { useEffect, useRef, useState } from 'react';
+
+import type { QrElement } from 'shared';
 import type { Font, GraphicBitmap } from 'shared/zpl';
+import { createQrBitmap } from 'shared/zpl';
+import { loadSwiss721 } from 'shared/zpl/font';
+
 import { useEditorStore } from '@/store/useEditorStore';
 import { mmToPx } from '@/utils/scale';
-import { loadSwiss721 } from 'shared/zpl/font';
+import { bitmapToImageData } from '@/utils/bitmapToImageData';
 
 const font = await loadSwiss721();
 
@@ -84,37 +87,7 @@ function QrBitmapPreview({ element, createBitmap, dpi: dpiOverride }: QrBitmapPr
 
 			if (!ctx) return;
 
-			const imageData = ctx.createImageData(bitmap.widthDots, bitmap.heightDots);
-
-			const pixels = imageData.data;
-
-			for (let y = 0; y < bitmap.heightDots; y++) {
-				const sourceRowOffset = y * bitmap.bytesPerRow;
-				const targetRowOffset = y * bitmap.widthDots * 4;
-
-				for (let byteX = 0; byteX < bitmap.bytesPerRow; byteX++) {
-					const byte = bitmap.data[sourceRowOffset + byteX];
-
-					for (let bit = 0; bit < 8; bit++) {
-						const x = byteX * 8 + bit;
-
-						// Los últimos bits del último byte pueden quedar fuera del ancho real.
-						if (x >= bitmap.widthDots) {
-							break;
-						}
-
-						const isBlack = (byte & (0x80 >> bit)) !== 0;
-						const value = isBlack ? 0 : 255;
-
-						const pixelIndex = targetRowOffset + x * 4;
-
-						pixels[pixelIndex] = value;
-						pixels[pixelIndex + 1] = value;
-						pixels[pixelIndex + 2] = value;
-						pixels[pixelIndex + 3] = 255;
-					}
-				}
-			}
+			const imageData = bitmapToImageData(ctx, bitmap);
 
 			ctx.putImageData(imageData, 0, 0);
 		});
