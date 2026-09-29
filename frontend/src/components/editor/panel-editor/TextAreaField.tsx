@@ -9,6 +9,7 @@ interface TextAreaFieldProps {
 	disabled?: boolean;
 	rows?: number;
 	debounceMs?: number;
+	maxLength?: number;
 	ref?: Ref<HTMLTextAreaElement>;
 }
 
@@ -21,6 +22,7 @@ export function TextAreaField({
 	disabled = false,
 	rows = 2,
 	debounceMs = DEFAULT_DEBOUNCE_MS,
+	maxLength,
 	ref,
 }: TextAreaFieldProps) {
 	const [inputValue, setInputValue] = useState(value);
@@ -124,12 +126,19 @@ export function TextAreaField({
 				ref={ref}
 				value={inputValue}
 				rows={rows}
+				maxLength={maxLength}
 				disabled={disabled}
 				onChange={(e) => handleChange(e.target.value)}
 				onFocus={handleFocus}
 				onBlur={handleBlur}
 				className='mt-1 w-full rounded-md border border-app-border bg-app-surface p-1 text-app-text'
 			/>
+
+			{maxLength != null && (
+				<div className='mt-1 text-right text-xs text-app-text-muted'>
+					{inputValue.length} / {maxLength}
+				</div>
+			)}
 		</Field>
 	);
 }

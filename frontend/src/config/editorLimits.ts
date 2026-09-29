@@ -22,4 +22,10 @@ export const EDITOR_LIMITS = {
 	positionMm: {
 		max: 500,
 	},
+
+	contentLength: {
+		text: 500,
+		barcode: 80,
+		qr: 1000,
+	},
 } as const;

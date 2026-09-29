@@ -11,6 +11,7 @@ import { Field } from './Field';
 import { TextAreaField } from './TextAreaField';
 import { PanelSection } from './PanelSection';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { EDITOR_LIMITS } from '@/config/editorLimits'
 
 const TYPE_ICON = { text: Type, barcode: Barcode, qr: QrCode } as const;
 const TYPE_LABEL = { text: 'Texto', barcode: 'Código de barras', qr: 'Código QR' } as const;
@@ -45,6 +46,7 @@ export function PropertiesPanel() {
 
 	const update = (changes: ElementPatch) => updateElement(element.id, changes);
 	const Icon = TYPE_ICON[element.type];
+	const contentMaxLength = EDITOR_LIMITS.contentLength[element.type];
 
 	return (
 		<div className='flex flex-col gap-3 overflow-y-auto p-3 thin-scrollbar'>
@@ -120,6 +122,7 @@ export function PropertiesPanel() {
 						label='Contenido'
 						value={element.content}
 						onChange={(content) => update({ content })}
+						maxLength={contentMaxLength}
 						rows={2}
 					/>
 				</fieldset>
