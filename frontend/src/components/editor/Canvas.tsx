@@ -4,13 +4,19 @@ import { CanvasElement } from './CanvasElement';
 import { GuidesOverlay } from './GuidesOverlay';
 import { SelectionHandles } from './SelectionHandles';
 import { mmToPx, pxToMm } from '@/utils/scale';
-import { getAlignmentPoints, getElementBounds, getQrSelectionCorners, getResizeBounds, getSelectionCorners } from '@/utils/geometry/elementBounds';
+import {
+	getAlignmentPoints,
+	getElementBounds,
+	getQrSelectionCorners,
+	getResizeBounds,
+	getSelectionCorners,
+} from '@/utils/geometry/elementBounds';
 import { findAlignmentMatches, getSnapOffset } from '@/utils/geometry/alignment';
 import { calculateResize, type ResizeHandle } from '@/utils/geometry/resize';
 import { applyResizeToElement } from '@/utils/geometry/applyResize';
-import { beginHistoryTransaction, commitHistoryTransaction } from '@/store/history'
-import type { LabelElement } from 'shared'
-import { EDITOR_LIMITS } from '@/config/editorLimits'
+import { beginHistoryTransaction, commitHistoryTransaction } from '@/store/history';
+import type { LabelElement } from 'shared';
+import { EDITOR_LIMITS } from '@/config/editorLimits';
 
 interface CanvasProps {
 	loadError?: string | null;
@@ -32,6 +38,11 @@ export function Canvas({ loadError }: CanvasProps) {
 	const canvasRef = useRef<HTMLDivElement>(null);
 	const viewportRef = useRef<HTMLDivElement>(null);
 	const hasInitialCentered = useRef(false);
+
+	const [workspacePadding, setWorkspacePadding] = useState({
+		horizontal: mmToPx(WORKSPACE_MARGIN_MM),
+		vertical: mmToPx(WORKSPACE_MARGIN_MM),
+	});
 
 	const [naturalSizes, setNaturalSizes] = useState<Record<string, NaturalSize>>({});
 	const [guides, setGuides] = useState<Guide[]>([]);
@@ -156,20 +167,11 @@ export function Canvas({ loadError }: CanvasProps) {
 	}, []);
 
 	const selectedCorners =
-  selectedElement && naturalSizes[selectedElement.id]
-    ? selectedElement.type === 'qr'
-      ? getQrSelectionCorners(
-          selectedElement,
-          naturalSizes[selectedElement.id],
-          profile?.dpi ?? 203,
-        )
-      : getSelectionCorners(
-          getResizeBounds(
-            selectedElement,
-            naturalSizes[selectedElement.id],
-          ),
-        )
-    : null;
+		selectedElement && naturalSizes[selectedElement.id]
+			? selectedElement.type === 'qr'
+				? getQrSelectionCorners(selectedElement, naturalSizes[selectedElement.id], profile?.dpi ?? 203)
+				: getSelectionCorners(getResizeBounds(selectedElement, naturalSizes[selectedElement.id]))
+			: null;
 
 	const handleResizePointerDown = useCallback(
 		(handle: ResizeHandle, event: PointerEvent<HTMLDivElement>) => {
@@ -296,6 +298,32 @@ export function Canvas({ loadError }: CanvasProps) {
 	);
 
 	useLayoutEffect(() => {
+		if (!profile) return;
+
+		const viewport = viewportRef.current;
+
+		if (!viewport) return;
+
+		const updateWorkspacePadding = () => {
+			const canvasWidth = mmToPx(profile.widthMm);
+			const canvasHeight = mmToPx(profile.heightMm);
+			const margin = mmToPx(WORKSPACE_MARGIN_MM);
+
+			setWorkspacePadding({
+				horizontal: Math.max(margin, (viewport.clientWidth - canvasWidth) / 2),
+				vertical: Math.max(margin, (viewport.clientHeight - canvasHeight) / 2),
+			});
+		};
+
+		updateWorkspacePadding();
+
+		const observer = new ResizeObserver(updateWorkspacePadding);
+		observer.observe(viewport);
+
+		return () => observer.disconnect();
+	}, [profile]);
+
+	useLayoutEffect(() => {
 		if (!profile || hasInitialCentered.current) return;
 
 		const viewport = viewportRef.current;
@@ -306,11 +334,15 @@ export function Canvas({ loadError }: CanvasProps) {
 		const canvasHeight = mmToPx(profile.heightMm);
 		const margin = mmToPx(WORKSPACE_MARGIN_MM);
 
-		viewport.scrollLeft = margin - (viewport.clientWidth - canvasWidth) / 2;
+		const horizontalPadding = Math.max(margin, (viewport.clientWidth - canvasWidth) / 2);
+		const verticalPadding = Math.max(margin, (viewport.clientHeight - canvasHeight) / 2);
 
-		viewport.scrollTop = margin - (viewport.clientHeight - canvasHeight) / 2;
+		requestAnimationFrame(() => {
+			viewport.scrollLeft = horizontalPadding - (viewport.clientWidth - canvasWidth) / 2;
+			viewport.scrollTop = verticalPadding - (viewport.clientHeight - canvasHeight) / 2;
 
-		hasInitialCentered.current = true;
+			hasInitialCentered.current = true;
+		});
 	}, [profile]);
 
 	const handleViewportPointerDown = (event: PointerEvent<HTMLDivElement>) => {
@@ -346,9 +378,12 @@ export function Canvas({ loadError }: CanvasProps) {
 			className='min-h-0 min-w-0 flex-1 overflow-auto bg-app-bg thin-scrollbar'
 		>
 			<div
-				className='relative w-max shrink-0'	
+				className='relative w-max shrink-0'
 				style={{
-					padding: mmToPx(WORKSPACE_MARGIN_MM),
+					paddingTop: workspacePadding.vertical,
+					paddingBottom: workspacePadding.vertical,
+					paddingLeft: workspacePadding.horizontal,
+					paddingRight: workspacePadding.horizontal,
 				}}
 			>
 				<div
