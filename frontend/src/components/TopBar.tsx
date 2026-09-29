@@ -10,7 +10,7 @@ import { useEditorStore } from '@/store/useEditorStore';
 import { api, ApiError } from '@/api/client';
 
 import { SaveTemplateModal } from './editor/SaveTemplateModal';
-import { DocumentSwitcher } from './editor/DocumentSwitcher';
+import { DocumentChip } from './editor/DocumentChip';
 import { useLoginDialog } from '@/hooks/useLoginDialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -102,7 +102,7 @@ export function TopBar({ profiles, profilesError }: TopBarProps) {
 			<div className='flex min-w-0 items-center gap-3'>
 				<LogoMenu onNewDocument={handleNewDocument} />
 
-				<DocumentSwitcher
+				<DocumentChip
 					templateId={templateId}
 					templateName={templateName}
 					onNewDocument={handleNewDocument}

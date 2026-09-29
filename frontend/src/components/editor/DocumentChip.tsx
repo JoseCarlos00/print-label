@@ -1,17 +1,17 @@
 import { FilePlus, FileText, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-interface DocumentSwitcherProps {
+interface DocumentChipProps  {
   templateId: string | null;
   templateName: string;
   onNewDocument: () => void;
 }
 
-export function DocumentSwitcher({
+export function DocumentChip({
   templateId,
   templateName,
   onNewDocument,
-}: DocumentSwitcherProps) {
+}: DocumentChipProps ) {
   const hasTemplate = Boolean(templateId);
 
   if (!hasTemplate) {
