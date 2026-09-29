@@ -47,7 +47,7 @@ export function rotateBitmap(bitmap: GraphicBitmap, rotation: 0 | 90 | 180 | 270
 		const byteIndex = y * bitmap.bytesPerRow + Math.floor(x / 8);
 		const bitIndex = 7 - (x % 8);
 
-		return (bitmap.data[byteIndex] & (1 << bitIndex)) !== 0;
+		return (bitmap.data[byteIndex]! & (1 << bitIndex)) !== 0;
 	}
 
 	function setPixel(x: number, y: number): void {
@@ -55,7 +55,7 @@ export function rotateBitmap(bitmap: GraphicBitmap, rotation: 0 | 90 | 180 | 270
 
 		const bitIndex = 7 - (x % 8);
 
-		targetData[byteIndex] |= 1 << bitIndex;
+		targetData[byteIndex]! |= 1 << bitIndex;
 	}
 
 	for (let y = 0; y < sourceHeight; y++) {
@@ -113,7 +113,7 @@ export function barsToBitmap(bars: string, widthDots: number, heightDots: number
 
 			for (let y = 0; y < heightDots; y++) {
 				const index = y * bytesPerRow + byteIndex;
-				data[index] |= 1 << bitIndex;
+				data[index]! |= 1 << bitIndex;
 			}
 		}
 	}
@@ -133,7 +133,7 @@ export function drawBitmap(destination: GraphicBitmap, source: GraphicBitmap, of
 
 			const sourceBitIndex = 7 - (sourceX % 8);
 
-			const isBlack = (source.data[sourceByteIndex] & (1 << sourceBitIndex)) !== 0;
+			const isBlack = (source.data[sourceByteIndex]! & (1 << sourceBitIndex)) !== 0;
 
 			if (!isBlack) continue;
 
@@ -151,7 +151,7 @@ export function setPixel(bitmap: GraphicBitmap, x: number, y: number): void {
 
 	const bitIndex = 7 - (x % 8);
 
-	bitmap.data[byteIndex] |= 1 << bitIndex;
+	bitmap.data[byteIndex]! |= 1 << bitIndex;
 }
 
 
@@ -209,7 +209,7 @@ export function clipBitmapToLabel(
 			const sourceByteIndex = sourceY * bitmap.bytesPerRow + Math.floor(sourceX / 8);
 			const sourceBitIndex = 7 - (sourceX % 8);
 
-			const isBlack = (bitmap.data[sourceByteIndex] & (1 << sourceBitIndex)) !== 0;
+			const isBlack = (bitmap.data[sourceByteIndex]! & (1 << sourceBitIndex)) !== 0;
 			if (!isBlack) continue;
 
 			setPixel(clipped, x, y);

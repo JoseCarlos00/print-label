@@ -84,7 +84,7 @@ function createQrGraphicBitmap(matrix: boolean[][], requestedSizeDots: number): 
 
 	for (let y = 0; y < moduleCount; y++) {
 		for (let x = 0; x < moduleCount; x++) {
-			if (!matrix[y][x]) {
+			if (!matrix?.[y]?.[x]) {
 				continue;
 			}
 
@@ -101,7 +101,7 @@ function createQrGraphicBitmap(matrix: boolean[][], requestedSizeDots: number): 
 
 					const bitIndex = 7 - (pixelX % 8);
 
-					data[byteIndex] |= 1 << bitIndex;
+					data[byteIndex]! |= 1 << bitIndex;
 				}
 			}
 		}
@@ -143,7 +143,11 @@ export function createQrBitmap(el: QrElement, dpi: number, font: Font): GraphicB
 		content: labelText,
 		fontSize: el.label.fontSize,
 		bold: false,
-		wrapWidth: el.label.wrapWidth,
+
+		...(el.label.wrapWidth !== undefined && {
+			wrapWidth: el.label.wrapWidth,
+		}),
+		
 		textAlign: 'Left',
 		lineSpacing: 0,
 	};

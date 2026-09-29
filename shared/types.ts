@@ -70,11 +70,26 @@ export interface QrElement extends BaseElement {
 	label: QrLabel;
 }
 
+interface ImageElement extends BaseElement {
+	type: 'image';
+
+	/**
+	 * Imagen normalizada almacenada como data URL.
+	 * El contenido se rasteriza a la resolución necesaria por el editor
+	 * y se persiste junto con la plantilla.
+	 */
+	src: string;
+
+	lockAspectRatio: boolean;
+	width: number; // mm
+	height: number; // mm
+}
+
 /**
  * Unión discriminada por "tipo": el editor y el conversor de ZPL
  * usan este campo para saber qué propiedades esperar.
  */
-export type LabelElement = TextElement | BarcodeElement | QrElement;
+export type LabelElement = TextElement | BarcodeElement | QrElement | ImageElement;
 
 /**
  * Perfil de una impresora física: sus dimensiones, resolución y

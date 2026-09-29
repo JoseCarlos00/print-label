@@ -54,14 +54,14 @@ export function renderText(
 	const lines: RenderLine[] = [];
 
 	for (let paragraphIndex = 0; paragraphIndex < explicitLines.length; paragraphIndex++) {
-		const explicitLine = explicitLines[paragraphIndex];
+		const explicitLine = explicitLines[paragraphIndex]!;
 
 		if (wrapWidth != null) {
 			const wrappedLines = wrapLine(font, explicitLine, fontSize, wrapWidth);
 
 			for (let i = 0; i < wrappedLines.length; i++) {
 				lines.push({
-					text: wrappedLines[i],
+					text: wrappedLines[i]!,
 					paragraphIndex,
 					isLastLineOfParagraph: i === wrappedLines.length - 1,
 				});
@@ -105,7 +105,7 @@ export function renderText(
 	};
 
 	for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
-		const renderLine = lines[lineIndex];
+		const renderLine = lines[lineIndex]!;
 		const line = renderLine.text;
 		const lineNaturalWidth = lineWidthsDots[lineIndex];
 
@@ -354,7 +354,11 @@ function transformContours(contours: Point[][], scaleX: number, scaleY: number, 
 	);
 }
 
-function wrapLine(font: Font, text: string, fontSize: number, maxWidthDots: number): string[] {
+function wrapLine(font: Font, text: string | undefined, fontSize: number, maxWidthDots: number): string[] {
+	if (!text) {
+		return [''];
+	}
+
 	if (text.length === 0) {
 		return [''];
 	}

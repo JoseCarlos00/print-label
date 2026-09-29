@@ -20,7 +20,7 @@ export function createTextBitmap(el: TextElement, dpi: number, font: Font): Grap
 	const result = renderText(font, el.content, fontSize, wrapWidthDots, {
 		align,
 		fit: 'none',
-		wrapWidth: wrapWidthDots,
+		...(wrapWidthDots !== undefined ? { wrapWidth: wrapWidthDots } : {}),
 		lineSpacingDots,
 		bold: el.bold,
 	});
