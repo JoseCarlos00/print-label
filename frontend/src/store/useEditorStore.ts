@@ -142,6 +142,19 @@ export const useEditorStore = create<EditorStore>()(
 					selectedElementId: null,
 				}),
 
+			newDocument: () =>
+				set((state) => ({
+					templateId: null,
+					templateName: '',
+					isPublic: true,
+					positionLocked: false,
+					loadedTemplateState: null,
+					elements: [],
+					selectedElementId: null,
+					focusContentRequest: state.focusContentRequest + 1,
+					isDirty: false,
+				})),
+
 			resetEditor: () => set(initialState),
 
 			requestContentFocus: () => {

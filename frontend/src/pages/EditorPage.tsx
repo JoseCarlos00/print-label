@@ -30,21 +30,25 @@ function EditorPage() {
 	const templateId = useEditorStore((s) => s.templateId);
 	const setProfile = useEditorStore((s) => s.setProfile);
 	const loadTemplate = useEditorStore((s) => s.loadTemplate);
-	const resetEditor = useEditorStore((s) => s.resetEditor);
+	const newDocument = useEditorStore((s) => s.newDocument);
 
 	// Si cambia el :id (o pasamos de una plantilla a "nueva"), reseteamos
 	// el store antes de que los efectos de abajo vuelvan a poblarlo.
 	useEffect(() => {
 		if (!id) {
+			if (templateId !== null) {
+				newDocument();
+			}
+
 			clearHistory();
 			return;
 		}
 
 		if (templateId !== id) {
-			resetEditor();
+			newDocument();
 			clearHistory();
 		}
-	}, [id, templateId, resetEditor]);
+	}, [id, templateId, newDocument]);
 
 	// El perfil/impresora es una preferencia del LIENZO, independiente de
 	// qué plantilla esté cargada: se define una sola vez (preferencia

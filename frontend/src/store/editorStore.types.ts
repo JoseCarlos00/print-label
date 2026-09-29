@@ -45,6 +45,7 @@ export interface EditorActions {
 		>,
 	) => void;
 	loadTemplate: (template: Template) => void;
+	newDocument: () => void;
 	resetEditor: () => void;
 	requestContentFocus: () => void;
 	copyElement: (id: string) => void;

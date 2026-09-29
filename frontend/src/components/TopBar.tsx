@@ -10,6 +10,7 @@ import { useEditorStore } from '@/store/useEditorStore';
 import { api, ApiError } from '@/api/client';
 
 import { SaveTemplateModal } from './editor/SaveTemplateModal';
+import { DocumentSwitcher } from './editor/DocumentSwitcher';
 import { useLoginDialog } from '@/hooks/useLoginDialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -40,16 +41,26 @@ export function TopBar({ profiles, profilesError }: TopBarProps) {
 	const templateId = useEditorStore((s) => s.templateId);
 	const templateName = useEditorStore((s) => s.templateName);
 	const loadedTemplateState = useEditorStore((s) => s.loadedTemplateState);
+	const newDocument = useEditorStore((s) => s.newDocument);
 
 	const [printState, setPrintState] = useState<'idle' | 'printing'>('idle');
-
 	const [printError, setPrintError] = useState<string | null>(null);
-
 	const [printSuccess, setPrintSuccess] = useState(false);
-
 	const [isSaveModalOpen, setSaveModalOpen] = useState(false);
-
 	const [saveMessage, setSaveMessage] = useState<string | null>(null);
+
+	const navigate = useNavigate();
+
+	const handleNewDocument = () => {
+		if (!confirmLeaveEditor()) return;
+
+		if (location.pathname === '/') {
+			newDocument();
+			clearHistory();
+		} else {
+			navigate('/');
+		}
+	};
 
 	const handlePrint = async () => {
 		if (!profile) return;
@@ -89,9 +100,13 @@ export function TopBar({ profiles, profilesError }: TopBarProps) {
 	return (
 		<header className='flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-app-border p-2'>
 			<div className='flex min-w-0 items-center gap-3'>
-				<LogoMenu />
+				<LogoMenu onNewDocument={handleNewDocument} />
 
-				<h1 className='truncate text-sm font-medium text-app-text-muted'>{templateName || 'Nueva etiqueta'}</h1>
+				<DocumentSwitcher
+					templateId={templateId}
+					templateName={templateName}
+					onNewDocument={handleNewDocument}
+				/>
 			</div>
 
 			<div className='flex items-center gap-2'>
@@ -150,28 +165,19 @@ export function TopBar({ profiles, profilesError }: TopBarProps) {
 	);
 }
 
-function LogoMenu() {
+interface LogoMenuProps {
+	onNewDocument: () => void;
+}
+
+function LogoMenu({ onNewDocument }: LogoMenuProps) {
 	const { isAdmin, logout } = useAuth();
 	const { openLogin } = useLoginDialog();
 	const navigate = useNavigate();
-	const resetEditor = useEditorStore((s) => s.resetEditor);
+
 
 	const handleLogout = async () => {
 		await logout();
 		navigate('/');
-	};
-
-	const handleNewDocument = () => {
-		if (!confirmLeaveEditor()) return;
-
-		if (location.pathname === '/') {
-			// Ya estamos en el editor en blanco — navegar a la misma ruta
-			// no remonta nada (mismo `key`), así que reseteamos a mano.
-			resetEditor();
-			clearHistory();
-		} else {
-			navigate('/');
-		}
 	};
 
 
@@ -194,7 +200,7 @@ function LogoMenu() {
 				<DropdownMenuContent align='start'>
 					<DropdownMenuItem
 						className='cursor-pointer'
-						onClick={handleNewDocument}
+						onClick={onNewDocument}
 					>
 						<FilePlus className='size-4' />
 						Nueva etiqueta
