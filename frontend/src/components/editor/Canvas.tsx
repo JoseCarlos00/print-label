@@ -273,6 +273,17 @@ export function Canvas({ loadError }: CanvasProps) {
 		};
 	}, [resizeState]);
 
+	const handleCanvasPointerDown = useCallback(
+		(event: PointerEvent<HTMLDivElement>) => {
+			if (event.target !== event.currentTarget) {
+				return;
+			}
+
+			selectElement(null);
+		},
+		[selectElement],
+	);
+
 	if (loadError) {
 		return (
 			<div className='flex flex-1 items-center justify-center bg-app-bg p-8'>
@@ -293,6 +304,7 @@ export function Canvas({ loadError }: CanvasProps) {
 		<div className='flex min-w-0 flex-1 flex-col items-center justify-center bg-app-bg p-8 overflow-auto thin-scrollbar'>
 			<div
 				ref={canvasRef}
+				onPointerDown={handleCanvasPointerDown}
 				style={{
 					width: mmToPx(profile.widthMm),
 					height: mmToPx(profile.heightMm),
