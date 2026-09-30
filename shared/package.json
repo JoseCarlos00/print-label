@@ -10,7 +10,7 @@
 		".": "./types.ts",
 		"./zpl": "./zpl/index.ts",
 		"./zpl/font": {
-			"types": "./zpl/fonts/loadFont.node.ts",
+			"types": "./zpl/fonts/loadFont.types.d.ts",
 			"node": "./zpl/fonts/loadFont.node.ts",
 			"browser": "./zpl/fonts/loadFont.browser.ts",
 			"default": "./zpl/fonts/loadFont.node.ts"
