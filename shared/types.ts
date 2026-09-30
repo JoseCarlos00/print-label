@@ -66,7 +66,6 @@ export interface QrElement extends BaseElement {
 	type: 'qr';
 	content: string;
 	size: number; // tamaño deseado del QR en mm
-	errorCorrection?: QrErrorCorrection; // por defecto "M" si no se especifica
 	label: QrLabel;
 }
 

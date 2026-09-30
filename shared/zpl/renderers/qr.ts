@@ -1,3 +1,5 @@
+/// <reference path="./qrcode-core.d.ts" />
+
 import QRCode from 'qrcode/lib/core/qrcode.js';
 
 import type { Font } from 'opentype.js';
@@ -9,11 +11,19 @@ import { createTextBitmap } from '../renderers/text.js';
 // ──────────────────────────────────────────────────────────────────────────
 // QR
 // ──────────────────────────────────────────────────────────────────────────
-const QR_ERROR_CORRECTION_DEFAULT: QrErrorCorrection = 'M';
 
-export function getQrModuleCount(content: string, errorCorrection: QrErrorCorrection = 'M'): number {
+/** Selects redundancy by Unicode character count to balance damage tolerance and QR density. */
+function resolveQrErrorCorrection(content: string): QrErrorCorrection {
+	const characterCount = Array.from(content).length;
+
+	if (characterCount <= 70) return 'H';
+	if (characterCount <= 150) return 'Q';
+	return 'M';
+}
+
+export function getQrModuleCount(content: string): number {
 	return QRCode.create(content, {
-		errorCorrectionLevel: errorCorrection,
+		errorCorrectionLevel: resolveQrErrorCorrection(content),
 	}).modules.size;
 }
 
@@ -124,9 +134,7 @@ export function createQrBitmap(el: QrElement, dpi: number, font: Font): GraphicB
 		throw new ZplValidationError('El código QR no puede estar vacío', el.id);
 	}
 
-	const errorCorrection = el.errorCorrection ?? QR_ERROR_CORRECTION_DEFAULT;
-
-	const matrix = getQrMatrix(el.content, errorCorrection);
+	const matrix = getQrMatrix(el.content, resolveQrErrorCorrection(el.content));
 
 	const requestedSizeDots = mmToDots(el.size, dpi);
 

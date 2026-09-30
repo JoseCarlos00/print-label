@@ -151,7 +151,7 @@ export function getQrSelectionCorners(element: LabelElement, naturalSize: Natura
 
 function getQrBitmapSizeMm(element: Extract<LabelElement, { type: 'qr' }>, dpi: number): number {
 	try {
-		const moduleCount = getQrModuleCount(element.content, element.errorCorrection);
+		const moduleCount = getQrModuleCount(element.content);
 
 		const requestedSizeDots = mmToDots(element.size, dpi);
 
