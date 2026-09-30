@@ -18,8 +18,6 @@ export function StagingPage() {
 	const { profiles } = usePrinterProfiles();
 
 	const loadPending = () => {
-		setLoading(true);
-		setError(null);
 		api
 			.get<Template[]>('/staging')
 			.then(setTemplates)
