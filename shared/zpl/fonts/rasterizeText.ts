@@ -3,7 +3,6 @@ import { setPixel, type GraphicBitmap } from '../renderers/graphic.js';
 import { mmToDots } from '../units.js';
 import type { TextAlign } from '../../types.js';
 
-
 export interface RenderTextOptions {
 	align?: TextAlign;
 	fit?: 'none' | 'compress';
@@ -53,15 +52,13 @@ export function renderText(
 
 	const lines: RenderLine[] = [];
 
-	for (let paragraphIndex = 0; paragraphIndex < explicitLines.length; paragraphIndex++) {
-		const explicitLine = explicitLines[paragraphIndex]!;
-
+	for (const [paragraphIndex, explicitLine] of explicitLines.entries()) {
 		if (wrapWidth != null) {
 			const wrappedLines = wrapLine(font, explicitLine, fontSize, wrapWidth);
 
-			for (let i = 0; i < wrappedLines.length; i++) {
+			for (const [i, wrappedLine] of wrappedLines.entries()) {
 				lines.push({
-					text: wrappedLines[i]!,
+					text: wrappedLine,
 					paragraphIndex,
 					isLastLineOfParagraph: i === wrappedLines.length - 1,
 				});
@@ -80,10 +77,7 @@ export function renderText(
 	const naturalWidthDots = Math.max(0, ...lineWidthsDots);
 
 	const naturalHeightDots =
-		lines.length === 0
-			? 0
-			: lines.length * lineHeightDots +
-				(lines.length - 1) * lineSpacingDots;
+		lines.length === 0 ? 0 : lines.length * lineHeightDots + (lines.length - 1) * lineSpacingDots;
 
 	const availableWidthDots = widthDots ?? naturalWidthDots;
 
@@ -104,10 +98,9 @@ export function renderText(
 		data: new Uint8Array(Math.ceil(bitmapWidthDots / 8) * naturalHeightDots),
 	};
 
-	for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
-		const renderLine = lines[lineIndex]!;
+	for (const [lineIndex, renderLine] of lines.entries()) {
 		const line = renderLine.text;
-		const lineNaturalWidth = lineWidthsDots[lineIndex];
+		const lineNaturalWidth = lineWidthsDots[lineIndex]!;
 
 		const shouldCompress = fit === 'compress' && lineNaturalWidth > widthDots!;
 
@@ -145,15 +138,15 @@ export function renderText(
 				}
 			}
 		}
+
 		const contours: Point[][] = [];
 		let cursorX = 0;
+		let previousGlyph: ReturnType<Font['charToGlyph']> | undefined;
 
-		for (let i = 0; i < line.length; i++) {
-			const glyph = font.charToGlyph(line[i]);
+		for (const char of line) {
+			const glyph = font.charToGlyph(char);
 
-			if (i > 0) {
-				const previousGlyph = font.charToGlyph(line[i - 1]);
-
+			if (previousGlyph) {
 				const kerning = font.getKerningValue(previousGlyph, glyph);
 
 				cursorX += kerning * scale;
@@ -165,9 +158,11 @@ export function renderText(
 
 			cursorX += glyph.advanceWidth! * scale;
 
-			if (shouldJustify && line[i] === ' ') {
+			if (shouldJustify && char === ' ') {
 				cursorX += extraSpace;
 			}
+
+			previousGlyph = glyph;
 		}
 
 		let transformedContours = contours;
@@ -209,7 +204,6 @@ function quadraticBezier(p0: Point, p1: Point, p2: Point, t: number): Point {
 
 	return {
 		x: mt * mt * p0.x + 2 * mt * t * p1.x + t * t * p2.x,
-
 		y: mt * mt * p0.y + 2 * mt * t * p1.y + t * t * p2.y,
 	};
 }
@@ -289,8 +283,8 @@ function fillContours(bitmap: GraphicBitmap, contours: Point[][]): void {
 
 		for (const points of contours) {
 			for (let i = 0; i < points.length; i++) {
-				const a = points[i];
-				const b = points[(i + 1) % points.length];
+				const a = points[i]!;
+				const b = points[(i + 1) % points.length]!;
 
 				if (a.y === b.y) {
 					continue;
@@ -314,9 +308,8 @@ function fillContours(bitmap: GraphicBitmap, contours: Point[][]): void {
 		intersections.sort((a, b) => a - b);
 
 		for (let i = 0; i + 1 < intersections.length; i += 2) {
-			const startX = Math.ceil(intersections[i]);
-
-			const endX = Math.floor(intersections[i + 1]);
+			const startX = Math.ceil(intersections[i]!);
+			const endX = Math.floor(intersections[i + 1]!);
 
 			for (let x = startX; x <= endX; x++) {
 				setPixel(bitmap, x, y);
@@ -327,19 +320,20 @@ function fillContours(bitmap: GraphicBitmap, contours: Point[][]): void {
 
 function getTextWidth(font: Font, text: string, scale: number): number {
 	let width = 0;
+	let previousGlyph: ReturnType<Font['charToGlyph']> | undefined;
 
-	for (let i = 0; i < text.length; i++) {
-		const glyph = font.charToGlyph(text[i]);
+	for (const char of text) {
+		const glyph = font.charToGlyph(char);
 
-		if (i > 0) {
-			const previousGlyph = font.charToGlyph(text[i - 1]);
-
+		if (previousGlyph) {
 			const kerning = font.getKerningValue(previousGlyph, glyph);
 
 			width += kerning * scale;
 		}
 
 		width += glyph.advanceWidth! * scale;
+
+		previousGlyph = glyph;
 	}
 
 	return width;
@@ -354,11 +348,7 @@ function transformContours(contours: Point[][], scaleX: number, scaleY: number, 
 	);
 }
 
-function wrapLine(font: Font, text: string | undefined, fontSize: number, maxWidthDots: number): string[] {
-	if (!text) {
-		return [''];
-	}
-
+function wrapLine(font: Font, text: string, fontSize: number, maxWidthDots: number): string[] {
 	if (text.length === 0) {
 		return [''];
 	}
@@ -407,10 +397,9 @@ function emboldenBitmap(bitmap: GraphicBitmap): GraphicBitmap {
 	for (let y = 0; y < bitmap.heightDots; y++) {
 		for (let x = 0; x < bitmap.widthDots; x++) {
 			const byteIndex = y * bitmap.bytesPerRow + Math.floor(x / 8);
-
 			const bitIndex = 7 - (x % 8);
 
-			const isBlack = (bitmap.data[byteIndex] & (1 << bitIndex)) !== 0;
+			const isBlack = (bitmap.data[byteIndex]! & (1 << bitIndex)) !== 0;
 
 			if (!isBlack) continue;
 
@@ -424,7 +413,6 @@ function emboldenBitmap(bitmap: GraphicBitmap): GraphicBitmap {
 
 	return result;
 }
-
 
 export function fontSizeMmToOpenType(font: Font, fontSizeMm: number, dpi: number): number {
 	const heightDots = mmToDots(fontSizeMm, dpi);

@@ -21,11 +21,11 @@ export function bytesToHex(data: Uint8Array): string {
 	return result;
 }
 
-export function getByte(data: Uint8Array, index: number): number {
+function getByte(data: Uint8Array, index: number): number {
 	return data[index]!;
 }
 
-export function setBit(data: Uint8Array, byteIndex: number, bitIndex: number): void {
+function setBit(data: Uint8Array, byteIndex: number, bitIndex: number): void {
 	data[byteIndex]! |= 1 << bitIndex;
 }
 
