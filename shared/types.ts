@@ -49,7 +49,7 @@ export interface BarcodeElement extends BaseElement {
 	height: number; // mm
 	lockAspectRatio: boolean;
 	showText: boolean; // imprime el número legible debajo del código
-	fontSize?: number;
+	fontSize?: number; // mm; tamaño del texto legible, automático según height si se omite
 }
 
 export type QrErrorCorrection = 'L' | 'M' | 'Q' | 'H';

@@ -6,6 +6,7 @@ import { Field } from './Field';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { resolveBarcodeTextSize } from 'shared/zpl';
 
 const SYMBOLOGIES: Symbology[] = ['code128', 'ean13'];
 
@@ -22,10 +23,12 @@ export function BarcodeFields({
 	onChange: (changes: Partial<BarcodeElement>) => void;
 }) {
 	const aspectRatio = element.height > 0 ? element.width / element.height : 1;
+	const autoFontSize = resolveBarcodeTextSize(element);
+	const maxFontSize = Math.min(EDITOR_LIMITS.fontSizeMm.max, Math.max(2, element.height - 1));
 
 	const updateWidth = (width: number | undefined) => {
 		if (width === undefined) return;
-		if (!aspectRatio) return onChange({ width });
+		if (!element.lockAspectRatio || !aspectRatio) return onChange({ width });
 
 		const height = width / aspectRatio;
 		const clampedHeight = Math.min(EDITOR_LIMITS.dimensionMm.max, Math.max(EDITOR_LIMITS.dimensionMm.min, height));
@@ -34,7 +37,7 @@ export function BarcodeFields({
 
 	const updateHeight = (height: number | undefined) => {
 		if (height === undefined) return;
-		if (!aspectRatio) return onChange({ height });
+		if (!element.lockAspectRatio || !aspectRatio) return onChange({ height });
 
 		const width = height * aspectRatio;
 		const clampedWidth = Math.min(EDITOR_LIMITS.dimensionMm.max, Math.max(EDITOR_LIMITS.dimensionMm.min, width));
@@ -112,6 +115,34 @@ export function BarcodeFields({
 					onCheckedChange={(showText) => onChange({ showText })}
 				/>
 			</div>
+
+			<div className='my-3 flex items-center justify-between'>
+				<Label
+					htmlFor={`custom-barcode-font-size-${element.id}`}
+					className='w-full cursor-pointer text-xs font-normal text-app-text-muted'
+				>
+					Tamaño de texto personalizado
+				</Label>
+				<Switch
+					id={`custom-barcode-font-size-${element.id}`}
+					checked={element.fontSize !== undefined}
+					disabled={!element.showText}
+					onCheckedChange={(enabled) =>
+						onChange({ fontSize: enabled ? autoFontSize : undefined })
+					}
+				/>
+			</div>
+
+			<NumberField
+				label='Tamaño del texto (mm)'
+				value={element.fontSize ?? autoFontSize}
+				min={2}
+				max={maxFontSize}
+				disabled={!element.showText || element.fontSize === undefined}
+				onChange={(fontSize) => {
+					if (fontSize !== undefined) onChange({ fontSize });
+				}}
+			/>
 		</>
 	);
 }

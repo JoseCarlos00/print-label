@@ -43,6 +43,16 @@ export function TextFields({
 				}}
 			/>
 
+			<NumberField
+				label='Espaciado entre líneas (mm)'
+				value={element.lineSpacing ?? 0}
+				min={EDITOR_LIMITS.lineSpacingMm.min}
+				max={EDITOR_LIMITS.lineSpacingMm.max}
+				onChange={(lineSpacing) => {
+					if (lineSpacing !== undefined) onChange({ lineSpacing });
+				}}
+			/>
+
 			<div className='my-3 flex items-center justify-between'>
 				<Label
 					htmlFor='wrapTextEnabled'

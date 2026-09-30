@@ -73,6 +73,7 @@ export type { GraphicBitmap } from './renderers/graphic.js';
 export type { Font } from 'opentype.js';
 
 export { ZplValidationError };
+export { resolveBarcodeTextSize } from './units.js';
 export { getQrModuleCount } from './renderers/qr.js';
 export { MAX_IMAGE_DIMENSION, type RgbaImage } from './image/rasterize.js';
 
