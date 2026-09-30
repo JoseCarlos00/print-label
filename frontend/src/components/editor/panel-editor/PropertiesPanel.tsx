@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Barcode, FileText, Move, QrCode, Type, Image } from 'lucide-react';
+import { Barcode, FileText, Move, QrCode, Type, Image, Square } from 'lucide-react';
 import type { ElementPatch } from '@/store/editorStore.types';
 import type { Rotation } from 'shared';
 import { useEditorStore } from '@/store/useEditorStore';
@@ -10,11 +10,12 @@ import { NumberField } from './NumberField';
 import { Field } from './Field';
 import { TextAreaField } from './TextAreaField';
 import { PanelSection } from './PanelSection';
+import { ShapeFields } from './ShapeFields';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { EDITOR_LIMITS } from '@/config/editorLimits'
 
-const TYPE_ICON = { text: Type, barcode: Barcode, qr: QrCode, image: Image } as const;
-const TYPE_LABEL = { text: 'Texto', barcode: 'Código de barras', qr: 'Código QR', image: 'Imagen' } as const;
+const TYPE_ICON = { text: Type, barcode: Barcode, qr: QrCode, image: Image, shape: Square } as const;
+const TYPE_LABEL = { text: 'Texto', barcode: 'Código de barras', qr: 'Código QR', image: 'Imagen', shape: 'Forma' } as const;
 const ROTATIONS: Rotation[] = [0, 90, 180, 270];
 
 export function PropertiesPanel() {
@@ -40,6 +41,89 @@ export function PropertiesPanel() {
 		return (
 			<div className='p-4'>
 				<p className='text-sm text-app-text-muted'>Selecciona un elemento para editar sus propiedades.</p>
+			</div>
+		);
+	}
+
+	if (element.type === 'shape') {
+		const Icon = TYPE_ICON[element.type];
+		const update = (changes: Partial<typeof element>) => updateElement(element.id, changes);
+
+		return (
+			<div className='flex flex-col gap-3 overflow-y-auto p-3 thin-scrollbar'>
+				<div className='flex items-center gap-2 rounded-md border border-app-border bg-app-surface px-3 py-2'>
+					<Icon className='size-4 text-app-accent-500' />
+					<span className='text-sm font-medium text-app-text'>{TYPE_LABEL[element.type]}</span>
+				</div>
+
+				{positionLocked && (
+					<p className='rounded-md border border-app-border bg-app-surface p-2 text-xs text-app-text-muted'>
+						Las posiciones están bloqueadas en esta plantilla.
+					</p>
+				)}
+
+				<PanelSection
+					title='Posición y rotación'
+					icon={<Move className='size-3.5' />}
+				>
+					<fieldset
+						disabled={structureDisabled}
+						className='grid grid-cols-2 gap-2 disabled:opacity-50'
+					>
+						<NumberField
+							label='X (mm)'
+							value={element.x}
+							onChange={(x) => update({ x })}
+						/>
+						<NumberField
+							label='Y (mm)'
+							value={element.y}
+							onChange={(y) => update({ y })}
+						/>
+					</fieldset>
+
+					<fieldset
+						disabled={structureDisabled}
+						className='disabled:opacity-50'
+					>
+						<Field label='Rotación'>
+							<Select
+								value={String(element.rotation)}
+								onValueChange={(value) => update({ rotation: Number(value) as Rotation })}
+								disabled={structureDisabled}
+							>
+								<SelectTrigger className='mt-1 w-full'>
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									{ROTATIONS.map((rotation) => (
+										<SelectItem
+											key={rotation}
+											value={String(rotation)}
+										>
+											{rotation}°
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</Field>
+					</fieldset>
+				</PanelSection>
+
+				<PanelSection
+					title='Propiedades'
+					icon={<Icon className='size-3.5' />}
+				>
+					<fieldset
+						disabled={structureDisabled}
+						className='space-y-2 disabled:opacity-50'
+					>
+						<ShapeFields
+							element={element}
+							onChange={update}
+						/>
+					</fieldset>
+				</PanelSection>
 			</div>
 		);
 	}

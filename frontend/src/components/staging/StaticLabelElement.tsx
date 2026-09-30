@@ -7,6 +7,7 @@ import { PreviewErrorBoundary } from '@/components/editor/previews/PreviewErrorB
 import { QrPreview } from '@/components/editor/previews/QrPreview';
 import { TextPreview } from '@/components/editor/previews/TextPreview';
 import { OutOfBoundsWarning } from '@/components/editor/OutOfBoundsWarning';
+import { ShapePreview } from '../editor/previews/ShapePreview'
 
 interface StaticLabelElementProps {
 	element: LabelElement;
@@ -115,6 +116,13 @@ function StaticElementPreview({ element, dpi }: { element: LabelElement; dpi: nu
 						element={element}
 						dpi={dpi}
 					/>
+				</PreviewErrorBoundary>
+			);
+
+		case 'shape':
+			return (
+				<PreviewErrorBoundary resetKey={element}>
+					<ShapePreview element={element} />
 				</PreviewErrorBoundary>
 			);
 	}

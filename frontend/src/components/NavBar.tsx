@@ -17,13 +17,6 @@ export function NavBar() {
 			<div className='flex items-center gap-6'>
 				<Link
 					to='/'
-					className='text-sm font-semibold text-app-text -rotate-12'
-				>
-					PrintLabel
-				</Link>
-
-				<Link
-					to='/'
 					className='text-sm text-app-text-muted hover:text-app-text'
 				>
 					Editor

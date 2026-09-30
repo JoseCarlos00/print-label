@@ -37,7 +37,7 @@ export function TemplateCard({ template, profile, onUse, onDelete }: TemplateCar
 					</div>
 				</div>
 				<p className='mt-1 text-sm text-app-text-muted'>
-					{profile ? `${profile.name} (${profile.widthMm}×${profile.heightMm}mm)` : 'Impresora no disponible'}
+					{profile ? `(${profile.widthMm}×${profile.heightMm}mm)` : 'Impresora no disponible'}
 				</p>
 				<p className='mt-1 text-xs text-app-text-muted'>{template.elements.length} elemento(s)</p>
 				{template.positionLocked && <p className='mt-1 text-xs text-amber-400'>Posiciones bloqueadas</p>}
