@@ -5,7 +5,8 @@ import { useEditorStore } from '@/store/useEditorStore';
 import { useNewDocument } from '@/hooks/useNewDocument';
 import { Button } from '@/components/ui/button';
 import { cn } from "@/lib/utils";
-import { QUICK_TEMPLATE_LIMIT } from '@/config/config'
+
+const QUICK_TEMPLATE_LIMIT = 10;
 
 export function QuickTemplatesPanel() {
 	const { templates, loading, error } = useTemplates(false);

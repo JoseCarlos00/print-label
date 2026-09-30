@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import type { LabelElement, QrLabel } from 'shared';
+import type { ImageElement, LabelElement, QrLabel } from 'shared';
 import type { ElementType } from '@/store/editorStore.types';
 
 export function createDefaultElement(type: ElementType, index: number): LabelElement {
@@ -12,19 +12,46 @@ export function createDefaultElement(type: ElementType, index: number): LabelEle
 		locked: false,
 	};
 
-	const baseQrLabel: QrLabel = { 
+	const baseQrLabel: QrLabel = {
 		fontSize: 8,
-		visible: true 
+		visible: true,
 	};
 
 	switch (type) {
 		case 'text':
 			return { ...base, type: 'text', content: 'Texto', fontSize: 10, bold: false };
 		case 'barcode':
-			return { ...base, type: 'barcode', content: '123456789012', symbology: 'code128', width: 50, height: 25, showText: true, lockAspectRatio: true };
+			return {
+				...base,
+				type: 'barcode',
+				content: '123456789012',
+				symbology: 'code128',
+				width: 50,
+				height: 25,
+				showText: true,
+				lockAspectRatio: true,
+			};
 		case 'qr':
 			return { ...base, type: 'qr', content: 'https://', size: 35, label: baseQrLabel };
-		case 'image' : 
-			 throw new Error('Las imágenes deben crearse mediante importación.');
 	}
+}
+
+const DEFAULT_IMAGE_WIDTH_MM = 40;
+
+export function createImageElement(src: string, widthPx: number, heightPx: number, index: number): ImageElement {
+	const width = DEFAULT_IMAGE_WIDTH_MM;
+	const height = width * (heightPx / widthPx);
+
+	return {
+		id: uuidv4(),
+		x: 10 + index * 3,
+		y: 10 + index * 3,
+		rotation: 0,
+		locked: false,
+		type: 'image',
+		src,
+		width,
+		height,
+		lockAspectRatio: true,
+	};
 }

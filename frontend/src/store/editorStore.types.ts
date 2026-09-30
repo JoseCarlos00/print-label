@@ -1,7 +1,11 @@
 import type { BarcodeElement, LabelElement, PrinterProfile, QrElement, StateTemplate, Template, TextElement,
 } from 'shared';
 
-export type ElementType = LabelElement['type'];
+export type ElementType =
+  | TextElement['type']
+  | BarcodeElement['type']
+  | QrElement['type'];
+	
 export type ElementPatch = Partial<TextElement> | Partial<BarcodeElement> | Partial<QrElement>;
 
 
@@ -32,6 +36,7 @@ export interface EditorState {
 export interface EditorActions {
 	setProfile: (profile: PrinterProfile | null) => void;
 	addElement: (type: ElementType) => void;
+	addImageElement: (src: string, widthPx: number, heightPx: number)  => void;
 	updateElement: (id: string, changes: Partial<LabelElement>) => void;
 	removeElement: (id: string) => void;
 	duplicateElement: (id: string) => void;
