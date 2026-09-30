@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from '@/context/AuthProvider';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { NavBar } from '@/components/NavBar';
+import { Toaster } from '@/components/ui/toast';
 import { EditorRoute } from '@/pages/EditorPage';
 import { StagingPage } from '@/pages/StagingPage';
 import { GalleryPage } from '@/pages/GalleryPage';
@@ -58,13 +59,15 @@ function App() {
 	useEditorKeyboard();
 
 	return (
-		<AuthProvider>
-			<LoginDialogProvider>
-				<BrowserRouter>
-					<AppShell />
-				</BrowserRouter>
-			</LoginDialogProvider>
-		</AuthProvider>
+		<Toaster>
+			<AuthProvider>
+				<LoginDialogProvider>
+					<BrowserRouter>
+						<AppShell />
+					</BrowserRouter>
+				</LoginDialogProvider>
+			</AuthProvider>
+		</Toaster>
 	);
 }
 export default App;

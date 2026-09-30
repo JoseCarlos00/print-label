@@ -1,21 +1,21 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom'
-import { ChevronDown, FilePlus, LogIn, LogOut, Printer, BookImage, ClipboardClock} from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ChevronDown, FilePlus, LogIn, LogOut, Printer, BookImage, ClipboardClock } from 'lucide-react';
 
 import type { PrinterProfile, Template } from 'shared';
 import { api, ApiError } from '@/api/client';
 import { useEditorStore } from '@/store/useEditorStore';
-import type { EditorStore } from '@/store/editorStore.types'
+import type { EditorStore } from '@/store/editorStore.types';
 
 import { useAuth } from '@/hooks/useAuth';
 import { useNewDocument } from '@/hooks/useNewDocument';
 import { useLoginDialog } from '@/hooks/useLoginDialog';
 
-
 import { SaveTemplateModal } from './editor/SaveTemplateModal';
 import { DocumentChip } from './editor/DocumentChip';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { toast } from '@/components/ui/toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
 	DropdownMenu,
@@ -24,7 +24,6 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-
 
 interface TopBarProps {
 	profiles: PrinterProfile[];
@@ -42,10 +41,7 @@ export function TopBar({ profiles, profilesError }: TopBarProps) {
 	const loadedTemplateState = useEditorStore((s) => s.loadedTemplateState);
 
 	const [printState, setPrintState] = useState<'idle' | 'printing'>('idle');
-	const [printError, setPrintError] = useState<string | null>(null);
-	const [printSuccess, setPrintSuccess] = useState(false);
 	const [isSaveModalOpen, setSaveModalOpen] = useState(false);
-	const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
 	const handleNewDocument = useNewDocument();
 
@@ -53,8 +49,6 @@ export function TopBar({ profiles, profilesError }: TopBarProps) {
 		if (!profile) return;
 
 		setPrintState('printing');
-		setPrintError(null);
-		setPrintSuccess(false);
 
 		try {
 			await api.post('/print', {
@@ -62,9 +56,13 @@ export function TopBar({ profiles, profilesError }: TopBarProps) {
 				profileId: profile.id,
 			});
 
-			setPrintSuccess(true);
+			toast.add({ title: `Etiqueta enviada a ${profile.name}.`, type: 'success' });
 		} catch (err) {
-			setPrintError(err instanceof ApiError ? err.message : 'Error al imprimir');
+			toast.add({
+				title: 'Error al imprimir',
+				description: err instanceof ApiError ? err.message : undefined,
+				type: 'error',
+			});
 		} finally {
 			setPrintState('idle');
 		}
@@ -74,10 +72,13 @@ export function TopBar({ profiles, profilesError }: TopBarProps) {
 		const messages = {
 			created: `Plantilla "${saved.name}" guardada.`,
 			updated: `Plantilla "${saved.name}" actualizada.`,
-			requested: `Solicitud enviada para "${saved.name}". Un admin debe aprobarla.`,
+			requested: `Solicitud enviada. Un admin debe aprobarla.`,
 		};
 
-		setSaveMessage(messages[mode]);
+		toast.add({
+			title: messages[mode],
+			type: mode === 'requested' ? 'info' : 'success',
+		});
 	};
 
 	const isUpdating = isAdmin && Boolean(templateId) && loadedTemplateState === 'approved';
@@ -153,16 +154,6 @@ export function TopBar({ profiles, profilesError }: TopBarProps) {
 				</Button>
 			</div>
 
-			{(printSuccess || printError || saveMessage) && (
-				<div className='w-full text-xs'>
-					{printSuccess && <p className='text-green-400'>Enviado a {profile?.name}.</p>}
-
-					{printError && <p className='text-red-400'>{printError}</p>}
-
-					{saveMessage && <p className='text-green-400'>{saveMessage}</p>}
-				</div>
-			)}
-
 			{isSaveModalOpen && (
 				<SaveTemplateModal
 					onClose={() => setSaveModalOpen(false)}
@@ -182,12 +173,10 @@ function LogoMenu({ onNewDocument }: LogoMenuProps) {
 	const { openLogin } = useLoginDialog();
 	const navigate = useNavigate();
 
-
 	const handleLogout = async () => {
 		await logout();
 		navigate('/');
 	};
-
 
 	return (
 		<div className='flex items-center gap-2'>
@@ -291,7 +280,7 @@ function PrinterSelect({ profiles, profile, setProfile }: PrinterSelectProps) {
 				<SelectValue placeholder='Seleccionar impresora' />
 			</SelectTrigger>
 
-			<SelectContent className="max-h-150">
+			<SelectContent className='max-h-150'>
 				{profiles.map((item) => (
 					<SelectItem
 						key={item.name}

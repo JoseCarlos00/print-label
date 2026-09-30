@@ -123,8 +123,9 @@ export function SaveTemplateModal({ onClose, onSaved }: SaveTemplateModalProps) 
 					/>
 				</label>
 
-				<label className='flex items-center gap-2 text-sm text-app-text-muted'>
+				<label className='flex items-center gap-2 text-sm text-app-text-muted cursor-pointer'>
 					<input
+						className='cursor-pointer'
 						type='checkbox'
 						checked={isPub}
 						onChange={(e) => setIsPub(e.target.checked)}
@@ -132,8 +133,9 @@ export function SaveTemplateModal({ onClose, onSaved }: SaveTemplateModalProps) 
 					Pública (visible en la galería general)
 				</label>
 
-				<label className='flex items-center gap-2 text-sm text-app-text-muted'>
+				<label className='flex items-center gap-2 text-sm text-app-text-muted cursor-pointer'>
 					<input
+						className='cursor-pointer'
 						type='checkbox'
 						checked={isLocked}
 						onChange={(e) => setIsLocked(e.target.checked)}
@@ -149,9 +151,10 @@ export function SaveTemplateModal({ onClose, onSaved }: SaveTemplateModalProps) 
 						{elements.map((el) => (
 							<label
 								key={el.id}
-								className='flex items-center gap-2 text-sm text-app-text'
+								className='flex items-center gap-2 text-sm text-app-text cursor-pointer'
 							>
 								<input
+									className='cursor-pointer'
 									type='checkbox'
 									checked={Boolean(el.locked)}
 									onChange={() => toggleElementLock(el.id)}
@@ -182,14 +185,14 @@ export function SaveTemplateModal({ onClose, onSaved }: SaveTemplateModalProps) 
 				<div className='flex justify-end gap-2 pt-2'>
 					<button
 						onClick={onClose}
-						className='rounded-md border border-app-border px-3 py-1.5 text-sm text-app-text'
+						className='rounded-md border border-app-border px-3 py-1.5 text-sm text-app-text cursor-pointer'
 					>
 						Cancelar
 					</button>
 					<button
 						disabled={!canSubmit || submitting}
 						onClick={handleSubmit}
-						className='rounded-md bg-app-accent-500 px-3 py-1.5 text-sm font-medium text-app-accent-contrast disabled:opacity-50'
+						className='rounded-md bg-app-accent-500 px-3 py-1.5 text-sm font-medium text-app-accent-contrast disabled:opacity-50 cursor-pointer'
 					>
 						{submitting ? 'Guardando...' : isUpdating ? 'Actualizar' : isAdmin ? 'Guardar' : 'Enviar solicitud'}
 					</button>

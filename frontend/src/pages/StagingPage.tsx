@@ -4,6 +4,7 @@ import { api, ApiError } from '@/api/client';
 import { usePrinterProfiles } from '@/hooks/usePrinterProfiles';
 import { bumpTemplatesVersion } from '@/store/templatesCache';
 import { StagingPreviewModal } from '@/components/staging/StagingPreviewModal';
+import { toast } from '@/components/ui/toast';
 
 type ActionState = 'idle' | 'approving' | 'rejecting';
 
@@ -30,23 +31,31 @@ export function StagingPage() {
 		loadPending();
 	}, []);
 
-	const handleAction = async (id: string, action: 'approve' | 'reject') => {
-		setActionState((prev) => ({ ...prev, [id]: action === 'approve' ? 'approving' : 'rejecting' }));
+		const handleAction = async (id: string, action: 'approve' | 'reject') => {
+			setActionState((prev) => ({ ...prev, [id]: action === 'approve' ? 'approving' : 'rejecting' }));
 
-		try {
-			await api.post(`/staging/${id}/${action}`);
-			setTemplates((prev) => prev.filter((t) => t.id !== id));
-			bumpTemplatesVersion();
-			setPreviewId((current) => (current === id ? null : current));
-		} catch (err) {
-			setError(err instanceof ApiError ? err.message : `Error al ${action} la plantilla`);
-			setActionState((prev) => {
-				const next = { ...prev };
-				delete next[id];
-				return next;
-			});
-		}
-	};
+			try {
+				await api.post(`/staging/${id}/${action}`);
+				setTemplates((prev) => prev.filter((t) => t.id !== id));
+				bumpTemplatesVersion();
+				setPreviewId((current) => (current === id ? null : current));
+				toast.add({
+					title: action === 'approve' ? 'Plantilla aprobada.' : 'Plantilla rechazada.',
+					type: 'success',
+				});
+			} catch (err) {
+				toast.add({
+					title: `Error al ${action === 'approve' ? 'aprobar' : 'rechazar'} la plantilla`,
+					description: err instanceof ApiError ? err.message : undefined,
+					type: 'error',
+				});
+				setActionState((prev) => {
+					const next = { ...prev };
+					delete next[id];
+					return next;
+				});
+			}
+		};
 
 	const previewTemplate = templates.find((t) => t.id === previewId) ?? null;
 
