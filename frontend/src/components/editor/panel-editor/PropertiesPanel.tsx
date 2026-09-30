@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Barcode, FileText, Move, QrCode, Type } from 'lucide-react';
+import { Barcode, FileText, Move, QrCode, Type, Image } from 'lucide-react';
 import type { ElementPatch } from '@/store/editorStore.types';
 import type { Rotation } from 'shared';
 import { useEditorStore } from '@/store/useEditorStore';
@@ -13,8 +13,8 @@ import { PanelSection } from './PanelSection';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { EDITOR_LIMITS } from '@/config/editorLimits'
 
-const TYPE_ICON = { text: Type, barcode: Barcode, qr: QrCode } as const;
-const TYPE_LABEL = { text: 'Texto', barcode: 'Código de barras', qr: 'Código QR' } as const;
+const TYPE_ICON = { text: Type, barcode: Barcode, qr: QrCode, image: Image } as const;
+const TYPE_LABEL = { text: 'Texto', barcode: 'Código de barras', qr: 'Código QR', image: 'Imagen' } as const;
 const ROTATIONS: Rotation[] = [0, 90, 180, 270];
 
 export function PropertiesPanel() {
@@ -40,6 +40,23 @@ export function PropertiesPanel() {
 		return (
 			<div className='p-4'>
 				<p className='text-sm text-app-text-muted'>Selecciona un elemento para editar sus propiedades.</p>
+			</div>
+		);
+	}
+
+	if (element.type === 'image') {
+		const Icon = TYPE_ICON[element.type];
+
+		return (
+			<div className='flex flex-col gap-3 overflow-y-auto p-3 thin-scrollbar'>
+				<div className='flex items-center gap-2 rounded-md border border-app-border bg-app-surface px-3 py-2'>
+					<Icon className='size-4 text-app-accent-500' />
+					<span className='text-sm font-medium text-app-text'>{TYPE_LABEL[element.type]}</span>
+				</div>
+
+				<div className='p-4'>
+					<p className='text-sm text-app-text-muted'>Propiedades de imagen próximamente.</p>
+				</div>
 			</div>
 		);
 	}

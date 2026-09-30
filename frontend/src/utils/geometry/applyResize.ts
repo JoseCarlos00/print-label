@@ -1,8 +1,8 @@
-import type { BarcodeElement, LabelElement, QrElement, TextElement } from 'shared';
+import type { BarcodeElement, ImageElement, LabelElement, QrElement, TextElement } from 'shared';
 
 import type { ElementBounds } from './elementBounds';
 import { getResizeScale, type ResizeResult } from './resize';
-import { EDITOR_LIMITS } from '@/config/editorLimits'
+import { EDITOR_LIMITS } from '@/config/editorLimits';
 
 export function applyResizeToElement(element: LabelElement, bounds: ElementBounds, result: ResizeResult): LabelElement {
 	switch (element.type) {
@@ -14,12 +14,15 @@ export function applyResizeToElement(element: LabelElement, bounds: ElementBound
 
 		case 'qr':
 			return resizeQr(element, bounds, result);
+
+		case 'image':
+			return resizeImage(element, result);
 	}
 }
 
 function resizeText(element: TextElement, bounds: ElementBounds, result: ResizeResult): TextElement {
 	const scale = getResizeScale(bounds, result);
-  const fontSize = Math.min(
+	const fontSize = Math.min(
 		Math.max(element.fontSize * scale, EDITOR_LIMITS.fontSizeMm.min),
 		EDITOR_LIMITS.fontSizeMm.max,
 	);
@@ -54,5 +57,15 @@ function resizeQr(element: QrElement, bounds: ElementBounds, result: ResizeResul
 		x: result.left,
 		y: result.top,
 		size: element.size * scale,
+	};
+}
+
+function resizeImage(element: ImageElement, result: ResizeResult): ImageElement {
+	return {
+		...element,
+		x: result.left,
+		y: result.top,
+		width: result.width,
+		height: result.height,
 	};
 }

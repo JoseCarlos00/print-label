@@ -24,5 +24,7 @@ export function createDefaultElement(type: ElementType, index: number): LabelEle
 			return { ...base, type: 'barcode', content: '123456789012', symbology: 'code128', width: 50, height: 25, showText: true, lockAspectRatio: true };
 		case 'qr':
 			return { ...base, type: 'qr', content: 'https://', size: 35, label: baseQrLabel };
+		case 'image' : 
+			 throw new Error('Las imágenes deben crearse mediante importación.');
 	}
 }

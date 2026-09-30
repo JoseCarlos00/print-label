@@ -212,7 +212,10 @@ export function Canvas({ loadError }: CanvasProps) {
 			const cursorX = pxToMm(event.clientX - canvasRect.left);
 			const cursorY = pxToMm(event.clientY - canvasRect.top);
 
-			const keepAspectRatio = element.type === 'barcode' ? element.lockAspectRatio : true;
+			const keepAspectRatio =
+				element.type === 'barcode' || element.type === 'image'
+					? element.lockAspectRatio
+					: true;
 
 			let minWidth: number | undefined;
 			let minHeight: number | undefined;

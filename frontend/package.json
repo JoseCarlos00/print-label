@@ -5,7 +5,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite --host",
-		"build": "tsc -b && vite build",
+		"build": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\" && tsc -b && vite build",
 		"lint": "eslint .",
 		"type-check": "npx tsc --noEmit",
 		"preview": "vite preview"

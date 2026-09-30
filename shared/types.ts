@@ -70,7 +70,7 @@ export interface QrElement extends BaseElement {
 	label: QrLabel;
 }
 
-interface ImageElement extends BaseElement {
+export interface ImageElement extends BaseElement {
 	type: 'image';
 
 	/**
