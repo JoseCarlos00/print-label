@@ -33,7 +33,7 @@ const frontendPath = path.join(__dirname, '/', 'public');
 function configureApp(): express.Application {
 	const app = express();
 
-	app.use(express.json());
+	app.use(express.json({ limit: '15mb' }));
 	app.use(cookieParser());
 	app.use(attachAdminStatus);
 	app.use(express.static(frontendPath));
