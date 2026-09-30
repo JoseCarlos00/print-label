@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import type { ImageElement, LabelElement, QrLabel } from 'shared';
+import type { ImageElement, LabelElement, QrLabel, ShapeElement, ShapeType } from 'shared';
 import type { ElementType } from '@/store/editorStore.types';
 
 export function createDefaultElement(type: ElementType, index: number): LabelElement {
@@ -54,4 +54,50 @@ export function createImageElement(src: string, widthPx: number, heightPx: numbe
 		height,
 		lockAspectRatio: true,
 	};
+}
+
+export function createShapeElement(shape: ShapeType, index: number): ShapeElement {
+	const base = {
+		id: uuidv4(),
+		x: 10 + index * 3,
+		y: 10 + index * 3,
+		rotation: 0 as const,
+		locked: false,
+	};
+
+	switch (shape) {
+		case 'rectangle':
+			return {
+				...base,
+				type: 'shape',
+				shape,
+				width: 50,
+				height: 25,
+				strokeWidth: 1,
+				filled: false,
+				radius: 0,
+			};
+
+		case 'line':
+			return {
+				...base,
+				type: 'shape',
+				shape,
+				width: 50,
+				height: 1,
+				strokeWidth: 1,
+				filled: false,
+			};
+
+		case 'ellipse':
+			return {
+				...base,
+				type: 'shape',
+				shape,
+				width: 30,
+				height: 30,
+				strokeWidth: 1,
+				filled: false,
+			};
+	}
 }

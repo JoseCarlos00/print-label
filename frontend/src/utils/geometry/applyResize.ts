@@ -1,4 +1,4 @@
-import type { BarcodeElement, ImageElement, LabelElement, QrElement, TextElement } from 'shared';
+import type { BarcodeElement, ImageElement, LabelElement, QrElement, ShapeElement, TextElement } from 'shared';
 
 import type { ElementBounds } from './elementBounds';
 import { getResizeScale, type ResizeResult } from './resize';
@@ -17,6 +17,9 @@ export function applyResizeToElement(element: LabelElement, bounds: ElementBound
 
 		case 'image':
 			return resizeImage(element, result);
+
+		case 'shape':
+			return resizeShape(element, result);
 	}
 }
 
@@ -61,6 +64,18 @@ function resizeQr(element: QrElement, bounds: ElementBounds, result: ResizeResul
 }
 
 function resizeImage(element: ImageElement, result: ResizeResult): ImageElement {
+	const isSideways = element.rotation === 90 || element.rotation === 270;
+
+	return {
+		...element,
+		x: result.left,
+		y: result.top,
+		width: isSideways ? result.height : result.width,
+		height: isSideways ? result.width : result.height,
+	};
+}
+
+function resizeShape(element: ShapeElement, result: ResizeResult): ShapeElement {
 	const isSideways = element.rotation === 90 || element.rotation === 270;
 
 	return {

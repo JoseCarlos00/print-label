@@ -2,7 +2,7 @@ import { create, type StoreApi, type UseBoundStore } from 'zustand';
 import { temporal, type TemporalState } from 'zundo';
 import { v4 as uuidv4 } from 'uuid';
 import type { LabelElement, Rotation, Template } from 'shared';
-import { createDefaultElement, createImageElement } from '@/config/elementDefaults';
+import { createDefaultElement, createImageElement, createShapeElement } from '@/config/elementDefaults';
 import type { EditorState, EditorStore } from './editorStore.types';
 import { removePrinterId, savePrinterId } from '@/utils/printerPreference';
 
@@ -76,6 +76,16 @@ export const useEditorStore = create<EditorStore>()(
 
 			addImageElement: (src, widthPx, heightPx) => {
 				const element = createImageElement(src, widthPx, heightPx, get().elements.length);
+
+				set((state) => ({
+					elements: [...state.elements, element],
+					selectedElementId: element.id,
+					focusContentRequest: state.focusContentRequest + 1,
+				}));
+			},
+
+			addShapeElement: (shape) => {
+				const element = createShapeElement(shape, get().elements.length);
 
 				set((state) => ({
 					elements: [...state.elements, element],

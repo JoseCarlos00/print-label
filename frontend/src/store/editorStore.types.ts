@@ -1,4 +1,4 @@
-import type { BarcodeElement, LabelElement, PrinterProfile, QrElement, StateTemplate, Template, TextElement,
+import type { BarcodeElement, LabelElement, PrinterProfile, QrElement, ShapeType, StateTemplate, Template, TextElement,
 } from 'shared';
 
 export type ElementType =
@@ -36,7 +36,8 @@ export interface EditorState {
 export interface EditorActions {
 	setProfile: (profile: PrinterProfile | null) => void;
 	addElement: (type: ElementType) => void;
-	addImageElement: (src: string, widthPx: number, heightPx: number)  => void;
+	addImageElement: (src: string, widthPx: number, heightPx: number) => void;
+	addShapeElement: (shape: ShapeType) => void;
 	updateElement: (id: string, changes: Partial<LabelElement>) => void;
 	removeElement: (id: string) => void;
 	duplicateElement: (id: string) => void;

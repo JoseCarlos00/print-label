@@ -85,11 +85,26 @@ export interface ImageElement extends BaseElement {
 	height: number; // mm
 }
 
+export type ShapeType = 'rectangle' | 'line' | 'ellipse';
+
+export interface ShapeElement extends BaseElement {
+	type: 'shape';
+	shape: ShapeType;
+
+	width: number; // mm
+	height: number; // mm
+
+	strokeWidth: number; // mm
+	filled: boolean;
+
+	radius?: number; // mm; solo rectangle
+}
+
 /**
  * Unión discriminada por "tipo": el editor y el conversor de ZPL
  * usan este campo para saber qué propiedades esperar.
  */
-export type LabelElement = TextElement | BarcodeElement | QrElement | ImageElement;
+export type LabelElement = TextElement | BarcodeElement | QrElement | ImageElement | ShapeElement;
 
 /**
  * Perfil de una impresora física: sus dimensiones, resolución y

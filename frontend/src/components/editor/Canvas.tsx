@@ -215,7 +215,7 @@ export function Canvas({ loadError }: CanvasProps) {
 			const keepAspectRatio =
 				element.type === 'barcode' || element.type === 'image'
 					? element.lockAspectRatio
-					: true;
+					: element.type !== 'shape';
 
 			let minWidth: number | undefined;
 			let minHeight: number | undefined;
@@ -246,6 +246,13 @@ export function Canvas({ loadError }: CanvasProps) {
 				minWidth = EDITOR_LIMITS.dimensionMm.min;
 				minHeight = EDITOR_LIMITS.dimensionMm.min;
 
+				maxWidth = EDITOR_LIMITS.dimensionMm.max;
+				maxHeight = EDITOR_LIMITS.dimensionMm.max;
+			}
+
+			if (element.type === 'shape') {
+				minWidth = 1;
+				minHeight = 1;
 				maxWidth = EDITOR_LIMITS.dimensionMm.max;
 				maxHeight = EDITOR_LIMITS.dimensionMm.max;
 			}

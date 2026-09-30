@@ -9,6 +9,7 @@ import { BarcodePreview } from './previews/BarcodePreview';
 import { ImagePreview } from './previews/ImagePreview';
 import { PreviewErrorBoundary } from './previews/PreviewErrorBoundary';
 import { QrPreview } from './previews/QrPreview';
+import { ShapePreview } from './previews/ShapePreview';
 import { TextPreview } from './previews/TextPreview';
 import { OutOfBoundsWarning } from './OutOfBoundsWarning';
 import { getElementBounds } from '@/utils/geometry/elementBounds';
@@ -216,6 +217,13 @@ function ElementPreview({ element }: { element: LabelElement }) {
 			return (
 				<PreviewErrorBoundary resetKey={element}>
 					<ImagePreview element={element} />
+				</PreviewErrorBoundary>
+			);
+
+		case 'shape':
+			return (
+				<PreviewErrorBoundary resetKey={element}>
+					<ShapePreview element={element} />
 				</PreviewErrorBoundary>
 			);
 	}
