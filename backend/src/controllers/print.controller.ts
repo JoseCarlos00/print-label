@@ -3,6 +3,7 @@ import type { LabelElement } from 'shared';
 import { generateZpl, ZplValidationError} from 'shared/zpl';
 import { getPrinterProfileById } from '../printerProfileRepo.js';
 import { sendToPrinter } from '../services/printerService.js';
+import { decodeImageElements } from '../services/imageDecoder.js';
 import { loadSwiss721 } from 'shared/zpl/font';
 
 const font = await loadSwiss721();
@@ -39,7 +40,8 @@ export const print = async (req: Request, res: Response) => {
 	let zpl: string;
 
 	try {
-		zpl = generateZpl(req.body.elements, profile, font);
+		const images = decodeImageElements(req.body.elements);
+		zpl = generateZpl(req.body.elements, profile, font, images);
 
 	} catch (error) {
 
