@@ -13,12 +13,12 @@ export function mmToDots(mm: number, dpi: number): number {
  * error de conexión con la impresora.
  */
 export class ZplValidationError extends Error {
-	constructor(
-		message: string,
-		public elementId?: string,
-	) {
+	elementId: string | undefined;
+
+	constructor(message: string, elementId?: string) {
 		super(message);
 		this.name = 'ZplValidationError';
+		this.elementId = elementId;
 	}
 }
 
