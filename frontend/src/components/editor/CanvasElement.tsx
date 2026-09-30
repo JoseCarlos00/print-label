@@ -6,8 +6,9 @@ import { beginHistoryTransaction, commitHistoryTransaction } from '@/store/histo
 import { mmToPx, pxToMm } from '@/utils/scale';
 
 import { BarcodePreview } from './previews/BarcodePreview';
-import { QrPreview } from './previews/QrPreview';
+import { ImagePreview } from './previews/ImagePreview';
 import { PreviewErrorBoundary } from './previews/PreviewErrorBoundary';
+import { QrPreview } from './previews/QrPreview';
 import { TextPreview } from './previews/TextPreview';
 import { OutOfBoundsWarning } from './OutOfBoundsWarning';
 import { getElementBounds } from '@/utils/geometry/elementBounds';
@@ -210,6 +211,9 @@ function ElementPreview({ element }: { element: LabelElement }) {
 					<QrPreview element={element} />
 				</PreviewErrorBoundary>
 			);
+
+		case 'image':
+			return <ImagePreview element={element} />;
 	}
 }
 

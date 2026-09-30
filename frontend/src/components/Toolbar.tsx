@@ -1,53 +1,54 @@
 import React from 'react';
-import { Barcode, Plus, QrCode, Type, type LucideIcon } from 'lucide-react';
+import { Barcode, ImagePlus, Plus, QrCode, Type, type LucideIcon } from 'lucide-react';
 
 import { useEditorStore } from '@/store/useEditorStore';
+import { useImageImport } from '@/hooks/useImageImport';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 
 interface ToolbarButton {
-  type: 'text' | 'barcode' | 'qr';
-  label: string;
-  icon: LucideIcon;
+	type: 'text' | 'barcode' | 'qr';
+	label: string;
+	icon: LucideIcon;
 }
 
 const BUTTONS: ToolbarButton[] = [
-  {
-    type: 'text',
-    label: 'Texto',
-    icon: Type,
-  },
-  {
-    type: 'barcode',
-    label: 'Código de barras',
-    icon: Barcode,
-  },
-  {
-    type: 'qr',
-    label: 'Código QR',
-    icon: QrCode,
-  },
+	{ type: 'text', label: 'Texto', icon: Type },
+	{ type: 'barcode', label: 'Código de barras', icon: Barcode },
+	{ type: 'qr', label: 'Código QR', icon: QrCode },
 ];
 
 export function Toolbar() {
-  const addElement = useEditorStore((s) => s.addElement);
-  const positionLocked = useEditorStore((s) => s.positionLocked);
-  const profile = useEditorStore((s) => s.profile);
+	const addElement = useEditorStore((s) => s.addElement);
+	const positionLocked = useEditorStore((s) => s.positionLocked);
+	const profile = useEditorStore((s) => s.profile);
 
-  const disabled = positionLocked || !profile;
+	const { inputRef, accept, openPicker, handleFileChange } = useImageImport();
 
-  return (
+	const disabled = positionLocked || !profile;
+
+	return (
 		<div className='absolute z-30 left-3 top-2'>
+			{/* Fuera del dropdown a propósito: el menú se desmonta al cerrarse
+			    y el onChange se perdería. */}
+			<input
+				ref={inputRef}
+				type='file'
+				accept={accept}
+				className='hidden'
+				onChange={handleFileChange}
+			/>
+
 			{/* Desktop */}
 			<div className='w-20 hidden items-start rounded-lg border border-app-border bg-app-surface p-1 shadow-md lg:flex lg:flex-col'>
-				{BUTTONS.map(({ type, label, icon: Icon }, index) => (
+				{BUTTONS.map(({ type, label, icon: Icon }) => (
 					<React.Fragment key={type}>
 						<button
 							type='button'
@@ -60,10 +61,20 @@ export function Toolbar() {
 							<span>{label}</span>
 						</button>
 
-						{/* Separador entre botones */}
-						{index < BUTTONS.length - 1 && <Separator className='my-1 w-full bg-app-border' />}
+						<Separator className='my-1 w-full bg-app-border' />
 					</React.Fragment>
 				))}
+
+				<button
+					type='button'
+					disabled={disabled}
+					onClick={openPicker}
+					title='Imagen'
+					className='flex flex-col items-center cursor-pointer w-full gap-2 rounded-md px-0.5 py-2 text-xs text-app-text transition-colors hover:bg-app-bg disabled:pointer-events-none disabled:opacity-50'
+				>
+					<ImagePlus className='size-5' />
+					<span>Imagen</span>
+				</button>
 			</div>
 
 			{/* Mobile */}
@@ -84,7 +95,7 @@ export function Toolbar() {
 					/>
 
 					<DropdownMenuContent align='center'>
-						{BUTTONS.map(({ type, label, icon: Icon }, index) => (
+						{BUTTONS.map(({ type, label, icon: Icon }) => (
 							<React.Fragment key={type}>
 								<DropdownMenuItem
 									className='w-full gap-2 cursor-pointer'
@@ -94,10 +105,17 @@ export function Toolbar() {
 									{label}
 								</DropdownMenuItem>
 
-								{/* Imprime el separador solo entre elementos (no después del último) */}
-								{index < BUTTONS.length - 1 && <DropdownMenuSeparator />}
+								<DropdownMenuSeparator />
 							</React.Fragment>
 						))}
+
+						<DropdownMenuItem
+							className='w-full gap-2 cursor-pointer'
+							onClick={openPicker}
+						>
+							<ImagePlus className='size-4' />
+							Imagen
+						</DropdownMenuItem>
 
 						{positionLocked && (
 							<>

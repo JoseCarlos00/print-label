@@ -1,10 +1,11 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import type { LabelElement } from 'shared';
 import { mmToPx } from '@/utils/scale';
-import { PreviewErrorBoundary } from '@/components/editor/previews/PreviewErrorBoundary';
-import { TextPreview } from '@/components/editor/previews/TextPreview';
 import { BarcodePreview } from '@/components/editor/previews/BarcodePreview';
+import { ImagePreview } from '@/components/editor/previews/ImagePreview';
+import { PreviewErrorBoundary } from '@/components/editor/previews/PreviewErrorBoundary';
 import { QrPreview } from '@/components/editor/previews/QrPreview';
+import { TextPreview } from '@/components/editor/previews/TextPreview';
 import { OutOfBoundsWarning } from '@/components/editor/OutOfBoundsWarning';
 
 interface StaticLabelElementProps {
@@ -106,5 +107,8 @@ function StaticElementPreview({ element, dpi }: { element: LabelElement; dpi: nu
 					/>
 				</PreviewErrorBoundary>
 			);
+
+		case 'image':
+			return <ImagePreview element={element} />;
 	}
 }
