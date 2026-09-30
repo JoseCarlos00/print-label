@@ -1,6 +1,10 @@
 import type { GraphicBitmap } from 'shared/zpl';
 
-export function bitmapToImageData(ctx: CanvasRenderingContext2D, bitmap: GraphicBitmap): ImageData {
+export function bitmapToImageData(
+	ctx: CanvasRenderingContext2D,
+	bitmap: GraphicBitmap,
+	transparentBackground = false,
+): ImageData {
 	const imageData = ctx.createImageData(bitmap.widthDots, bitmap.heightDots);
 
 	const pixels = imageData.data;
@@ -26,7 +30,7 @@ export function bitmapToImageData(ctx: CanvasRenderingContext2D, bitmap: Graphic
 				pixels[pixelIndex] = value;
 				pixels[pixelIndex + 1] = value;
 				pixels[pixelIndex + 2] = value;
-				pixels[pixelIndex + 3] = 255;
+				pixels[pixelIndex + 3] = isBlack || !transparentBackground ? 255 : 0;
 			}
 		}
 	}

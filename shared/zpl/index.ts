@@ -6,6 +6,7 @@ import { buildTextCommand } from './renderers/text.js';
 import { buildBarcodeCommand } from './renderers/barcode.js';
 import { buildQrCommand } from './renderers/qr.js';
 import { buildImageCommand } from './renderers/image.js';
+import { buildShapeCommand } from './renderers/shape.js';
 import type { RgbaImage } from './image/rasterize.js';
 import type { Font } from 'opentype.js'
 
@@ -18,7 +19,10 @@ import type { Font } from 'opentype.js'
  * (^XA...^XZ) listo para enviar por socket TCP a la impresora (spec §8).
  *
  * Las imágenes deben venir decodificadas en `images`, indexadas por el id
- * del elemento. Lanza ZplValidationError si algún elemento no es válido.
+ * del elemento.
+ * Las formas se rasterizan según la resolución del perfil.
+ * 
+ * Lanza ZplValidationError si algún elemento no es válido.
  * El caller debe capturar ese error específico y devolver 400.
  */
 export function generateZpl(
@@ -48,6 +52,8 @@ export function generateZpl(
 
 					return buildImageCommand(el, profile.dpi, source, widthDots, heightDots);
 				}
+				case 'shape':
+					return buildShapeCommand(el, profile.dpi, widthDots, heightDots);
 			}
 		})
 		.filter((command): command is string => command !== null);
@@ -75,3 +81,4 @@ export { createEan13Bitmap } from './barcode/ean13.js';
 export { createQrBitmap } from './renderers/qr.js';
 export { createTextBitmap } from './renderers/text.js';
 export { createImageGraphicBitmap } from './renderers/image.js';
+export { buildShapeCommand, createShapeBitmap } from './renderers/shape.js';
