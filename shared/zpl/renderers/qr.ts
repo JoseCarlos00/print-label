@@ -12,7 +12,9 @@ import { createTextBitmap } from '../renderers/text.js';
 const QR_ERROR_CORRECTION_DEFAULT: QrErrorCorrection = 'M';
 
 export function getQrModuleCount(content: string, errorCorrection: QrErrorCorrection = 'M'): number {
-	return QRCode.create(content, { errorCorrectionLevel: errorCorrection }).modules.size;
+	return QRCode.create(content, {
+		errorCorrectionLevel: errorCorrection,
+	}).modules.size;
 }
 
 function createQrLabelBitmap(qrBitmap: GraphicBitmap, textBitmap: GraphicBitmap, dpi: number): GraphicBitmap {
@@ -83,8 +85,10 @@ function createQrGraphicBitmap(matrix: boolean[][], requestedSizeDots: number): 
 	const data = new Uint8Array(bytesPerRow * heightDots);
 
 	for (let y = 0; y < moduleCount; y++) {
+		const row = matrix[y]!;
+
 		for (let x = 0; x < moduleCount; x++) {
-			if (!matrix?.[y]?.[x]) {
+			if (!row[x]!) {
 				continue;
 			}
 
@@ -92,12 +96,12 @@ function createQrGraphicBitmap(matrix: boolean[][], requestedSizeDots: number): 
 			const startY = y * moduleSizeDots;
 
 			for (let dy = 0; dy < moduleSizeDots; dy++) {
-				const row = startY + dy;
+				const rowIndex = startY + dy;
 
 				for (let dx = 0; dx < moduleSizeDots; dx++) {
 					const pixelX = startX + dx;
 
-					const byteIndex = row * bytesPerRow + Math.floor(pixelX / 8);
+					const byteIndex = rowIndex * bytesPerRow + Math.floor(pixelX / 8);
 
 					const bitIndex = 7 - (pixelX % 8);
 
@@ -143,13 +147,9 @@ export function createQrBitmap(el: QrElement, dpi: number, font: Font): GraphicB
 		content: labelText,
 		fontSize: el.label.fontSize,
 		bold: false,
-
-		...(el.label.wrapWidth !== undefined && {
-			wrapWidth: el.label.wrapWidth,
-		}),
-		
 		textAlign: 'Left',
 		lineSpacing: 0,
+		...(el.label.wrapWidth != null ? { wrapWidth: el.label.wrapWidth } : {}),
 	};
 
 	const textBitmap = createTextBitmap(textElement, dpi, font);
@@ -171,6 +171,7 @@ export function buildQrCommand(
 	const rotatedBitmap = rotateBitmap(bitmap, el.rotation);
 
 	const clipped = clipBitmapToLabel(rotatedBitmap, xDots, yDots, labelWidthDots, labelHeightDots);
+
 	if (!clipped) return null;
 
 	return buildGraphicCommand(clipped.bitmap, `^FO${clipped.xDots},${clipped.yDots}`);

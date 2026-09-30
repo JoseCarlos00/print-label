@@ -1,6 +1,6 @@
 import type { Font } from 'opentype.js';
 import type { TextElement } from '../../types.js';
-import { fontSizeMmToOpenType, renderText } from '../fonts/rasterizeText.js';
+import { fontSizeMmToOpenType, renderText, type RenderTextOptions } from '../fonts/rasterizeText.js';
 import { buildGraphicCommand, clipBitmapToLabel, type GraphicBitmap, rotateBitmap } from './graphic.js';
 import { mmToDots, ZplValidationError } from '../units.js';
 
@@ -17,13 +17,18 @@ export function createTextBitmap(el: TextElement, dpi: number, font: Font): Grap
 
 	const align = el.textAlign != null ? el.textAlign : 'Left';
 
-	const result = renderText(font, el.content, fontSize, wrapWidthDots, {
+	const renderOptions: RenderTextOptions = {
 		align,
 		fit: 'none',
-		...(wrapWidthDots !== undefined ? { wrapWidth: wrapWidthDots } : {}),
 		lineSpacingDots,
 		bold: el.bold,
-	});
+	};
+
+	if (wrapWidthDots != null) {
+		renderOptions.wrapWidth = wrapWidthDots;
+	}
+
+	const result = renderText(font, el.content, fontSize, wrapWidthDots, renderOptions);
 
 	return result.bitmap;
 }
@@ -42,6 +47,7 @@ export function buildTextCommand(
 	const rotatedBitmap = rotateBitmap(bitmap, el.rotation);
 
 	const clipped = clipBitmapToLabel(rotatedBitmap, xDots, yDots, labelWidthDots, labelHeightDots);
+
 	if (!clipped) return null;
 
 	return buildGraphicCommand(clipped.bitmap, `^FO${clipped.xDots},${clipped.yDots}`);
