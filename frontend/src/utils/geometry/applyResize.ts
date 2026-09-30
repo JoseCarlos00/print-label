@@ -61,11 +61,13 @@ function resizeQr(element: QrElement, bounds: ElementBounds, result: ResizeResul
 }
 
 function resizeImage(element: ImageElement, result: ResizeResult): ImageElement {
+	const isSideways = element.rotation === 90 || element.rotation === 270;
+
 	return {
 		...element,
 		x: result.left,
 		y: result.top,
-		width: result.width,
-		height: result.height,
+		width: isSideways ? result.height : result.width,
+		height: isSideways ? result.width : result.height,
 	};
 }

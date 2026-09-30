@@ -213,7 +213,11 @@ function ElementPreview({ element }: { element: LabelElement }) {
 			);
 
 		case 'image':
-			return <ImagePreview element={element} />;
+			return (
+				<PreviewErrorBoundary resetKey={element}>
+					<ImagePreview element={element} />
+				</PreviewErrorBoundary>
+			);
 	}
 }
 

@@ -109,6 +109,13 @@ function StaticElementPreview({ element, dpi }: { element: LabelElement; dpi: nu
 			);
 
 		case 'image':
-			return <ImagePreview element={element} />;
+			return (
+				<PreviewErrorBoundary resetKey={element}>
+					<ImagePreview
+						element={element}
+						dpi={dpi}
+					/>
+				</PreviewErrorBoundary>
+			);
 	}
 }

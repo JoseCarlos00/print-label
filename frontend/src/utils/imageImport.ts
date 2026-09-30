@@ -1,7 +1,8 @@
+import { MAX_IMAGE_DIMENSION } from 'shared/zpl';
+
 export const ALLOWED_IMAGE_TYPES = ['image/png', 'image/jpeg'] as const;
 
 export const MAX_IMAGE_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
-export const MAX_IMAGE_DIMENSION = 2000;
 
 export interface ImportedImage {
 	src: string;
@@ -17,8 +18,8 @@ function calculateDimensions(width: number, height: number): { width: number; he
 	const scale = Math.min(1, MAX_IMAGE_DIMENSION / width, MAX_IMAGE_DIMENSION / height);
 
 	return {
-		width: Math.round(width * scale),
-		height: Math.round(height * scale),
+		width: Math.max(1, Math.round(width * scale)),
+		height: Math.max(1, Math.round(height * scale)),
 	};
 }
 
@@ -49,13 +50,9 @@ export async function importImage(file: File): Promise<ImportedImage> {
 
 		context.drawImage(bitmap, 0, 0, dimensions.width, dimensions.height);
 
-		const src = canvas.toDataURL(
-			file.type === 'image/png' ? 'image/png' : 'image/jpeg',
-			file.type === 'image/jpeg' ? 0.9 : undefined,
-		);
-
 		return {
-			src,
+			// Siempre PNG (sin pérdida): el backend solo necesita un decodificador.
+			src: canvas.toDataURL('image/png'),
 			widthPx: dimensions.width,
 			heightPx: dimensions.height,
 		};
