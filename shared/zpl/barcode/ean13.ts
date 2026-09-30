@@ -1,9 +1,9 @@
 import { Ean13 } from '@ashaffah/barcodes';
-import type { Font } from 'opentype.js'
+import type { Font } from 'opentype.js';
 import type { BarcodeElement } from '../../types.js';
 import { drawBitmap, setPixel, type GraphicBitmap } from '../renderers/graphic.js';
 import { mmToDots, resolveBarcodeTextSize, ZplValidationError } from '../units.js';
-import { fontSizeMmToOpenType, renderText } from '../fonts/rasterizeText.js'
+import { fontSizeMmToOpenType, renderText } from '../fonts/rasterizeText.js';
 
 export interface Ean13Encoded {
 	content: string;
@@ -110,13 +110,11 @@ export function createEan13Bitmap(
 	// 2. Preparar texto
 
 	if (el.showText) {
-		// 2. Preparar texto
-
 		const fontSize = fontSizeMmToOpenType(font, textSizeMm, dpi);
 
 		const textY = barHeightDots;
 
-		const firstDigit = encoded.content[0];
+		const firstDigit = encoded.content[0]!;
 		const leftDigits = encoded.content.slice(1, 7);
 		const rightDigits = encoded.content.slice(7, 13);
 
@@ -136,7 +134,7 @@ export function createEan13Bitmap(
 		 */
 		const firstDigitGapDots = mmToDots(1, dpi);
 
-		const firstDigitBitmap = renderText(font, firstDigit!, fontSize, firstDigitAreaEnd - firstDigitGapDots, {
+		const firstDigitBitmap = renderText(font, firstDigit, fontSize, firstDigitAreaEnd - firstDigitGapDots, {
 			align: 'Right',
 		});
 
@@ -147,26 +145,23 @@ export function createEan13Bitmap(
 		 * Al centrar cada dígito dentro de su slot,
 		 * conseguimos un efecto equivalente a space-around.
 		 */
-
 		function drawSpacedDigits(text: string, areaStart: number, areaEnd: number): void {
 			const areaWidth = areaEnd - areaStart;
 			const slotWidth = areaWidth / text.length;
 
-			for (let i = 0; i < text.length; i++) {
+			for (const [i, char] of text.split('').entries()) {
 				const slotStart = Math.floor(areaStart + i * slotWidth);
-
 				const slotEnd = Math.floor(areaStart + (i + 1) * slotWidth);
 
 				const currentSlotWidth = slotEnd - slotStart;
 
-				const digitBitmap = renderText(font, text[i]!, fontSize, currentSlotWidth, { align: 'Center' });
+				const digitBitmap = renderText(font, char, fontSize, currentSlotWidth, { align: 'Center' });
 
 				drawBitmap(bitmap, digitBitmap.bitmap, slotStart, textY);
 			}
 		}
 
 		drawSpacedDigits(leftDigits, leftAreaStart, leftAreaEnd);
-
 		drawSpacedDigits(rightDigits, rightAreaStart, rightAreaEnd);
 	}
 
@@ -177,12 +172,12 @@ function calculateEan13CheckDigit(content: string): string {
 	let sum = 0;
 
 	for (let i = 0; i < 12; i++) {
-		const digit = Number(content[i]);
+		const digit = Number(content[i]!);
 
 		sum += i % 2 === 0 ? digit : digit * 3;
 	}
 
 	const remainder = sum % 10;
-	
+
 	return String(remainder === 0 ? 0 : 10 - remainder);
 }
