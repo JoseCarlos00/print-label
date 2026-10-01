@@ -30,6 +30,7 @@ interface CanvasElementProps {
 
 	onDragPositionChange: (elementId: string, x: number, y: number) => void;
 	onDragEnd: () => void;
+	onRequestOpenPropertiesPanel: () => void;
 }
 
 interface Actions {
@@ -48,6 +49,7 @@ export function CanvasElement({
 	onNaturalSizeChange,
 	onDragPositionChange,
 	onDragEnd,
+	onRequestOpenPropertiesPanel,
 }: CanvasElementProps) {
 	const positionLocked = useEditorStore((s) => s.positionLocked);
 	const selectElement = useEditorStore((s) => s.selectElement);
@@ -115,6 +117,7 @@ export function CanvasElement({
 		if ((e.target as HTMLElement).closest('[data-element-toolbar]')) return;
 
 		selectElement(element.id);
+		onRequestOpenPropertiesPanel();
 		requestContentFocus();
 	};
 

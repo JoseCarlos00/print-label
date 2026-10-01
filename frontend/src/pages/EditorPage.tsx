@@ -16,6 +16,7 @@ import { Toolbar } from '@/components/Toolbar';
 import { Canvas } from '@/components/editor/Canvas';
 import { EditorPanelTabs } from '@/components/editor/EditorPanelTabs';
 import { FloatingActionBar } from '@/components/editor/FloatingActionBar';
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 
 
 // Wrapper que fuerza un remount COMPLETO de EditorPage cada vez que cambia
@@ -28,6 +29,7 @@ export function EditorRoute() {
 function EditorPage() {
 	const { id } = useParams<{ id: string }>();
 	const [mobilePanelOpen, setMobilePanelOpen] = useState(false);
+	const matches = useMediaQuery('(min-width: 64rem)');
 
 	const navigate = useNavigate();
 
@@ -36,9 +38,15 @@ function EditorPage() {
 
 	const profile = useEditorStore((s) => s.profile);
 	const templateId = useEditorStore((s) => s.templateId);
+	const selectedElementId = useEditorStore((s) => s.selectedElementId);
 	const setProfile = useEditorStore((s) => s.setProfile);
 	const loadTemplate = useEditorStore((s) => s.loadTemplate);
 	const newDocument = useEditorStore((s) => s.newDocument);
+
+	useEffect(() => {
+		if (!selectedElementId || matches) return;
+		setMobilePanelOpen(true);
+	}, [selectedElementId, matches]);
 
 	// Si cambia el :id (o pasamos de una plantilla a "nueva"), reseteamos
 	// el store antes de que los efectos de abajo vuelvan a poblarlo.
@@ -135,6 +143,9 @@ function EditorPage() {
 					<Canvas
 						loadError={loadError}
 						loadErrorActions={loadErrorActions}
+						onRequestOpenPropertiesPanel={() => {
+							if (!matches) setMobilePanelOpen(true);
+						}}
 					/>
 					<FloatingActionBar />
 

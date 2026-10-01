@@ -26,6 +26,7 @@ import { EDITOR_LIMITS } from '@/config/editorLimits';
 interface CanvasProps {
 	loadError?: string | null;
 	loadErrorActions?: ReactNode;
+	onRequestOpenPropertiesPanel: () => void;
 }
 
 interface NaturalSize {
@@ -40,7 +41,7 @@ interface Guide {
 
 const WORKSPACE_MARGIN_MM = 100;
 
-export function Canvas({ loadError, loadErrorActions }: CanvasProps) {
+export function Canvas({ loadError, loadErrorActions, onRequestOpenPropertiesPanel }: CanvasProps) {
 	const canvasRef = useRef<HTMLDivElement>(null);
 	const viewportRef = useRef<HTMLDivElement>(null);
 	const hasInitialCentered = useRef(false);
@@ -444,6 +445,7 @@ export function Canvas({ loadError, loadErrorActions }: CanvasProps) {
 							onNaturalSizeChange={handleNaturalSizeChange}
 							onDragPositionChange={handleDragPositionChange}
 							onDragEnd={handleDragEnd}
+							onRequestOpenPropertiesPanel={onRequestOpenPropertiesPanel}
 						/>
 					))}
 
