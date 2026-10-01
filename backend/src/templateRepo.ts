@@ -194,3 +194,10 @@ export function deleteTemplate(id: string): boolean {
 	const result = db.prepare(`DELETE FROM templates WHERE id = ?`).run(id);
 	return result.changes > 0;
 }
+
+export function countPending(): number {
+	const row = db.prepare(`SELECT COUNT(*) AS count FROM templates WHERE state = 'pending'`).get() as {
+		count: number;
+	};
+	return row.count;
+}

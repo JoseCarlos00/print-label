@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import { approveTemplate, listPending, rejectTemplate } from '../templateRepo.js';
+import { approveTemplate, countPending, listPending, rejectTemplate } from '../templateRepo.js';
 
 // GET /api/staging (admin)
 export const listStaging = (_req: Request, res: Response) => {
@@ -68,3 +68,7 @@ export const reject = (req: Request, res: Response) => {
 	}
 };
 
+// GET /api/staging/count (admin)
+export const pendingCount = (_req: Request, res: Response) => {
+	res.json({ count: countPending() });
+};
