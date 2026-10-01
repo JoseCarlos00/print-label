@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
-import { LayoutTemplate } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { ChevronLeft, ChevronRight, LayoutTemplate } from 'lucide-react';
 import type { Template } from 'shared';
 
 import { useAuth } from '@/hooks/useAuth';
@@ -50,7 +50,49 @@ export function GalleryPage() {
 	};
 
 	const previewTemplate = templates.find((t) => t.id === previewId) ?? null;
+	const previewIndex = previewTemplate ? templates.findIndex((template) => template.id === previewTemplate.id) : -1;
+	
+	const showPreviewNavigation = templates.length > 1 && previewIndex >= 0;
+	const showPreviousPreview = useCallback(() => {
+		if (!showPreviewNavigation) return;
+		const previousIndex = (previewIndex - 1 + templates.length) % templates.length;
+		setPreviewId(templates[previousIndex].id);
+	}, [showPreviewNavigation, previewIndex, templates]);
+
+	const showNextPreview = useCallback(() => {
+		if (!showPreviewNavigation) return;
+		const nextIndex = (previewIndex + 1) % templates.length;
+		setPreviewId(templates[nextIndex].id);
+	}, [showPreviewNavigation, previewIndex, templates]);
+
 	const hiddenPrivate = isAdmin && !showAll;
+
+	useEffect(() => {
+		if (!previewTemplate || templateToDelete) return;
+
+		const handlePreviewKeyDown = (event: KeyboardEvent) => {
+			if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+
+			const target = event.target;
+			if (
+				target instanceof HTMLElement &&
+				(target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))
+			) {
+				return;
+			}
+
+			if (event.key === 'ArrowLeft') {
+				event.preventDefault();
+				showPreviousPreview();
+			} else if (event.key === 'ArrowRight') {
+				event.preventDefault();
+				showNextPreview();
+			}
+		};
+
+		window.addEventListener('keydown', handlePreviewKeyDown, true);
+		return () => window.removeEventListener('keydown', handlePreviewKeyDown, true);
+	}, [previewTemplate, templateToDelete, showPreviousPreview, showNextPreview]);
 
 	return (
 		<div className='h-full overflow-y-auto thin-scrollbar'>
@@ -144,6 +186,33 @@ export function GalleryPage() {
 					onClose={() => setPreviewId(null)}
 					footer={
 						<>
+							{showPreviewNavigation && (
+								<div className='mr-auto flex items-center gap-2'>
+									<Button
+										type='button'
+										variant='outline'
+										size='icon'
+										aria-label='Plantilla anterior'
+										title='Plantilla anterior'
+										onClick={showPreviousPreview}
+									>
+										<ChevronLeft />
+									</Button>
+									<span className='min-w-12 text-center text-xs text-app-text-muted'>
+										{previewIndex + 1} / {templates.length}
+									</span>
+									<Button
+										type='button'
+										variant='outline'
+										size='icon'
+										aria-label='Siguiente plantilla'
+										title='Siguiente plantilla'
+										onClick={showNextPreview}
+									>
+										<ChevronRight />
+									</Button>
+								</div>
+							)}
 							<Button
 								type='button'
 								variant='outline'
