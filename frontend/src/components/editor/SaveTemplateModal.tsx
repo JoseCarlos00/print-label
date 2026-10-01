@@ -144,13 +144,17 @@ export function SaveTemplateModal({ onClose, onSaved }: SaveTemplateModalProps) 
 				savedMode = 'requested';
 			}
 
-			setTemplateMeta({
-				templateId: saved.id,
-				templateName: saved.name,
-				isPublic: saved.public,
-				positionLocked: saved.positionLocked,
-				loadedTemplateState: saved.state,
-			});
+			// el lienzo sigue siendo un documento nuevo.
+			if (savedMode !== 'requested') {
+				setTemplateMeta({
+					templateId: saved.id,
+					templateName: saved.name,
+					isPublic: saved.public,
+					positionLocked: saved.positionLocked,
+					loadedTemplateState: saved.state,
+				});
+			}
+
 			markHistorySaved();
 			bumpTemplatesVersion();
 			onSaved(saved, savedMode);

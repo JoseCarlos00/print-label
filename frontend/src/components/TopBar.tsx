@@ -32,6 +32,7 @@ interface TopBarProps {
 
 export function TopBar({ profiles, profilesError }: TopBarProps) {
 	const { isAdmin } = useAuth();
+	const navigate = useNavigate();
 
 	const profile = useEditorStore((s) => s.profile);
 	const setProfile = useEditorStore((s) => s.setProfile);
@@ -79,6 +80,10 @@ export function TopBar({ profiles, profilesError }: TopBarProps) {
 			title: messages[mode],
 			type: mode === 'requested' ? 'info' : 'success',
 		});
+
+		if (mode === 'created') {
+			navigate(`/editor/${saved.id}`, { replace: true });
+		}
 	};
 
 	const isUpdating = isAdmin && Boolean(templateId) && loadedTemplateState === 'approved';
