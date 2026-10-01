@@ -65,6 +65,11 @@ export function TopBar({ profiles, profilesLoading, profilesError, onRetryProfil
 		}
 	}, [profile, elements]);
 
+	const confirmKeyboardPrint = useCallback(async () => {
+		await handlePrint();
+		setKeyboardPrintConfirmationOpen(false);
+	}, [handlePrint]);
+
 	const handleSaved = (saved: Template, mode: 'created' | 'updated' | 'requested') => {
 		const messages = {
 			created: `Plantilla "${saved.name}" guardada.`,
@@ -94,7 +99,7 @@ export function TopBar({ profiles, profilesLoading, profilesError, onRetryProfil
 
 			event.preventDefault();
 
-			if (printState !== 'printing' && canEdit) {
+			if (printState !== 'printing' && canEdit && !isKeyboardPrintConfirmationOpen) {
 				setKeyboardPrintConfirmationOpen(true);
 			}
 		};
@@ -104,7 +109,7 @@ export function TopBar({ profiles, profilesLoading, profilesError, onRetryProfil
 		return () => {
 			window.removeEventListener('keydown', handleKeyDown);
 		};
-	}, [printState, canEdit]);
+	}, [printState, canEdit, isKeyboardPrintConfirmationOpen]);
 
 	return (
 		<header className='flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-app-border p-2'>
@@ -179,10 +184,7 @@ export function TopBar({ profiles, profilesLoading, profilesError, onRetryProfil
 				confirmLabel='Imprimir'
 				busy={printState === 'printing'}
 				onOpenChange={setKeyboardPrintConfirmationOpen}
-				onConfirm={() => {
-					setKeyboardPrintConfirmationOpen(false);
-					// void handlePrint();
-				}}
+				onConfirm={confirmKeyboardPrint}
 			/>
 		</header>
 	);
