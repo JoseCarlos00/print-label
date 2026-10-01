@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { AuthProvider } from '@/context/AuthProvider';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { NavBar } from '@/components/NavBar';
@@ -6,6 +6,7 @@ import { Toaster } from '@/components/ui/toast';
 import { EditorRoute } from '@/pages/EditorPage';
 import { StagingPage } from '@/pages/StagingPage';
 import { GalleryPage } from '@/pages/GalleryPage';
+import { NotFoundPage } from '@/pages/NotFoundPage';
 import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
 import { useEditorKeyboard } from '@/hooks/useEditorKeyboard';
 import { LoginDialogProvider } from './context/LoginDialogProvider'
@@ -36,6 +37,10 @@ function AppShell() {
 						element={<EditorRoute />}
 					/>
 					<Route
+						path='/editor'
+						element={<Navigate to='/' replace />}
+					/>
+					<Route
 						path='/galeria'
 						element={<GalleryPage />}
 					/>
@@ -47,6 +52,10 @@ function AppShell() {
 								<StagingPage />
 							</ProtectedRoute>
 						}
+					/>
+					<Route
+						path='*'
+						element={<NotFoundPage />}
 					/>
 				</Routes>
 			</div>

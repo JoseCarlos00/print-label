@@ -81,6 +81,22 @@ app.use('/api/staging', stagingApiRoutes);
 app.use('/api/print', printApiRoutes);
 app.use('/api/printers', printerApiRoutes);
 
+app.use('/api', (_req, res) => {
+	res.status(404).json({ message: 'Ruta de API no encontrada' });
+});
+
+app.use((req, res, next) => {
+	if (req.method !== 'GET' || req.path.startsWith('/api/')) {
+		return next();
+	}
+
+	res.sendFile(path.join(frontendPath, 'index.html'), (error) => {
+		if (error) {
+			next(error);
+		}
+	});
+});
+
 app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
 	console.error('Error no manejado:', err);
 
