@@ -17,6 +17,7 @@ function isValidInput(body: unknown): body is CreateTemplateInput {
 	return (
 		typeof input.name === 'string' &&
 		input.name.trim().length > 0 &&
+		input.name.length <= 60 &&
 		typeof input.profileId === 'string' &&
 		input.profileId.trim().length > 0 &&
 		Array.isArray(input.elements) &&
@@ -67,7 +68,7 @@ export const createStaging = (req: Request, res: Response) => {
 	}
 
 	try {
-		const template = createTemplate(req.body, 'pending');
+		const template = createTemplate({ ...req.body, public: true }, 'pending');
 		console.info(`Plantilla enviada a revisión: ${template.id} - ${template.name}`);
 
 		res.status(201).json(template);
