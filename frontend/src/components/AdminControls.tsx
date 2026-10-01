@@ -23,6 +23,7 @@ export function AdminControls() {
 				type='button'
 				variant='outline'
 				size='sm'
+				className='shrink-0'
 				onClick={openLogin}
 			>
 				<LogIn />
@@ -39,7 +40,7 @@ export function AdminControls() {
 						type='button'
 						variant='ghost'
 						size='sm'
-						className='gap-1 px-2'
+						className='shrink-0 gap-1 px-2'
 					>
 						<AdminBadge />
 						<ChevronDown className='size-3.5 text-app-text-muted' />
