@@ -30,7 +30,7 @@ export function QuickTemplatesPanel() {
 			<Button
 				variant='outline'
 				size='sm'
-				className='justify-start cursor-pointer'
+				className='justify-start'
 				onClick={handleNewDocument}
 			>
 				<FilePlus className='size-4' />

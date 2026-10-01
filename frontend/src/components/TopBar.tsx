@@ -141,7 +141,6 @@ export function TopBar({ profiles, profilesError }: TopBarProps) {
 					onClick={handlePrint}
 					disabled={printState === 'printing' || !canEdit}
 					title='Imprimir (Ctrl+P)'
-					className='bg-app-accent-500 text-app-accent-contrast hover:bg-app-accent-700 cursor-pointer'
 				>
 					<Printer />
 					<span className='hidden sm:inline'>{printState === 'printing' ? 'Imprimiendo...' : 'Imprimir'}</span>
@@ -150,7 +149,6 @@ export function TopBar({ profiles, profilesError }: TopBarProps) {
 				<Button
 					type='button'
 					variant='outline'
-					className='cursor-pointer'
 					onClick={() => setSaveModalOpen(true)}
 					disabled={!canEdit}
 				>
@@ -201,7 +199,6 @@ function LogoMenu({ onNewDocument }: LogoMenuProps) {
 
 				<DropdownMenuContent align='start'>
 					<DropdownMenuItem
-						className='cursor-pointer'
 						onClick={onNewDocument}
 					>
 						<FilePlus className='size-4' />
@@ -211,7 +208,6 @@ function LogoMenu({ onNewDocument }: LogoMenuProps) {
 					<DropdownMenuSeparator />
 
 					<DropdownMenuItem
-						className='cursor-pointer'
 						onClick={() => navigate('/galeria')}
 					>
 						<BookImage className='size-4' />
@@ -220,7 +216,6 @@ function LogoMenu({ onNewDocument }: LogoMenuProps) {
 
 					{isAdmin && (
 						<DropdownMenuItem
-							className='cursor-pointer'
 							onClick={() => navigate('/staging')}
 						>
 							<ClipboardClock className='size-4' />
@@ -233,7 +228,6 @@ function LogoMenu({ onNewDocument }: LogoMenuProps) {
 
 					{isAdmin ? (
 						<DropdownMenuItem
-							className='cursor-pointer'
 							variant='destructive'
 							onClick={handleLogout}
 						>
@@ -242,7 +236,6 @@ function LogoMenu({ onNewDocument }: LogoMenuProps) {
 						</DropdownMenuItem>
 					) : (
 						<DropdownMenuItem
-							className='cursor-pointer'
 							onClick={openLogin}
 						>
 							<LogIn />

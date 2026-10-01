@@ -55,7 +55,6 @@ export function TemplateCard({ template, profile, onUse, onPreview, onDelete }: 
 					type='button'
 					variant='outline'
 					onClick={onPreview}
-					className='cursor-pointer'
 				>
 					<Eye />
 					Vista previa
@@ -63,7 +62,6 @@ export function TemplateCard({ template, profile, onUse, onPreview, onDelete }: 
 				<Button
 					type='button'
 					onClick={onUse}
-					className='cursor-pointer bg-app-accent-500 text-app-accent-contrast hover:bg-app-accent-700'
 				>
 					Usar
 				</Button>

@@ -332,7 +332,6 @@ export function SaveTemplateModal({ onClose, onSaved }: SaveTemplateModalProps) 
 							variant='outline'
 							disabled={submitting}
 							onClick={onClose}
-							className='cursor-pointer'
 						>
 							Cancelar
 						</Button>
@@ -343,7 +342,6 @@ export function SaveTemplateModal({ onClose, onSaved }: SaveTemplateModalProps) 
 								variant='secondary'
 								disabled={submitting}
 								onClick={() => void submit('create')}
-								className='cursor-pointer'
 							>
 								Guardar como nueva
 							</Button>
@@ -352,7 +350,6 @@ export function SaveTemplateModal({ onClose, onSaved }: SaveTemplateModalProps) 
 						<Button
 							type='submit'
 							disabled={submitting}
-							className='cursor-pointer bg-app-accent-500 text-app-accent-contrast hover:bg-app-accent-700'
 						>
 							{submitting ? (
 								<>

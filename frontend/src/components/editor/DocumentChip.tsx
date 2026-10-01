@@ -19,7 +19,7 @@ export function DocumentChip({
       <Button
         variant='outline'
         size='sm'
-        className='shrink-0 cursor-pointer'
+        className='shrink-0'
         onClick={onNewDocument}
       >
         <FilePlus className='size-4' />
@@ -43,12 +43,12 @@ export function DocumentChip({
 			<Button
 				variant='ghost'
 				size='icon'
-				className='mr-0.5 size-7 shrink-0 text-app-text-muted hover:text-app-text cursor-pointer'
+				className='mr-0.5 size-7 shrink-0 text-app-text hover:text-app-text/80'
 				onClick={onNewDocument}
 				title='Cerrar plantilla'
 				aria-label='Cerrar plantilla'
 			>
-				<X className='size-4 text-red-600' />
+				<X className='size-4' />
 			</Button>
 		</div>
 	);

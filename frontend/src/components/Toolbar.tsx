@@ -116,7 +116,7 @@ export function Toolbar() {
 						{SHAPES.map(({ shape, label, icon: Icon }) => (
 							<DropdownMenuItem
 								key={shape}
-								className='gap-2 cursor-pointer'
+								className='gap-2'
 								onClick={() => addShapeElement(shape)}
 							>
 								<Icon className='size-4' />
@@ -148,7 +148,7 @@ export function Toolbar() {
 						{BUTTONS.map(({ type, label, icon: Icon }) => (
 							<React.Fragment key={type}>
 								<DropdownMenuItem
-									className='w-full gap-2 cursor-pointer'
+									className='w-full gap-2'
 									onClick={() => addElement(type)}
 								>
 									<Icon className='size-4' />
@@ -160,7 +160,7 @@ export function Toolbar() {
 						))}
 
 						<DropdownMenuItem
-							className='w-full gap-2 cursor-pointer'
+							className='w-full gap-2'
 							onClick={openPicker}
 						>
 							<ImagePlus className='size-4' />
@@ -177,7 +177,7 @@ export function Toolbar() {
 								{SHAPES.map(({ shape, label, icon: Icon }) => (
 									<DropdownMenuItem
 										key={shape}
-										className='gap-2 cursor-pointer'
+										className='gap-2'
 										onClick={() => addShapeElement(shape)}
 									>
 										<Icon className='size-4' />

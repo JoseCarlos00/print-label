@@ -47,7 +47,7 @@ export function StagingCard({
 				type='button'
 				variant='outline'
 				onClick={onPreview}
-				className='w-full cursor-pointer border-app-accent-500 text-app-accent-400 hover:text-app-accent-400'
+				className='w-full border-app-accent-500 text-app-accent-400 hover:text-app-accent-400'
 			>
 				<Eye />
 				Vista previa
@@ -59,7 +59,6 @@ export function StagingCard({
 					variant='outline'
 					disabled={busy}
 					onClick={onReject}
-					className='cursor-pointer'
 				>
 					<X />
 					{rejecting ? 'Rechazando...' : 'Rechazar'}
@@ -68,7 +67,6 @@ export function StagingCard({
 					type='button'
 					disabled={busy}
 					onClick={onApprove}
-					className='cursor-pointer bg-app-accent-500 text-app-accent-contrast hover:bg-app-accent-700'
 				>
 					<Check />
 					{approving ? 'Aprobando...' : 'Aprobar'}

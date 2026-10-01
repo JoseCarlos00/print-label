@@ -93,14 +93,12 @@ export function GalleryPage() {
 								type='button'
 								variant='outline'
 								onClick={() => setPreviewId(null)}
-								className='cursor-pointer'
 							>
 								Cerrar
 							</Button>
 							<Button
 								type='button'
 								onClick={() => navigate(`/editor/${previewTemplate.id}`)}
-								className='cursor-pointer bg-app-accent-500 text-app-accent-contrast hover:bg-app-accent-700'
 							>
 								Usar esta plantilla
 							</Button>

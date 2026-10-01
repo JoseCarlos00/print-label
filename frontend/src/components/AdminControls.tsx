@@ -49,7 +49,6 @@ export function AdminControls() {
 
 			<DropdownMenuContent align='end'>
 				<DropdownMenuItem
-					className='cursor-pointer'
 					variant='destructive'
 					onClick={handleLogout}
 				>

@@ -108,7 +108,6 @@ export function StagingPage() {
 								variant='outline'
 								disabled={previewBusy}
 								onClick={() => handleAction(previewTemplate.id, 'reject')}
-								className='cursor-pointer'
 							>
 								<X />
 								{previewState === 'rejecting' ? 'Rechazando...' : 'Rechazar'}
@@ -117,7 +116,6 @@ export function StagingPage() {
 								type='button'
 								disabled={previewBusy}
 								onClick={() => handleAction(previewTemplate.id, 'approve')}
-								className='cursor-pointer bg-app-accent-500 text-app-accent-contrast hover:bg-app-accent-700'
 							>
 								<Check />
 								{previewState === 'approving' ? 'Aprobando...' : 'Aprobar'}
