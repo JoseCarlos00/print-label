@@ -1,16 +1,22 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { PanelRight } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { BookImage, PanelRight, RotateCw } from 'lucide-react';
+
 import { usePrinterProfiles } from '@/hooks/usePrinterProfiles';
 import { useTemplate } from '@/hooks/useTemplate';
+
 import { useEditorStore } from '@/store/useEditorStore';
 import { clearHistory } from '@/store/history';
+
 import { getSavedPrinterId } from '@/utils/printerPreference';
+
+import { Button } from '@/components/ui/button';
 import { TopBar } from '@/components/TopBar';
 import { Toolbar } from '@/components/Toolbar';
 import { Canvas } from '@/components/editor/Canvas';
 import { EditorPanelTabs } from '@/components/editor/EditorPanelTabs';
 import { FloatingActionBar } from '@/components/editor/FloatingActionBar';
+
 
 // Wrapper que fuerza un remount COMPLETO de EditorPage cada vez que cambia
 // el :id de la ruta (incluido pasar de "sin id" a "con id" o viceversa).
@@ -23,8 +29,10 @@ function EditorPage() {
 	const { id } = useParams<{ id: string }>();
 	const [mobilePanelOpen, setMobilePanelOpen] = useState(false);
 
-	const { profiles, loading: loadingProfiles, error: profilesError } = usePrinterProfiles();
-	const { template, error: templateError } = useTemplate(id);
+	const navigate = useNavigate();
+
+	const { profiles, loading: loadingProfiles, error: profilesError, reload: reloadProfiles } = usePrinterProfiles();
+	const { template, error: templateError, errorStatus: templateErrorStatus, reload: reloadTemplate } = useTemplate(id);
 
 	const profile = useEditorStore((s) => s.profile);
 	const templateId = useEditorStore((s) => s.templateId);
@@ -77,17 +85,57 @@ function EditorPage() {
 	// antes, un error transitorio de refetch no debería tapar el lienzo).
 	const loadError = id ? templateError : !profile ? profilesError : null;
 
+	// Un 404 no se arregla reintentando: solo se ofrece volver a la galería.
+	const loadErrorActions = id ? (
+		<>
+			{templateErrorStatus !== 404 && (
+				<Button
+					type='button'
+					variant='outline'
+					size='sm'
+					onClick={reloadTemplate}
+				>
+					<RotateCw />
+					Reintentar
+				</Button>
+			)}
+			<Button
+				type='button'
+				size='sm'
+				onClick={() => navigate('/galeria')}
+			>
+				<BookImage />
+				Ir a la galería
+			</Button>
+		</>
+	) : (
+		<Button
+			type='button'
+			variant='outline'
+			size='sm'
+			onClick={reloadProfiles}
+		>
+			<RotateCw />
+			Reintentar
+		</Button>
+	);
+
 	return (
 		<div className='flex h-full flex-col'>
 			<TopBar
 				profiles={profiles}
+				profilesLoading={loadingProfiles}
 				profilesError={profilesError}
+				onRetryProfiles={reloadProfiles}
 			/>
 
 			<div className='flex flex-1 overflow-hidden'>
 				<main className='relative min-w-0 flex flex-1 flex-col overflow-hidden'>
 					<Toolbar />
-					<Canvas loadError={loadError} />
+					<Canvas
+						loadError={loadError}
+						loadErrorActions={loadErrorActions}
+					/>
 					<FloatingActionBar />
 
 					{!mobilePanelOpen && (

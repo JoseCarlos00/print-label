@@ -8,12 +8,16 @@ interface UseTemplateResult {
 	template: Template | null;
 	loading: boolean;
 	error: string | null;
+	errorStatus: number | null;
+	reload: () => void;
 }
 
 export function useTemplate(id: string | undefined): UseTemplateResult {
 	const [template, setTemplate] = useState<Template | null>(null);
 	const [loading, setLoading] = useState(Boolean(id));
 	const [error, setError] = useState<string | null>(null);
+	const [errorStatus, setErrorStatus] = useState<number | null>(null);
+	const [attempt, setAttempt] = useState(0);
 
 	useEffect(() => {
 		if (!id) return;
@@ -30,6 +34,7 @@ export function useTemplate(id: string | undefined): UseTemplateResult {
 			.catch((err) => {
 				if (!cancelled) {
 					setError(err instanceof ApiError ? err.message : 'Error cargando la plantilla');
+					setErrorStatus(err instanceof ApiError ? err.status : null);
 				}
 			})
 			.finally(() => {
@@ -41,7 +46,14 @@ export function useTemplate(id: string | undefined): UseTemplateResult {
 		return () => {
 			cancelled = true;
 		};
-	}, [id]);
+	}, [id, attempt]);
 
-	return { template, loading, error };
+	const reload = () => {
+		setError(null);
+		setErrorStatus(null);
+		setLoading(true);
+		setAttempt((current) => current + 1);
+	};
+
+	return { template, loading, error, errorStatus, reload };
 }

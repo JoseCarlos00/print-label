@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronDown, FilePlus, LogIn, LogOut, Printer, BookImage, ClipboardClock } from 'lucide-react';
+import { ChevronDown, FilePlus, LogIn, LogOut, Printer, BookImage, ClipboardClock, RotateCw } from 'lucide-react';
 
 import type { PrinterProfile, Template } from 'shared';
 import { api, ApiError } from '@/api/client';
@@ -23,17 +23,19 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { AdminBadge } from './AdminBadge'
-import { PendingCount } from './PendingCount'
-import { useLogout } from '@/hooks/useLogout'
-import { usePendingCount } from '@/hooks/usePendingCount'
+import { AdminBadge } from './AdminBadge';
+import { PendingCount } from './PendingCount';
+import { useLogout } from '@/hooks/useLogout';
+import { usePendingCount } from '@/hooks/usePendingCount';
 
 interface TopBarProps {
 	profiles: PrinterProfile[];
+	profilesLoading: boolean;
 	profilesError: string | null;
+	onRetryProfiles: () => void;
 }
 
-export function TopBar({ profiles, profilesError }: TopBarProps) {
+export function TopBar({ profiles, profilesLoading, profilesError, onRetryProfiles }: TopBarProps) {
 	const { isAdmin } = useAuth();
 	const navigate = useNavigate();
 
@@ -127,10 +129,22 @@ export function TopBar({ profiles, profilesError }: TopBarProps) {
 
 			<div className='flex items-center gap-2'>
 				{profilesError ? (
-					<p className='text-xs text-red-400'>{profilesError}</p>
+					<div className='flex items-center gap-2'>
+						<p className='text-xs text-red-400'>{profilesError}</p>
+						<Button
+							type='button'
+							variant='outline'
+							size='sm'
+							onClick={onRetryProfiles}
+						>
+							<RotateCw />
+							<span className='hidden sm:inline'>Reintentar</span>
+						</Button>
+					</div>
 				) : (
 					<PrinterSelect
 						profiles={profiles}
+						loading={profilesLoading}
 						profile={profile}
 						setProfile={setProfile}
 					/>
@@ -198,26 +212,20 @@ function LogoMenu({ onNewDocument }: LogoMenuProps) {
 				/>
 
 				<DropdownMenuContent align='start'>
-					<DropdownMenuItem
-						onClick={onNewDocument}
-					>
+					<DropdownMenuItem onClick={onNewDocument}>
 						<FilePlus className='size-4' />
 						Nueva etiqueta
 					</DropdownMenuItem>
 
 					<DropdownMenuSeparator />
 
-					<DropdownMenuItem
-						onClick={() => navigate('/galeria')}
-					>
+					<DropdownMenuItem onClick={() => navigate('/galeria')}>
 						<BookImage className='size-4' />
 						Galería
 					</DropdownMenuItem>
 
 					{isAdmin && (
-						<DropdownMenuItem
-							onClick={() => navigate('/staging')}
-						>
+						<DropdownMenuItem onClick={() => navigate('/staging')}>
 							<ClipboardClock className='size-4' />
 							Staging
 							<PendingCount count={pending} />
@@ -235,9 +243,7 @@ function LogoMenu({ onNewDocument }: LogoMenuProps) {
 							Cerrar sesión
 						</DropdownMenuItem>
 					) : (
-						<DropdownMenuItem
-							onClick={openLogin}
-						>
+						<DropdownMenuItem onClick={openLogin}>
 							<LogIn />
 							Iniciar sesión
 						</DropdownMenuItem>
@@ -252,15 +258,22 @@ function LogoMenu({ onNewDocument }: LogoMenuProps) {
 
 interface PrinterSelectProps extends Pick<EditorStore, 'setProfile'> {
 	profiles: PrinterProfile[];
+	loading: boolean;
 	profile: PrinterProfile | null;
 }
 
-function PrinterSelect({ profiles, profile, setProfile }: PrinterSelectProps) {
+function PrinterSelect({ profiles, loading, profile, setProfile }: PrinterSelectProps) {
 	const handleChange = (profileId: string | null) => {
 		const selectedProfile = profiles.find((item) => item.name === profileId);
 
 		setProfile(selectedProfile ?? null);
 	};
+
+	const placeholder = loading
+		? 'Cargando impresoras...'
+		: profiles.length === 0
+			? 'Sin impresoras disponibles'
+			: 'Seleccionar impresora';
 
 	return (
 		<Select
@@ -269,7 +282,7 @@ function PrinterSelect({ profiles, profile, setProfile }: PrinterSelectProps) {
 			disabled={profiles.length === 0}
 		>
 			<SelectTrigger className='w-36 sm:w-48'>
-				<SelectValue placeholder='Seleccionar impresora' />
+				<SelectValue placeholder={placeholder} />
 			</SelectTrigger>
 
 			<SelectContent className='max-h-150'>

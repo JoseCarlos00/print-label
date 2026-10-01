@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Check, X } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { Check, PartyPopper, X } from 'lucide-react';
 import type { Template } from 'shared';
 
 import { api, ApiError } from '@/api/client';
@@ -8,6 +8,7 @@ import { bumpTemplatesVersion } from '@/store/templatesCache';
 import { StagingCard } from '@/components/staging/StagingCard';
 import { TemplatePreviewModal } from '@/components/templates/TemplatePreviewModal';
 import { Button } from '@/components/ui/button';
+import { EmptyState, ErrorState, LoadingState } from '@/components/ui/state-panels';
 import { toast } from '@/components/ui/toast';
 
 type ActionState = 'idle' | 'approving' | 'rejecting';
@@ -19,15 +20,25 @@ export function StagingPage() {
 	const [actionState, setActionState] = useState<Record<string, ActionState>>({});
 	const [previewId, setPreviewId] = useState<string | null>(null);
 
-	const { profiles } = usePrinterProfiles();
+	const { profiles, error: profilesError, reload: reloadProfiles } = usePrinterProfiles();
 
-	useEffect(() => {
+	const fetchPending = useCallback(() => {
 		api
 			.get<Template[]>('/staging')
 			.then(setTemplates)
 			.catch((err) => setError(err instanceof ApiError ? err.message : 'Error cargando plantillas pendientes'))
 			.finally(() => setLoading(false));
 	}, []);
+
+	useEffect(() => {
+		fetchPending();
+	}, [fetchPending]);
+
+	const retry = () => {
+		setError(null);
+		setLoading(true);
+		fetchPending();
+	};
 
 	const handleAction = async (id: string, action: 'approve' | 'reject') => {
 		setActionState((prev) => ({ ...prev, [id]: action === 'approve' ? 'approving' : 'rejecting' }));
@@ -67,13 +78,43 @@ export function StagingPage() {
 					Plantillas enviadas por usuarios libres, pendientes de revisión.
 				</p>
 
-				{error && <p className='mt-4 rounded-md border border-red-800 bg-red-950 p-3 text-sm text-red-300'>{error}</p>}
+				{profilesError && (
+					<ErrorState
+						compact
+						className='mt-4'
+						title='No se pudo cargar la información de impresoras'
+						message='Las tarjetas no mostrarán el tamaño de etiqueta y la vista previa no estará disponible.'
+						onRetry={reloadProfiles}
+					/>
+				)}
+
+				{error && (
+					<ErrorState
+						className='mt-6'
+						title='No se pudieron cargar las solicitudes'
+						message={error}
+						onRetry={retry}
+					/>
+				)}
 
 				{loading ? (
-					<p className='mt-6 text-sm text-app-text-muted'>Cargando...</p>
-				) : templates.length === 0 ? (
-					<p className='mt-6 text-sm text-app-text-muted'>No hay plantillas pendientes de revisión.</p>
+					<LoadingState
+						className='mt-6'
+						label='Cargando solicitudes...'
+					/>
 				) : (
+					templates.length === 0 &&
+					!error && (
+						<EmptyState
+							className='mt-6'
+							icon={PartyPopper}
+							title='Todo al día'
+							description='No hay plantillas pendientes de revisión.'
+						/>
+					)
+				)}
+
+				{!loading && templates.length > 0 && (
 					<div className='mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'>
 						{templates.map((template) => {
 							const state = actionState[template.id] ?? 'idle';

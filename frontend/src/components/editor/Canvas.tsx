@@ -1,8 +1,14 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type PointerEvent } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type PointerEvent, type ReactNode } from 'react';
+import type { LabelElement } from 'shared';
+
 import { useEditorStore } from '@/store/useEditorStore';
+import { beginHistoryTransaction, commitHistoryTransaction } from '@/store/history';
+
 import { CanvasElement } from './CanvasElement';
 import { GuidesOverlay } from './GuidesOverlay';
 import { SelectionHandles } from './SelectionHandles';
+import { ErrorState, LoadingState } from '@/components/ui/state-panels';
+
 import { mmToPx, pxToMm } from '@/utils/scale';
 import {
 	getAlignmentPoints,
@@ -14,12 +20,12 @@ import {
 import { findAlignmentMatches, getSnapOffset } from '@/utils/geometry/alignment';
 import { calculateResize, type ResizeHandle } from '@/utils/geometry/resize';
 import { applyResizeToElement } from '@/utils/geometry/applyResize';
-import { beginHistoryTransaction, commitHistoryTransaction } from '@/store/history';
-import type { LabelElement } from 'shared';
+
 import { EDITOR_LIMITS } from '@/config/editorLimits';
 
 interface CanvasProps {
 	loadError?: string | null;
+	loadErrorActions?: ReactNode;
 }
 
 interface NaturalSize {
@@ -34,7 +40,7 @@ interface Guide {
 
 const WORKSPACE_MARGIN_MM = 100;
 
-export function Canvas({ loadError }: CanvasProps) {
+export function Canvas({ loadError, loadErrorActions }: CanvasProps) {
 	const canvasRef = useRef<HTMLDivElement>(null);
 	const viewportRef = useRef<HTMLDivElement>(null);
 	const hasInitialCentered = useRef(false);
@@ -368,7 +374,11 @@ export function Canvas({ loadError }: CanvasProps) {
 	if (loadError) {
 		return (
 			<div className='flex flex-1 items-center justify-center bg-app-bg p-8'>
-				<p className='text-sm text-red-400'>{loadError}</p>
+				<ErrorState
+					title='No se pudo abrir el editor'
+					message={loadError}
+					actions={loadErrorActions}
+				/>
 			</div>
 		);
 	}
@@ -376,7 +386,7 @@ export function Canvas({ loadError }: CanvasProps) {
 	if (!profile) {
 		return (
 			<div className='flex flex-1 items-center justify-center bg-app-bg p-8'>
-				<p className='text-sm text-app-text-muted'>Cargando lienzo...</p>
+				<LoadingState label='Cargando lienzo...' />
 			</div>
 		);
 	}

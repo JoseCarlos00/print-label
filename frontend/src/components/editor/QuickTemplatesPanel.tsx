@@ -1,15 +1,16 @@
-import { FilePlus, CircleCheckBig, Circle } from 'lucide-react';
+import { FilePlus, CircleCheckBig, Circle, LayoutTemplate } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTemplates } from '@/hooks/useTemplates';
 import { useEditorStore } from '@/store/useEditorStore';
 import { useNewDocument } from '@/hooks/useNewDocument';
 import { Button } from '@/components/ui/button';
-import { cn } from "@/lib/utils";
+import { EmptyState, ErrorState, LoadingState } from '@/components/ui/state-panels';
+import { cn } from '@/lib/utils';
 
 const QUICK_TEMPLATE_LIMIT = 10;
 
 export function QuickTemplatesPanel() {
-	const { templates, loading, error } = useTemplates(false);
+	const { templates, loading, error, reload } = useTemplates(false);
 
 	const templateId = useEditorStore((state) => state.templateId);
 	const handleNewDocument = useNewDocument();
@@ -37,12 +38,29 @@ export function QuickTemplatesPanel() {
 				Nueva etiqueta
 			</Button>
 
-			{loading && <p className='text-xs text-app-text-muted'>Cargando...</p>}
+			{loading && (
+				<LoadingState
+					compact
+					label='Cargando plantillas...'
+				/>
+			)}
 
-			{error && <p className='text-xs text-red-400'>{error}</p>}
+			{error && (
+				<ErrorState
+					compact
+					title='No se pudieron cargar las plantillas'
+					message={error}
+					onRetry={reload}
+				/>
+			)}
 
-			{!loading && templates.length === 0 && (
-				<p className='text-xs text-app-text-muted'>No hay plantillas públicas todavía.</p>
+			{!loading && !error && templates.length === 0 && (
+				<EmptyState
+					compact
+					icon={LayoutTemplate}
+					title='Aún no hay plantillas'
+					description='Diseña una etiqueta y usa «Guardar plantilla» o «Solicitar plantilla» para crear la primera.'
+				/>
 			)}
 
 			{templates.slice(0, QUICK_TEMPLATE_LIMIT).map((template) => {
