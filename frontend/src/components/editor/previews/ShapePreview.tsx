@@ -6,11 +6,11 @@ import { useEditorStore } from '@/store/useEditorStore';
 import { mmToPx } from '@/utils/scale';
 import { bitmapToImageData } from '@/utils/bitmapToImageData';
 
-export function ShapePreview({ element }: { element: ShapeElement }) {
+export function ShapePreview({ element, dpi: dpiOverride }: { element: ShapeElement; dpi?: number }) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 
 	const profile = useEditorStore((s) => s.profile);
-	const dpi = profile?.dpi ?? 203;
+	const dpi = dpiOverride ?? profile?.dpi ?? 203;
 	const bitmap = useMemo(() => createShapeBitmap(element, dpi), [element, dpi]);
 
 	useEffect(() => {
