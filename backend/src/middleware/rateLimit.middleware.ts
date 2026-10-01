@@ -3,7 +3,7 @@ import type { NextFunction, Request, Response } from 'express';
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 const LOGIN_MAX_ATTEMPTS = 10;
 const STAGING_COOLDOWN_MS = 2 * 1000;
-const PRINT_COOLDOWN_MS = 1 * 1000;
+const PRINT_COOLDOWN_MS = 0.5 * 1000;
 
 const loginAttempts = new Map<string, number[]>();
 const lastStagingRequest = new Map<string, number>();
