@@ -7,6 +7,7 @@ import cookieParser from 'cookie-parser';
 import { config, __dirname } from './src/config.js';
 import { initializeDatabase, closeDatabase } from './src/db.js';
 import { syncPrinterProfiles } from './src/printerProfileRepo.js';
+import { deleteExpiredRejectedTemplates } from './src/templateRepo.js';
 
 
 // Import Middlewares
@@ -21,6 +22,25 @@ import stagingApiRoutes from './src/api/staging.route.js';
 
 initializeDatabase();
 syncPrinterProfiles();
+
+const REJECTED_RETENTION_MS = 90 * 24 * 60 * 60 * 1000;
+const REJECTED_CLEANUP_INTERVAL_MS = 24 * 60 * 60 * 1000;
+
+function cleanupExpiredRejectedTemplates() {
+	const cutoff = new Date(Date.now() - REJECTED_RETENTION_MS).toISOString();
+
+	try {
+		const deletedCount = deleteExpiredRejectedTemplates(cutoff);
+		if (deletedCount > 0) {
+			console.info(`Limpieza automática: ${deletedCount} plantilla(s) rechazada(s) eliminada(s).`);
+		}
+	} catch (error) {
+		console.error(`Error en la limpieza automática de plantillas rechazadas: ${error}`);
+	}
+}
+
+cleanupExpiredRejectedTemplates();
+setInterval(cleanupExpiredRejectedTemplates, REJECTED_CLEANUP_INTERVAL_MS).unref();
 
 // Definir la ruta de estáticos una sola vez para evitar inconsistencias
 // const relativePath = config.NODE_ENV === 'production' ? '../..' : '..';
