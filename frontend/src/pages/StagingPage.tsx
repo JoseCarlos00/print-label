@@ -8,6 +8,7 @@ import { bumpTemplatesVersion } from '@/store/templatesCache';
 import { StagingCard } from '@/components/staging/StagingCard';
 import { TemplatePreviewModal } from '@/components/templates/TemplatePreviewModal';
 import { Button } from '@/components/ui/button';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/state-panels';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/components/ui/toast';
@@ -26,6 +27,7 @@ export function StagingPage() {
 	const [rejectedError, setRejectedError] = useState<string | null>(null);
 	const [actionState, setActionState] = useState<Record<string, ActionState>>({});
 	const [previewId, setPreviewId] = useState<string | null>(null);
+	const [templateToDelete, setTemplateToDelete] = useState<Template | null>(null);
 	const [tab, setTab] = useState<StagingTab>('pending');
 
 	const { profiles, error: profilesError, reload: reloadProfiles } = usePrinterProfiles();
@@ -79,14 +81,7 @@ export function StagingPage() {
 	const retry = tab === 'pending' ? reloadPending : reloadRejected;
 
 
-	const handleAction = async (template: Template, action: Action) => {
-		if (action === 'delete') {
-			const confirmed = window.confirm(
-				`¿Eliminar definitivamente la plantilla "${template.name}"? Esta acción no se puede deshacer.`,
-			);
-			if (!confirmed) return;
-		}
-
+	const performAction = async (template: Template, action: Action): Promise<boolean> => {
 		setActionState((prev) => ({ ...prev, [template.id]: action }));
 
 		try {
@@ -139,6 +134,7 @@ export function StagingPage() {
 				title: successTitles[action],
 				type: 'success',
 			});
+			return true;
 		} catch (err) {
 			const actionLabels: Record<Action, string> = {
 				approve: 'aprobar',
@@ -156,7 +152,23 @@ export function StagingPage() {
 				delete next[template.id];
 				return next;
 			});
+			return false;
 		}
+	};
+
+	const handleAction = (template: Template, action: Action) => {
+		if (action === 'delete') {
+			setTemplateToDelete(template);
+			return;
+		}
+
+		void performAction(template, action);
+	};
+
+	const confirmDelete = async () => {
+		if (!templateToDelete) return;
+		const deleted = await performAction(templateToDelete, 'delete');
+		if (deleted) setTemplateToDelete(null);
 	};
 
 	const previewTemplate = templates.find((t) => t.id === previewId) ?? null;
@@ -347,6 +359,19 @@ export function StagingPage() {
 					}
 				/>
 			)}
+
+			<ConfirmationDialog
+				open={templateToDelete !== null}
+				title='Eliminar plantilla rechazada'
+				description={`¿Eliminar definitivamente "${templateToDelete?.name ?? ''}"? \nEsta acción no se puede deshacer.`}
+				confirmLabel='Eliminar'
+				confirmVariant='destructive'
+				busy={templateToDelete ? actionState[templateToDelete.id] === 'delete' : false}
+				onOpenChange={(open) => {
+					if (!open) setTemplateToDelete(null);
+				}}
+				onConfirm={confirmDelete}
+			/>
 		</div>
 	);
 }

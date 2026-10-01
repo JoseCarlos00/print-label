@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { LayoutTemplate } from 'lucide-react';
+import type { Template } from 'shared';
 
 import { useAuth } from '@/hooks/useAuth';
 import { usePrinterProfiles } from '@/hooks/usePrinterProfiles';
@@ -9,6 +10,7 @@ import { useTemplates } from '@/hooks/useTemplates';
 import { TemplateCard } from '@/components/gallery/TemplateCard';
 import { TemplatePreviewModal } from '@/components/templates/TemplatePreviewModal';
 import { Button } from '@/components/ui/button';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/state-panels';
 import { toast } from '@/components/ui/toast';
 
@@ -21,23 +23,29 @@ export function GalleryPage() {
 
 	const [showAll, setShowAll] = useState(true);
 	const [previewId, setPreviewId] = useState<string | null>(null);
+	const [templateToDelete, setTemplateToDelete] = useState<Template | null>(null);
+	const [deleting, setDeleting] = useState(false);
 
 	const { profiles } = usePrinterProfiles();
 	const { templates, loading, error, reload } = useTemplates(isAdmin && showAll);
 
-	const handleDelete = async (id: string, name: string) => {
-		if (!window.confirm(`Eliminar "${name}"? Esta acción no se puede deshacer.`)) return;
+	const handleDelete = async () => {
+		if (!templateToDelete) return;
+		setDeleting(true);
 
 		try {
-			await api.delete(`/templates/${id}`);
+			await api.delete(`/templates/${templateToDelete.id}`);
 			bumpTemplatesVersion();
-			toast.add({ title: `Plantilla "${name}" eliminada.`, type: 'success' });
+			toast.add({ title: `Plantilla "${templateToDelete.name}" eliminada.`, type: 'success' });
+			setTemplateToDelete(null);
 		} catch (err) {
 			toast.add({
 				title: 'Error al eliminar la plantilla',
 				description: err instanceof ApiError ? err.message : undefined,
 				type: 'error',
 			});
+		} finally {
+			setDeleting(false);
 		}
 	};
 
@@ -122,7 +130,7 @@ export function GalleryPage() {
 								profile={profiles.find((p) => p.id === template.profileId)}
 								onUse={() => navigate(`/editor/${template.id}`)}
 								onPreview={() => setPreviewId(template.id)}
-								onDelete={isAdmin ? () => handleDelete(template.id, template.name) : undefined}
+								onDelete={isAdmin ? () => setTemplateToDelete(template) : undefined}
 							/>
 						))}
 					</div>
@@ -153,6 +161,19 @@ export function GalleryPage() {
 					}
 				/>
 			)}
+
+			<ConfirmationDialog
+				open={templateToDelete !== null}
+				title='Eliminar plantilla'
+				description={`¿Eliminar "${templateToDelete?.name ?? ''}"? \nEsta acción no se puede deshacer.`}
+				confirmLabel='Eliminar'
+				confirmVariant='destructive'
+				busy={deleting}
+				onOpenChange={(open) => {
+					if (!open) setTemplateToDelete(null);
+				}}
+				onConfirm={handleDelete}
+			/>
 		</div>
 	);
 }

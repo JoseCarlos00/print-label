@@ -12,6 +12,7 @@ import { useNewDocument } from '@/hooks/useNewDocument';
 import { SaveTemplateModal } from './editor/SaveTemplateModal';
 import { DocumentChip } from './editor/DocumentChip';
 import { Button } from '@/components/ui/button';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { toast } from '@/components/ui/toast';
 import { PrinterSelect } from './top-bar/PrinterSelect'
 import { LogoMenu } from './top-bar/LogoMenu'
@@ -37,6 +38,7 @@ export function TopBar({ profiles, profilesLoading, profilesError, onRetryProfil
 
 	const [printState, setPrintState] = useState<'idle' | 'printing'>('idle');
 	const [isSaveModalOpen, setSaveModalOpen] = useState(false);
+	const [isKeyboardPrintConfirmationOpen, setKeyboardPrintConfirmationOpen] = useState(false);
 
 	const handleNewDocument = useNewDocument();
 
@@ -93,7 +95,7 @@ export function TopBar({ profiles, profilesLoading, profilesError, onRetryProfil
 			event.preventDefault();
 
 			if (printState !== 'printing' && canEdit) {
-				void handlePrint();
+				setKeyboardPrintConfirmationOpen(true);
 			}
 		};
 
@@ -102,7 +104,7 @@ export function TopBar({ profiles, profilesLoading, profilesError, onRetryProfil
 		return () => {
 			window.removeEventListener('keydown', handleKeyDown);
 		};
-	}, [handlePrint, printState, canEdit]);
+	}, [printState, canEdit]);
 
 	return (
 		<header className='flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-app-border p-2'>
@@ -169,6 +171,19 @@ export function TopBar({ profiles, profilesLoading, profilesError, onRetryProfil
 					onSaved={handleSaved}
 				/>
 			)}
+
+			<ConfirmationDialog
+				open={isKeyboardPrintConfirmationOpen}
+				title='Confirmar impresión'
+				description={`¿Enviar la etiqueta a  ${profile?.name ?? 'la impresora seleccionada'}?`}
+				confirmLabel='Imprimir'
+				busy={printState === 'printing'}
+				onOpenChange={setKeyboardPrintConfirmationOpen}
+				onConfirm={() => {
+					setKeyboardPrintConfirmationOpen(false);
+					// void handlePrint();
+				}}
+			/>
 		</header>
 	);
 }
