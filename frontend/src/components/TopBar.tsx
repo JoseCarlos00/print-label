@@ -1,32 +1,21 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronDown, FilePlus, LogIn, LogOut, Printer, BookImage, ClipboardClock, RotateCw } from 'lucide-react';
+import { Printer, RotateCw } from 'lucide-react';
 
 import type { PrinterProfile, Template } from 'shared';
 import { api, ApiError } from '@/api/client';
 import { useEditorStore } from '@/store/useEditorStore';
-import type { EditorStore } from '@/store/editorStore.types';
 
 import { useAuth } from '@/hooks/useAuth';
 import { useNewDocument } from '@/hooks/useNewDocument';
-import { useLoginDialog } from '@/hooks/useLoginDialog';
 
 import { SaveTemplateModal } from './editor/SaveTemplateModal';
 import { DocumentChip } from './editor/DocumentChip';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/toast';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { AdminBadge } from './AdminBadge';
-import { PendingCount } from './PendingCount';
-import { useLogout } from '@/hooks/useLogout';
-import { usePendingCount } from '@/hooks/usePendingCount';
+import { PrinterSelect } from './top-bar/PrinterSelect'
+import { LogoMenu } from './top-bar/LogoMenu'
+
 
 interface TopBarProps {
 	profiles: PrinterProfile[];
@@ -181,124 +170,5 @@ export function TopBar({ profiles, profilesLoading, profilesError, onRetryProfil
 				/>
 			)}
 		</header>
-	);
-}
-
-interface LogoMenuProps {
-	onNewDocument: () => void;
-}
-
-function LogoMenu({ onNewDocument }: LogoMenuProps) {
-	const { isAdmin } = useAuth();
-	const { openLogin } = useLoginDialog();
-	const navigate = useNavigate();
-	const handleLogout = useLogout();
-	const pending = usePendingCount(isAdmin);
-
-	return (
-		<div className='flex items-center gap-2'>
-			<DropdownMenu>
-				<DropdownMenuTrigger
-					render={
-						<Button
-							variant='ghost'
-							size='sm'
-							className='gap-1 px-2 text-sm font-semibold text-app-text'
-						>
-							PrintLabel
-							<ChevronDown className='size-3.5 text-app-text-muted' />
-						</Button>
-					}
-				/>
-
-				<DropdownMenuContent align='start'>
-					<DropdownMenuItem onClick={onNewDocument}>
-						<FilePlus className='size-4' />
-						Nueva etiqueta
-					</DropdownMenuItem>
-
-					<DropdownMenuSeparator />
-
-					<DropdownMenuItem onClick={() => navigate('/galeria')}>
-						<BookImage className='size-4' />
-						Galería
-					</DropdownMenuItem>
-
-					{isAdmin && (
-						<DropdownMenuItem onClick={() => navigate('/staging')}>
-							<ClipboardClock className='size-4' />
-							Staging
-							<PendingCount count={pending} />
-						</DropdownMenuItem>
-					)}
-
-					<DropdownMenuSeparator />
-
-					{isAdmin ? (
-						<DropdownMenuItem
-							variant='destructive'
-							onClick={handleLogout}
-						>
-							<LogOut />
-							Cerrar sesión
-						</DropdownMenuItem>
-					) : (
-						<DropdownMenuItem onClick={openLogin}>
-							<LogIn />
-							Iniciar sesión
-						</DropdownMenuItem>
-					)}
-				</DropdownMenuContent>
-			</DropdownMenu>
-
-			{isAdmin && <AdminBadge className='hidden sm:inline-flex' />}
-		</div>
-	);
-}
-
-interface PrinterSelectProps extends Pick<EditorStore, 'setProfile'> {
-	profiles: PrinterProfile[];
-	loading: boolean;
-	profile: PrinterProfile | null;
-}
-
-function PrinterSelect({ profiles, loading, profile, setProfile }: PrinterSelectProps) {
-	const handleChange = (profileId: string | null) => {
-		const selectedProfile = profiles.find((item) => item.name === profileId);
-
-		setProfile(selectedProfile ?? null);
-	};
-
-	const placeholder = loading
-		? 'Cargando impresoras...'
-		: profiles.length === 0
-			? 'Sin impresoras disponibles'
-			: 'Seleccionar impresora';
-
-	return (
-		<Select
-			value={profile?.name ?? ''}
-			onValueChange={handleChange}
-			disabled={profiles.length === 0}
-		>
-			<SelectTrigger className='w-36 sm:w-48'>
-				<SelectValue placeholder={placeholder} />
-			</SelectTrigger>
-
-			<SelectContent className='max-h-150'>
-				{profiles.map((item) => (
-					<SelectItem
-						key={item.name}
-						value={item.name}
-					>
-						<div className='flex min-w-0 flex-col'>
-							<span className='truncate'>{item.name}</span>
-
-							<span className='truncate text-[11px] text-app-text-muted'>{item.label}</span>
-						</div>
-					</SelectItem>
-				))}
-			</SelectContent>
-		</Select>
 	);
 }
