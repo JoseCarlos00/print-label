@@ -122,7 +122,10 @@ function StaticElementPreview({ element, dpi }: { element: LabelElement; dpi: nu
 		case 'shape':
 			return (
 				<PreviewErrorBoundary resetKey={element}>
-					<ShapePreview element={element} />
+					<ShapePreview
+						element={element}
+						dpi={dpi}
+					/>
 				</PreviewErrorBoundary>
 			);
 	}
