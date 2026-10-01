@@ -34,10 +34,11 @@ export function LogoMenu({ onNewDocument }: LogoMenuProps) {
 						<Button
 							variant='ghost'
 							size='sm'
-							className='gap-1 px-2 text-sm font-semibold text-app-text'
+							className='gap-1 px-2 text-sm font-semibold text-app-text z-30 cursor-pointer relative'
 						>
 							PrintLabel
-							<ChevronDown className='size-3.5 text-app-text-muted' />
+							<PendingCount count={pending} className='absolute -top-2 right-2' />
+							<ChevronDown className='size-3.5 text-app-text-muted inline-block ml-0.5' />
 						</Button>
 					}
 				/>
