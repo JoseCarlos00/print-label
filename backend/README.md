@@ -30,6 +30,21 @@ servidor **falla al arrancar** si faltan (a propósito, ver `src/config.ts`).
 No hay tabla de usuarios ni roles: es un único admin fijo, pensado para
 red interna no expuesta a internet (spec §6).
 
+### Límites de solicitudes públicas
+
+- `POST /api/auth/login`: máximo 10 intentos fallidos por IP en una ventana
+  móvil de 15 minutos. Un login exitoso limpia los fallos previos. Al excederlo
+  responde `429` e incluye `Retry-After`.
+- `POST /api/templates/staging`: intervalo mínimo de 2 segundos entre envíos
+  desde la misma IP. Al excederlo responde `429` e incluye `Retry-After`.
+- `POST /api/print` sigue siendo público y permite imprimir a cualquier usuario,
+  con un intervalo mínimo de 1 segundo entre solicitudes desde la misma IP.
+  Al excederlo responde `429` e incluye `Retry-After`.
+
+Los límites se guardan en memoria y aplican por proceso; se reinician al
+reiniciar el backend. Usuarios detrás de la misma IP pública/local comparten
+el límite. El servidor actual se despliega como una sola instancia.
+
 ## Scripts
 
 ```bash

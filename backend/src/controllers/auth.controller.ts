@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import { config } from '../config.js';
 import { safeCompare } from '../utils/credentials.js';
 import { createSession, deleteSession } from '../sessionRepo.js';
+import { clearFailedLoginAttempts, recordFailedLoginAttempt } from '../middleware/rateLimit.middleware.js';
 
 const isProduction = config.NODE_ENV === 'production';
 
@@ -22,10 +23,12 @@ export const login = async (req: Request, res: Response) => {
 		const validCredentials = safeCompare(username, config.ADMIN_USER) && safeCompare(password, config.ADMIN_PASSWORD);
 
 		if (!validCredentials) {
+			recordFailedLoginAttempt(req);
 			console.warn(`Credenciales inválidas para el usuario: ${username}`);
 			return res.status(401).json({ message: 'Credenciales inválidas' });
 		}
 
+		clearFailedLoginAttempts(req);
 		const { token, expiresOn } = createSession();
 
 		res.cookie(config.SESSION_COOKIE_NAME, token, {

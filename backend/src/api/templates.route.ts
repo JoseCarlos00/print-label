@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { requireAdmin } from '../middleware/auth.middleware.js';
+import { limitStagingSubmissions } from '../middleware/rateLimit.middleware.js';
 import {
 	createApproved,
 	createStaging,
@@ -16,7 +17,7 @@ const router = Router();
 /* /api/templates */
 router.get('/all', requireAdmin, listAll);
 
-router.post('/staging', createStaging);
+router.post('/staging', limitStagingSubmissions, createStaging);
 router.post('/', requireAdmin, createApproved);
 
 
