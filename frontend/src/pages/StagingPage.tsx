@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Check, PartyPopper, X } from 'lucide-react';
+import { Check, PartyPopper, RotateCcw, Trash2, X } from 'lucide-react';
 import type { Template } from 'shared';
 
 import { api, ApiError } from '@/api/client';
@@ -9,58 +9,151 @@ import { StagingCard } from '@/components/staging/StagingCard';
 import { TemplatePreviewModal } from '@/components/templates/TemplatePreviewModal';
 import { Button } from '@/components/ui/button';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/state-panels';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/components/ui/toast';
+import { formatDate } from '@/utils/templateInfo';
 
-type ActionState = 'idle' | 'approving' | 'rejecting';
+type StagingTab = 'pending' | 'rejected';
+type Action = 'approve' | 'reject' | 'restore' | 'delete';
+type ActionState = 'idle' | Action;
 
 export function StagingPage() {
-	const [templates, setTemplates] = useState<Template[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
+	const [pendingTemplates, setPendingTemplates] = useState<Template[]>([]);
+	const [rejectedTemplates, setRejectedTemplates] = useState<Template[]>([]);
+	const [pendingLoading, setPendingLoading] = useState(true);
+	const [rejectedLoading, setRejectedLoading] = useState(true);
+	const [pendingError, setPendingError] = useState<string | null>(null);
+	const [rejectedError, setRejectedError] = useState<string | null>(null);
 	const [actionState, setActionState] = useState<Record<string, ActionState>>({});
 	const [previewId, setPreviewId] = useState<string | null>(null);
+	const [tab, setTab] = useState<StagingTab>('pending');
 
 	const { profiles, error: profilesError, reload: reloadProfiles } = usePrinterProfiles();
 
-	const fetchPending = useCallback(() => {
-		api
-			.get<Template[]>('/staging')
-			.then(setTemplates)
-			.catch((err) => setError(err instanceof ApiError ? err.message : 'Error cargando plantillas pendientes'))
-			.finally(() => setLoading(false));
+	const loadPending = useCallback(async () => {
+		try {
+			const templates = await api.get<Template[]>('/staging');
+			setPendingTemplates(templates);
+			setPendingError(null);
+		} catch (err) {
+			setPendingError(err instanceof ApiError ? err.message : 'Error cargando plantillas pendientes');
+		} finally {
+			setPendingLoading(false);
+		}
 	}, []);
 
+	const loadRejected = useCallback(async () => {
+		try {
+			const templates = await api.get<Template[]>('/staging/rejected');
+			setRejectedTemplates(templates);
+			setRejectedError(null);
+		} catch (err) {
+			setRejectedError(err instanceof ApiError ? err.message : 'Error cargando plantillas rechazadas');
+		} finally {
+			setRejectedLoading(false);
+		}
+	}, []);
+
+	const reloadPending = useCallback(() => {
+		setPendingLoading(true);
+		setPendingError(null);
+		return loadPending();
+	}, [loadPending]);
+
+	const reloadRejected = useCallback(() => {
+		setRejectedLoading(true);
+		setRejectedError(null);
+		return loadRejected();
+	}, [loadRejected]);
+
 	useEffect(() => {
-		fetchPending();
-	}, [fetchPending]);
+		loadPending();
+		loadRejected();
+	}, [loadPending, loadRejected]);
 
-	const retry = () => {
-		setError(null);
-		setLoading(true);
-		fetchPending();
-	};
 
-	const handleAction = async (id: string, action: 'approve' | 'reject') => {
-		setActionState((prev) => ({ ...prev, [id]: action === 'approve' ? 'approving' : 'rejecting' }));
+	const templates = tab === 'pending' ? pendingTemplates : rejectedTemplates;
+	const loading = tab === 'pending' ? pendingLoading : rejectedLoading;
+	const error = tab === 'pending' ? pendingError : rejectedError;
+
+	const retry = tab === 'pending' ? reloadPending : reloadRejected;
+
+
+	const handleAction = async (template: Template, action: Action) => {
+		if (action === 'delete') {
+			const confirmed = window.confirm(
+				`¿Eliminar definitivamente la plantilla "${template.name}"? Esta acción no se puede deshacer.`,
+			);
+			if (!confirmed) return;
+		}
+
+		setActionState((prev) => ({ ...prev, [template.id]: action }));
 
 		try {
-			await api.post(`/staging/${id}/${action}`);
-			setTemplates((prev) => prev.filter((t) => t.id !== id));
+			let updatedTemplate: Template | null = null;
+
+			if (action === 'delete') {
+				await api.delete(`/staging/${template.id}`);
+			} else {
+				const path = action === 'restore' ? `/staging/${template.id}/restore` : `/staging/${template.id}/${action}`;
+				updatedTemplate = await api.post<Template>(path);
+			}
+
+			const removeFromList = (items: Template[]) => items.filter((item) => item.id !== template.id);
+			if (action === 'approve') {
+				setPendingTemplates(removeFromList);
+			} else if (action === 'reject') {
+				setPendingTemplates(removeFromList);
+				if (updatedTemplate) {
+					const rejectedTemplate = updatedTemplate;
+					setRejectedTemplates((items) =>
+						[rejectedTemplate, ...removeFromList(items)].sort((a, b) => b.updateOn.localeCompare(a.updateOn)),
+					);
+				}
+			} else if (action === 'restore') {
+				setRejectedTemplates(removeFromList);
+				if (updatedTemplate) {
+					const restoredTemplate = updatedTemplate;
+					setPendingTemplates((items) =>
+						[...removeFromList(items), restoredTemplate].sort((a, b) => a.createOn.localeCompare(b.createOn)),
+					);
+				}
+			} else {
+				setRejectedTemplates(removeFromList);
+			}
 			bumpTemplatesVersion();
-			setPreviewId((current) => (current === id ? null : current));
+			setPreviewId((current) => (current === template.id ? null : current));
+			setActionState((prev) => {
+				const next = { ...prev };
+				delete next[template.id];
+				return next;
+			});
+
+			const successTitles: Record<Action, string> = {
+				approve: 'Plantilla aprobada.',
+				reject: 'Plantilla rechazada.',
+				restore: 'Plantilla restaurada a pendientes.',
+				delete: 'Plantilla eliminada definitivamente.',
+			};
 			toast.add({
-				title: action === 'approve' ? 'Plantilla aprobada.' : 'Plantilla rechazada.',
+				title: successTitles[action],
 				type: 'success',
 			});
 		} catch (err) {
+			const actionLabels: Record<Action, string> = {
+				approve: 'aprobar',
+				reject: 'rechazar',
+				restore: 'restaurar',
+				delete: 'eliminar',
+			};
 			toast.add({
-				title: `Error al ${action === 'approve' ? 'aprobar' : 'rechazar'} la plantilla`,
+				title: `Error al ${actionLabels[action]} la plantilla`,
 				description: err instanceof ApiError ? err.message : undefined,
 				type: 'error',
 			});
 			setActionState((prev) => {
 				const next = { ...prev };
-				delete next[id];
+				delete next[template.id];
 				return next;
 			});
 		}
@@ -75,8 +168,64 @@ export function StagingPage() {
 			<div className='mx-auto max-w-6xl p-6'>
 				<h1 className='text-3xl font-bold'>Panel de staging</h1>
 				<p className='mt-1 text-sm text-app-text-muted'>
-					Plantillas enviadas por usuarios libres, pendientes de revisión.
+					{tab === 'pending'
+						? 'Plantillas enviadas por usuarios libres, pendientes de revisión.'
+						: 'Plantillas rechazadas que puedes restaurar o eliminar definitivamente.'}
 				</p>
+
+				<Tabs
+					value={tab}
+					onValueChange={(value) => {
+						if (value === 'pending' || value === 'rejected') {
+							setTab(value);
+							setPreviewId(null);
+						}
+					}}
+					className='mt-6'
+				>
+					<TabsList>
+						<TabsTrigger
+							className='
+								h-full
+								rounded-none
+								border-0
+								px-4
+								text-app-text-muted
+								transition-colors
+
+								data-active:bg-app-surface!
+    						data-active:text-app-accent-500!
+							
+								after:bottom-0
+								after:h-0.5
+								after:bg-app-accent-500
+							'
+							value='pending'
+						>
+							Pendientes
+						</TabsTrigger>
+						<TabsTrigger
+							className='
+								h-full
+								rounded-none
+								border-0
+								px-4
+								text-app-text-muted
+								transition-colors
+
+								data-active:bg-app-surface!
+    						data-active:text-app-accent-500!
+							
+								after:bottom-0
+								after:h-0.5
+								after:bg-app-accent-500
+							'
+							value='rejected'
+						>
+							Rechazadas
+						</TabsTrigger>
+					</TabsList>
+				</Tabs>
 
 				{profilesError && (
 					<ErrorState
@@ -91,7 +240,7 @@ export function StagingPage() {
 				{error && (
 					<ErrorState
 						className='mt-6'
-						title='No se pudieron cargar las solicitudes'
+						title={`No se pudieron cargar las ${tab === 'pending' ? 'solicitudes' : 'plantillas rechazadas'}`}
 						message={error}
 						onRetry={retry}
 					/>
@@ -100,16 +249,20 @@ export function StagingPage() {
 				{loading ? (
 					<LoadingState
 						className='mt-6'
-						label='Cargando solicitudes...'
+						label={`Cargando ${tab === 'pending' ? 'solicitudes' : 'plantillas rechazadas'}...`}
 					/>
 				) : (
 					templates.length === 0 &&
 					!error && (
 						<EmptyState
 							className='mt-6'
-							icon={PartyPopper}
-							title='Todo al día'
-							description='No hay plantillas pendientes de revisión.'
+							icon={tab === 'pending' ? PartyPopper : Trash2}
+							title={tab === 'pending' ? 'Todo al día' : 'No hay rechazadas'}
+							description={
+								tab === 'pending'
+									? 'No hay plantillas pendientes de revisión.'
+									: 'No hay plantillas rechazadas por administrar.'
+							}
 						/>
 					)
 				)}
@@ -124,11 +277,10 @@ export function StagingPage() {
 									key={template.id}
 									template={template}
 									profile={profiles.find((p) => p.id === template.profileId)}
-									approving={state === 'approving'}
-									rejecting={state === 'rejecting'}
+									mode={tab}
+									actionState={state}
 									onPreview={() => setPreviewId(template.id)}
-									onApprove={() => handleAction(template.id, 'approve')}
-									onReject={() => handleAction(template.id, 'reject')}
+									onAction={(action) => handleAction(template, action)}
 								/>
 							);
 						})}
@@ -140,28 +292,58 @@ export function StagingPage() {
 				<TemplatePreviewModal
 					template={previewTemplate}
 					profile={profiles.find((p) => p.id === previewTemplate.profileId)}
-					subtitle={`Solicitado por: ${previewTemplate.requestedBy || 'sin nombre'}`}
+					subtitle={
+						<>
+							<span className='block'>Solicitado por: {previewTemplate.requestedBy || 'sin nombre'}</span>
+							{tab === 'rejected' && (
+								<span className='block'>Rechazada el: {formatDate(previewTemplate.updateOn)}</span>
+							)}
+						</>
+					}
 					onClose={() => setPreviewId(null)}
 					footer={
-						<>
-							<Button
-								type='button'
-								variant='outline'
-								disabled={previewBusy}
-								onClick={() => handleAction(previewTemplate.id, 'reject')}
-							>
-								<X />
-								{previewState === 'rejecting' ? 'Rechazando...' : 'Rechazar'}
-							</Button>
-							<Button
-								type='button'
-								disabled={previewBusy}
-								onClick={() => handleAction(previewTemplate.id, 'approve')}
-							>
-								<Check />
-								{previewState === 'approving' ? 'Aprobando...' : 'Aprobar'}
-							</Button>
-						</>
+						tab === 'pending' ? (
+							<>
+								<Button
+									type='button'
+									variant='outline'
+									disabled={previewBusy}
+									onClick={() => handleAction(previewTemplate, 'reject')}
+								>
+									<X />
+									{previewState === 'reject' ? 'Rechazando...' : 'Rechazar'}
+								</Button>
+								<Button
+									type='button'
+									disabled={previewBusy}
+									onClick={() => handleAction(previewTemplate, 'approve')}
+								>
+									<Check />
+									{previewState === 'approve' ? 'Aprobando...' : 'Aprobar'}
+								</Button>
+							</>
+						) : (
+							<>
+								<Button
+									type='button'
+									variant='outline'
+									disabled={previewBusy}
+									onClick={() => handleAction(previewTemplate, 'restore')}
+								>
+									<RotateCcw />
+									{previewState === 'restore' ? 'Restaurando...' : 'Restaurar'}
+								</Button>
+								<Button
+									type='button'
+									variant='destructive'
+									disabled={previewBusy}
+									onClick={() => handleAction(previewTemplate, 'delete')}
+								>
+									<Trash2 />
+									{previewState === 'delete' ? 'Eliminando...' : 'Eliminar'}
+								</Button>
+							</>
+						)
 					}
 				/>
 			)}

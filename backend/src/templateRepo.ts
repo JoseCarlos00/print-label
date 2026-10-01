@@ -90,9 +90,31 @@ export function listPending(): Template[] {
 	return filas.map(rowToTemplate);
 }
 
+export function listRejected(): Template[] {
+	const filas = db
+		.prepare(`SELECT * FROM templates WHERE state = 'rejected' ORDER BY update_on DESC`)
+		.all() as RowTemplate[];
+	return filas.map(rowToTemplate);
+}
+
 export function getById(id: string): Template | undefined {
 	const fila = db.prepare(`SELECT * FROM templates WHERE id = ?`).get(id) as RowTemplate | undefined;
 	return fila ? rowToTemplate(fila) : undefined;
+}
+
+export function restoreRejectedTemplate(id: string): Template | undefined {
+	const now = new Date().toISOString();
+	const result = db
+		.prepare(
+			`
+		UPDATE templates
+		SET state = 'pending', update_on = @updateOn
+		WHERE id = @id AND state = 'rejected'
+	`,
+		)
+		.run({ id, updateOn: now });
+
+	return result.changes > 0 ? getById(id) : undefined;
 }
 
 export function updateState(id: string, state: StateTemplate): Template | undefined {
@@ -193,6 +215,18 @@ export function updateTemplate(id: string, input: UpdateTemplateInput): Template
 export function deleteTemplate(id: string): boolean {
 	const result = db.prepare(`DELETE FROM templates WHERE id = ?`).run(id);
 	return result.changes > 0;
+}
+
+export function deleteRejectedTemplate(id: string): boolean {
+	const result = db.prepare(`DELETE FROM templates WHERE id = ? AND state = 'rejected'`).run(id);
+	return result.changes > 0;
+}
+
+export function deleteExpiredRejectedTemplates(cutoff: string): number {
+	const result = db
+		.prepare(`DELETE FROM templates WHERE state = 'rejected' AND update_on < ?`)
+		.run(cutoff);
+	return result.changes;
 }
 
 export function countPending(): number {

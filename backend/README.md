@@ -70,6 +70,15 @@ del usuario); cualquier otro error en la generación es 500.
   sincroniza en cada arranque desde `src/printerDevices.ts` — el código
   es la fuente de verdad, no se edita a mano en la DB).
 
+### Staging: rechazadas
+
+- `GET /api/staging/rejected` lista las plantillas rechazadas.
+- `POST /api/staging/:id/restore` las devuelve a `pending`.
+- `DELETE /api/staging/:id` las elimina definitivamente.
+- Una limpieza automática al arrancar y cada 24 horas elimina las rechazadas
+  cuyo `update_on` tenga más de 90 días. El contador de staging sigue contando
+  únicamente las pendientes.
+
 ### Bundle de producción
 
 `esbuild.config.js` genera `dist/server.js` autocontenido:

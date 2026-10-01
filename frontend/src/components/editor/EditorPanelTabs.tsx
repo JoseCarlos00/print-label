@@ -73,7 +73,6 @@ export function EditorPanelTabs({ mobileOpen, onCloseMobile }: EditorPanelTabsPr
 							value='templates'
 							className='
 								h-full
-								cursor-pointer
 								rounded-none
 								border-0
 								px-4
@@ -96,7 +95,6 @@ export function EditorPanelTabs({ mobileOpen, onCloseMobile }: EditorPanelTabsPr
 							value='panel'
 							className='
 								h-full
-								cursor-pointer
 								rounded-none
 								border-0
 								px-4

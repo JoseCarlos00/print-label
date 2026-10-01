@@ -1,29 +1,29 @@
-import { Check, Eye, X } from 'lucide-react';
+import { Check, Eye, RotateCcw, Trash2, X } from 'lucide-react';
 import type { PrinterProfile, Template } from 'shared';
 
 import { Button } from '@/components/ui/button';
 import { formatDate, formatLabelSize } from '@/utils/templateInfo';
 
+type StagingCardMode = 'pending' | 'rejected';
+
 interface StagingCardProps {
 	template: Template;
 	profile: PrinterProfile | undefined;
-	approving: boolean;
-	rejecting: boolean;
+	mode: StagingCardMode;
+	actionState: 'idle' | 'approve' | 'reject' | 'restore' | 'delete';
 	onPreview: () => void;
-	onApprove: () => void;
-	onReject: () => void;
+	onAction: (action: 'approve' | 'reject' | 'restore' | 'delete') => void;
 }
 
 export function StagingCard({
 	template,
 	profile,
-	approving,
-	rejecting,
+	mode,
+	actionState,
 	onPreview,
-	onApprove,
-	onReject,
+	onAction,
 }: StagingCardProps) {
-	const busy = approving || rejecting;
+	const busy = actionState !== 'idle';
 
 	return (
 		<div className='flex flex-col gap-4 rounded-lg border border-app-border bg-app-surface p-4'>
@@ -37,7 +37,10 @@ export function StagingCard({
 				<p className='mt-1 truncate text-sm text-app-text-muted'>
 					Solicitado por: {template.requestedBy || 'sin nombre'}
 				</p>
-				<p className='mt-1 text-xs text-app-text-muted'>{formatDate(template.createOn)}</p>
+				<p className='mt-1 text-xs text-app-text-muted'>
+					{mode === 'rejected' ? 'Rechazada el: ' : ''}
+					{formatDate(mode === 'rejected' ? template.updateOn : template.createOn)}
+				</p>
 				<p className='mt-1 text-xs text-app-text-muted'>
 					Etiqueta: {formatLabelSize(profile)} · {template.elements.length} elemento(s)
 				</p>
@@ -53,25 +56,48 @@ export function StagingCard({
 				Vista previa
 			</Button>
 
-			<div className='grid grid-cols-2 gap-2'>
-				<Button
-					type='button'
-					variant='outline'
-					disabled={busy}
-					onClick={onReject}
-				>
-					<X />
-					{rejecting ? 'Rechazando...' : 'Rechazar'}
-				</Button>
-				<Button
-					type='button'
-					disabled={busy}
-					onClick={onApprove}
-				>
-					<Check />
-					{approving ? 'Aprobando...' : 'Aprobar'}
-				</Button>
-			</div>
+			{mode === 'pending' ? (
+				<div className='grid grid-cols-2 gap-2'>
+					<Button
+						type='button'
+						variant='outline'
+						disabled={busy}
+						onClick={() => onAction('reject')}
+					>
+						<X />
+						{actionState === 'reject' ? 'Rechazando...' : 'Rechazar'}
+					</Button>
+					<Button
+						type='button'
+						disabled={busy}
+						onClick={() => onAction('approve')}
+					>
+						<Check />
+						{actionState === 'approve' ? 'Aprobando...' : 'Aprobar'}
+					</Button>
+				</div>
+			) : (
+				<div className='grid grid-cols-2 gap-2'>
+					<Button
+						type='button'
+						variant='outline'
+						disabled={busy}
+						onClick={() => onAction('restore')}
+					>
+						<RotateCcw />
+						{actionState === 'restore' ? 'Restaurando...' : 'Restaurar'}
+					</Button>
+					<Button
+						type='button'
+						variant='destructive'
+						disabled={busy}
+						onClick={() => onAction('delete')}
+					>
+						<Trash2 />
+						{actionState === 'delete' ? 'Eliminando...' : 'Eliminar'}
+					</Button>
+				</div>
+			)}
 		</div>
 	);
 }
