@@ -4,6 +4,7 @@ import type { LabelElement } from 'shared';
 import { useEditorStore } from '@/store/useEditorStore';
 import { beginHistoryTransaction, commitHistoryTransaction } from '@/store/history';
 import { mmToPx, pxToMm } from '@/utils/scale';
+import { cn } from "@/lib/utils";
 
 import { BarcodePreview } from './previews/BarcodePreview';
 import { ImagePreview } from './previews/ImagePreview';
@@ -171,7 +172,12 @@ export function CanvasElement({
 					transform: `rotate(${element.rotation}deg)`,
 					cursor: draggable ? 'move' : 'default',
 				}}
-				className={`select-none ${draggable ? 'touch-none' : ''} ${isSelected ? 'outline-2 outline-app-accent-500' : ''}`}
+				className={cn(
+					'select-none',
+					draggable && 'touch-none',
+					isSelected && 'outline-2 outline-app-accent-500',
+					isOutOfBounds && !isSelected && 'outline-2 outline-red-500',
+				)}
 			>
 				<ElementPreview element={element} />
 

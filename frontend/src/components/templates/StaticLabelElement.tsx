@@ -1,6 +1,7 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { LabelElement } from 'shared';
 import { mmToPx } from '@/utils/scale';
+import { cn } from '@/lib/utils';
 import { BarcodePreview } from '@/components/editor/previews/BarcodePreview';
 import { ImagePreview } from '@/components/editor/previews/ImagePreview';
 import { PreviewErrorBoundary } from '@/components/editor/previews/PreviewErrorBoundary';
@@ -14,13 +15,14 @@ interface StaticLabelElementProps {
 	canvasWidthMm: number;
 	canvasHeightMm: number;
 	dpi: number;
+	onOutOfBoundsChange: (elementId: string, isOutOfBounds: boolean) => void;
 }
 
 // Versión de solo lectura de CanvasElement: mismo cálculo de posición y
 // compensación de rotación para 90°/270°, pero sin ningún handler de
 // puntero, selección, ni mini-toolbar — es una previsualización, no un
 // editor.
-export function StaticLabelElement({ element, canvasWidthMm, canvasHeightMm, dpi }: StaticLabelElementProps) {
+export function StaticLabelElement({ element, canvasWidthMm, canvasHeightMm, dpi, onOutOfBoundsChange }: StaticLabelElementProps) {
 	const elementRef = useRef<HTMLDivElement>(null);
 	const [naturalSize, setNaturalSize] = useState({ width: 0, height: 0 });
 
@@ -49,6 +51,10 @@ export function StaticLabelElement({ element, canvasWidthMm, canvasHeightMm, dpi
 		hasMeasured &&
 		(leftPx < 0 || topPx < 0 || leftPx + widthPx > mmToPx(canvasWidthMm) || topPx + heightPx > mmToPx(canvasHeightMm));
 
+	useEffect(() => {
+		onOutOfBoundsChange(element.id, isOutOfBounds);
+	}, [element.id, isOutOfBounds, onOutOfBoundsChange]);
+
 	return (
 		<>
 			<div
@@ -59,7 +65,7 @@ export function StaticLabelElement({ element, canvasWidthMm, canvasHeightMm, dpi
 					top: mmToPx(element.y) + offsetYPx,
 					transform: `rotate(${element.rotation}deg)`,
 				}}
-				className='pointer-events-none select-none'
+				className={cn('pointer-events-none select-none', isOutOfBounds && 'outline-2 outline-amber-400')}
 			>
 				<StaticElementPreview
 					element={element}
