@@ -26,6 +26,7 @@ import { EDITOR_LIMITS } from '@/config/editorLimits';
 interface CanvasProps {
 	loadError?: string | null;
 	loadErrorActions?: ReactNode;
+	verticalCenterOffset: number;
 	onRequestOpenPropertiesPanel: () => void;
 }
 
@@ -41,7 +42,7 @@ interface Guide {
 
 const WORKSPACE_MARGIN_MM = 100;
 
-export function Canvas({ loadError, loadErrorActions, onRequestOpenPropertiesPanel }: CanvasProps) {
+export function Canvas({ loadError, loadErrorActions, verticalCenterOffset, onRequestOpenPropertiesPanel }: CanvasProps) {
 	const canvasRef = useRef<HTMLDivElement>(null);
 	const viewportRef = useRef<HTMLDivElement>(null);
 	const hasInitialCentered = useRef(false);
@@ -356,11 +357,12 @@ export function Canvas({ loadError, loadErrorActions, onRequestOpenPropertiesPan
 
 		requestAnimationFrame(() => {
 			viewport.scrollLeft = horizontalPadding - (viewport.clientWidth - canvasWidth) / 2;
-			viewport.scrollTop = verticalPadding - (viewport.clientHeight - canvasHeight) / 2;
+			viewport.scrollTop =
+				verticalPadding - (viewport.clientHeight - canvasHeight) / 2 + verticalCenterOffset;
 
 			hasInitialCentered.current = true;
 		});
-	}, [profile]);
+	}, [profile, verticalCenterOffset]);
 
 	const handleViewportPointerDown = (event: PointerEvent<HTMLDivElement>) => {
 		const target = event.target as HTMLElement;

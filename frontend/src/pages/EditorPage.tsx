@@ -143,6 +143,7 @@ function EditorPage() {
 					<Canvas
 						loadError={loadError}
 						loadErrorActions={loadErrorActions}
+						verticalCenterOffset={matches ? 0 : 24}
 						onRequestOpenPropertiesPanel={() => {
 							if (!matches) setMobilePanelOpen(true);
 						}}
