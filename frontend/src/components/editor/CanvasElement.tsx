@@ -175,8 +175,9 @@ export function CanvasElement({
 				className={cn(
 					'select-none',
 					draggable && 'touch-none',
-					isSelected && 'outline-2 outline-app-accent-500',
-					isOutOfBounds && !isSelected && 'outline-2 outline-red-500',
+					isSelected 
+						? 'outline-2 outline-app-accent-500'
+						: isOutOfBounds && 'outline-2 outline-red-500',
 				)}
 			>
 				<ElementPreview element={element} />
