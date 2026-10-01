@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Loader2, LogIn } from 'lucide-react';
+import { useEffect, useState, type FormEvent } from 'react';
+import { Eye, EyeOff, Loader2, LogIn } from 'lucide-react';
 
 import { useAuth } from '@/hooks/useAuth';
 import { ApiError } from '@/api/client';
@@ -26,6 +26,8 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
 
 	const [username, setUsername] = useState('');
 	const [password, setPassword] = useState('');
+	const [showPassword, setShowPassword] = useState(false);
+	const [attempted, setAttempted] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
 
@@ -33,14 +35,23 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
 		if (!open) {
 			setUsername('');
 			setPassword('');
+			setShowPassword(false);
+			setAttempted(false);
 			setError(null);
 		}
 	}, [open]);
 
-	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+	const usernameError = attempted && !username.trim() ? 'Escribe tu usuario.' : null;
+	const passwordError = attempted && !password ? 'Escribe tu contraseña.' : null;
+
+	const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
 
+		setAttempted(true);
 		setError(null);
+
+		if (!username.trim() || !password) return;
+
 		setIsLoading(true);
 
 		try {
@@ -56,9 +67,16 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
 	return (
 		<Dialog
 			open={open}
-			onOpenChange={onOpenChange}
+			onOpenChange={(next) => {
+				// No se puede cerrar mientras se envía.
+				if (!next && isLoading) return;
+				onOpenChange(next);
+			}}
 		>
-			<DialogContent className='sm:max-w-sm'>
+			<DialogContent
+				className='sm:max-w-sm'
+				showCloseButton={!isLoading}
+			>
 				<DialogHeader>
 					<DialogTitle>Iniciar sesión</DialogTitle>
 					<DialogDescription>Inicia sesión para acceder a las funciones de administrador.</DialogDescription>
@@ -67,6 +85,7 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
 				<form
 					onSubmit={handleSubmit}
 					className='space-y-4'
+					noValidate
 				>
 					<div className='space-y-2'>
 						<Label htmlFor='login-username'>Usuario</Label>
@@ -76,20 +95,52 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
 							onChange={(event) => setUsername(event.target.value)}
 							autoComplete='username'
 							disabled={isLoading}
+							aria-invalid={usernameError ? true : undefined}
 							autoFocus
 						/>
+						{usernameError && (
+							<p
+								className='text-xs text-red-400'
+								role='alert'
+							>
+								{usernameError}
+							</p>
+						)}
 					</div>
 
 					<div className='space-y-2'>
 						<Label htmlFor='login-password'>Contraseña</Label>
-						<Input
-							id='login-password'
-							type='password'
-							value={password}
-							onChange={(event) => setPassword(event.target.value)}
-							autoComplete='current-password'
-							disabled={isLoading}
-						/>
+						<div className='relative'>
+							<Input
+								id='login-password'
+								type={showPassword ? 'text' : 'password'}
+								value={password}
+								onChange={(event) => setPassword(event.target.value)}
+								autoComplete='current-password'
+								disabled={isLoading}
+								aria-invalid={passwordError ? true : undefined}
+								className='pr-9'
+							/>
+							<Button
+								type='button'
+								variant='ghost'
+								size='icon-xs'
+								onClick={() => setShowPassword((current) => !current)}
+								disabled={isLoading}
+								aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+								className='absolute top-1/2 right-1 -translate-y-1/2 text-app-text-muted'
+							>
+								{showPassword ? <EyeOff /> : <Eye />}
+							</Button>
+						</div>
+						{passwordError && (
+							<p
+								className='text-xs text-red-400'
+								role='alert'
+							>
+								{passwordError}
+							</p>
+						)}
 					</div>
 
 					{error && (
@@ -104,8 +155,7 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
 					<DialogFooter>
 						<Button
 							type='submit'
-							disabled={isLoading || !username || !password}
-							className='bg-app-accent-500 text-app-accent-contrast hover:bg-app-accent-700'
+							disabled={isLoading}
 						>
 							{isLoading ? (
 								<>

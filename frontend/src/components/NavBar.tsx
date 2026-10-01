@@ -1,63 +1,55 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
+
 import { useAuth } from '@/hooks/useAuth';
-import { useLoginDialog } from '@/hooks/useLoginDialog'
+import { usePendingCount } from '@/hooks/usePendingCount';
+import { AdminControls } from '@/components/AdminControls';
+import { PendingCount } from '@/components/PendingCount';
+import { cn } from '@/lib/utils';
+
+const linkClass = ({ isActive }: { isActive: boolean }) =>
+	cn(
+		'flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors',
+		isActive ? 'bg-app-surface text-app-text' : 'text-app-text-muted hover:text-app-text',
+	);
 
 export function NavBar() {
-	const { isAdmin, logout } = useAuth();
-	const { openLogin } = useLoginDialog();
-	const navigate = useNavigate();
-
-	const handleLogout = async () => {
-		await logout();
-		navigate('/');
-	};
+	const { isAdmin } = useAuth();
+	const pending = usePendingCount(isAdmin);
 
 	return (
 		<nav className='flex h-14 shrink-0 items-center justify-between border-b border-app-border px-6'>
-			<div className='flex items-center gap-6'>
-				<Link
-					to='/'
-					className='text-sm text-app-text-muted hover:text-app-text'
-				>
-					Editor
-				</Link>
+			<div className='flex items-center gap-4'>
+				<span className='text-sm font-semibold text-app-text'>PrintLabel</span>
 
-				<Link
-					to='/galeria'
-					className='text-sm text-app-text-muted hover:text-app-text'
-				>
-					Galería
-				</Link>
-
-				{isAdmin && (
-					<Link
-						to='/staging'
-						className='text-sm text-app-text-muted hover:text-app-text'
+				<div className='flex items-center gap-1'>
+					<NavLink
+						to='/'
+						end
+						className={linkClass}
 					>
-						Staging
-					</Link>
-				)}
+						Editor
+					</NavLink>
+
+					<NavLink
+						to='/galeria'
+						className={linkClass}
+					>
+						Galería
+					</NavLink>
+
+					{isAdmin && (
+						<NavLink
+							to='/staging'
+							className={linkClass}
+						>
+							Staging
+							<PendingCount count={pending} />
+						</NavLink>
+					)}
+				</div>
 			</div>
 
-			<div className='flex items-center gap-3'>
-				{isAdmin && <span className='rounded bg-amber-800 px-2 py-0.5 text-xs text-white'>Modo admin</span>}
-				{isAdmin ? (
-					<button
-						onClick={handleLogout}
-						className='text-sm text-app-text-muted hover:text-app-text cursor-pointer'
-					>
-						Cerrar sesión
-					</button>
-				) : (
-					<button
-						type='button'
-						onClick={openLogin}
-						className='text-sm text-app-text-muted hover:text-app-text cursor-pointer'
-					>
-						Iniciar sesión
-					</button>
-				)}
-			</div>
+			<AdminControls />
 		</nav>
 	);
 }

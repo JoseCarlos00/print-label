@@ -13,7 +13,6 @@ import { useLoginDialog } from '@/hooks/useLoginDialog';
 
 import { SaveTemplateModal } from './editor/SaveTemplateModal';
 import { DocumentChip } from './editor/DocumentChip';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -24,6 +23,10 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { AdminBadge } from './AdminBadge'
+import { PendingCount } from './PendingCount'
+import { useLogout } from '@/hooks/useLogout'
+import { usePendingCount } from '@/hooks/usePendingCount'
 
 interface TopBarProps {
 	profiles: PrinterProfile[];
@@ -174,14 +177,11 @@ interface LogoMenuProps {
 }
 
 function LogoMenu({ onNewDocument }: LogoMenuProps) {
-	const { isAdmin, logout } = useAuth();
+	const { isAdmin } = useAuth();
 	const { openLogin } = useLoginDialog();
 	const navigate = useNavigate();
-
-	const handleLogout = async () => {
-		await logout();
-		navigate('/');
-	};
+	const handleLogout = useLogout();
+	const pending = usePendingCount(isAdmin);
 
 	return (
 		<div className='flex items-center gap-2'>
@@ -191,7 +191,7 @@ function LogoMenu({ onNewDocument }: LogoMenuProps) {
 						<Button
 							variant='ghost'
 							size='sm'
-							className='gap-1 px-2 text-sm font-semibold text-app-text cursor-pointer'
+							className='gap-1 px-2 text-sm font-semibold text-app-text'
 						>
 							PrintLabel
 							<ChevronDown className='size-3.5 text-app-text-muted' />
@@ -225,6 +225,7 @@ function LogoMenu({ onNewDocument }: LogoMenuProps) {
 						>
 							<ClipboardClock className='size-4' />
 							Staging
+							<PendingCount count={pending} />
 						</DropdownMenuItem>
 					)}
 
@@ -251,14 +252,7 @@ function LogoMenu({ onNewDocument }: LogoMenuProps) {
 				</DropdownMenuContent>
 			</DropdownMenu>
 
-			{isAdmin && (
-				<Badge
-					variant='outline'
-					className='hidden border-amber-700 text-amber-400 sm:inline-flex'
-				>
-					Modo admin
-				</Badge>
-			)}
+			{isAdmin && <AdminBadge className='hidden sm:inline-flex' />}
 		</div>
 	);
 }
