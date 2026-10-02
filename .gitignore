@@ -27,3 +27,4 @@ backend/data/*
 test.ts
 *.debug.ts*
 data/
+*.zip
