@@ -18,9 +18,11 @@ const SYMBOLOGY_LABELS: Record<Symbology, string> = {
 export function BarcodeFields({
 	element,
 	onChange,
+	sizeLocked = false,
 }: {
 	element: BarcodeElement;
 	onChange: (changes: Partial<BarcodeElement>) => void;
+	sizeLocked?: boolean;
 }) {
 	const aspectRatio = element.height > 0 ? element.width / element.height : 1;
 	const autoFontSize = resolveBarcodeTextSize(element);
@@ -74,6 +76,7 @@ export function BarcodeFields({
 					min={EDITOR_LIMITS.dimensionMm.min}
 					max={EDITOR_LIMITS.dimensionMm.max}
 					inputClassName={element.lockAspectRatio ? 'outline outline-1 outline-app-accent-500' : undefined}
+					disabled={sizeLocked}
 					onChange={updateWidth}
 				/>
 
@@ -83,6 +86,7 @@ export function BarcodeFields({
 					min={EDITOR_LIMITS.dimensionMm.min}
 					max={EDITOR_LIMITS.dimensionMm.max}
 					inputClassName={element.lockAspectRatio ? 'outline outline-1 outline-app-accent-500' : undefined}
+					disabled={sizeLocked}
 					onChange={updateHeight}
 				/>
 			</div>

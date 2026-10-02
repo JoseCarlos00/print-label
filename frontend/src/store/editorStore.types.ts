@@ -15,9 +15,6 @@ export interface EditorState {
 	templateName: string;
 	isPublic: boolean;
 
-	/** viene de la plantilla cargada, o se define al guardar una nueva */
-	positionLocked: boolean;
-
 	/** state de la plantilla cargada (approved/pending/rejected); null si es nueva */
 	loadedTemplateState: StateTemplate | null;
 
@@ -43,11 +40,10 @@ export interface EditorActions {
 	duplicateElement: (id: string) => void;
 	rotateElement: (id: string) => void;
 	clearElements: () => void;
-	toggleElementLock: (id: string) => void;
 	selectElement: (id: string | null) => void;
 	setTemplateMeta: (
 		meta: Partial<
-			Pick<EditorState, 'templateId' | 'templateName' | 'isPublic' | 'positionLocked' | 'loadedTemplateState'>
+			Pick<EditorState, 'templateId' | 'templateName' | 'isPublic' | 'loadedTemplateState'>
 		>,
 	) => void;
 	loadTemplate: (template: Template) => void;

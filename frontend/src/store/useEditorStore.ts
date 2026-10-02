@@ -34,14 +34,13 @@ type EditorStoreWithTemporal = UseBoundStore<StoreApi<EditorStore>> & {
  * sin suscribirse a re-renders
  * (por ejemplo, al armar el body del POST /api/templates dentro de SaveTemplateModal),
  * usás useEditorStore.getState() directo, sin el hook:
- * `const { templateName, isPublic, positionLocked, profile, elements } = useEditorStore.getState();`
+ * `const { templateName, isPublic, profile, elements } = useEditorStore.getState();`
  * */
 
 const initialState: EditorState = {
 	templateId: null,
 	templateName: '',
 	isPublic: true,
-	positionLocked: false,
 	loadedTemplateState: null,
 	profile: null,
 	elements: [],
@@ -114,7 +113,7 @@ export const useEditorStore = create<EditorStore>()(
 					id: uuidv4(),
 					x: original.x + 5,
 					y: original.y + 5,
-					locked: false,
+					positionLocked: false,
 				};
 				set((state) => ({
 					elements: [...state.elements, copy],
@@ -132,13 +131,8 @@ export const useEditorStore = create<EditorStore>()(
 					}),
 				})),
 
-			toggleElementLock: (id) =>
-				set((state) => ({
-					elements: state.elements.map((el) => (el.id === id ? { ...el, locked: !el.locked } : el)),
-				})),
-
 			// Vacía SOLO los elementos del lienzo — a diferencia de resetEditor(),
-			// mantiene perfil, nombre de plantilla, positionLocked, etc.
+			// mantiene perfil y nombre de plantilla, entre otros metadatos.
 			// Es una acción atómica (un click), no necesita transacción propia:
 			// queda grabada como una entrada normal del historial.
 			clearElements: () =>
@@ -156,9 +150,13 @@ export const useEditorStore = create<EditorStore>()(
 					templateId: template.id,
 					templateName: template.name,
 					isPublic: template.public,
-					positionLocked: template.positionLocked,
 					loadedTemplateState: template.state,
-					elements: template.elements,
+					elements: template.elements.map((element) => {
+						const currentElement = { ...element };
+						delete currentElement.locked;
+
+						return currentElement;
+					}),
 					selectedElementId: null,
 				}),
 
@@ -167,7 +165,6 @@ export const useEditorStore = create<EditorStore>()(
 					templateId: null,
 					templateName: '',
 					isPublic: true,
-					positionLocked: false,
 					loadedTemplateState: null,
 					elements: [],
 					selectedElementId: null,
@@ -198,7 +195,7 @@ export const useEditorStore = create<EditorStore>()(
 					id: uuidv4(),
 					x: clipboardElement.x + 5,
 					y: clipboardElement.y + 5,
-					locked: false,
+					positionLocked: false,
 				};
 
 				set((state) => ({

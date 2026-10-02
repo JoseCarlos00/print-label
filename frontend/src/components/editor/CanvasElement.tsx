@@ -54,7 +54,6 @@ export function CanvasElement({
 	onDragEnd,
 	onRequestOpenPropertiesPanel,
 }: CanvasElementProps) {
-	const positionLocked = useEditorStore((s) => s.positionLocked);
 	const selectElement = useEditorStore((s) => s.selectElement);
 	const rotateElement = useEditorStore((s) => s.rotateElement);
 	const duplicateElement = useEditorStore((s) => s.duplicateElement);
@@ -72,7 +71,7 @@ export function CanvasElement({
 	};
 
 	const dragOffsetMm = useRef<{ dx: number; dy: number } | null>(null);
-	const draggable = !positionLocked;
+	const draggable = !element.positionLocked;
 
 	const elementRef = useRef<HTMLDivElement>(null);
 	const [naturalSize, setNaturalSize] = useState({ width: 0, height: 0 });
@@ -187,7 +186,7 @@ export function CanvasElement({
 			>
 				<ElementPreview element={element} />
 
-				{isSelected && !positionLocked && (
+				{isSelected && (
 					<ActionsButtons
 						element={element}
 						actions={actions}

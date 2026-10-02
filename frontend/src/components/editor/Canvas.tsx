@@ -72,7 +72,6 @@ export function Canvas({ loadError, loadErrorActions, verticalCenterOffset, onRe
 	const selectedElementId = useEditorStore((s) => s.selectedElementId);
 	const selectElement = useEditorStore((s) => s.selectElement);
 	const updateElement = useEditorStore((s) => s.updateElement);
-	const positionLocked = useEditorStore((s) => s.positionLocked);
 
 	const selectedElement = elements.find((element) => element.id === selectedElementId);
 
@@ -192,8 +191,8 @@ export function Canvas({ loadError, loadErrorActions, verticalCenterOffset, onRe
 			event.stopPropagation();
 			event.preventDefault();
 
-			if (positionLocked) return;
 			if (!selectedElement) return;
+			if (selectedElement.positionLocked) return;
 
 			const naturalSize = naturalSizes[selectedElement.id];
 			if (!naturalSize) return;
@@ -209,7 +208,7 @@ export function Canvas({ loadError, loadErrorActions, verticalCenterOffset, onRe
 				element: selectedElement,
 			});
 		},
-		[positionLocked, selectedElement, naturalSizes],
+		[selectedElement, naturalSizes],
 	);
 
 	useEffect(() => {
@@ -477,7 +476,7 @@ export function Canvas({ loadError, loadErrorActions, verticalCenterOffset, onRe
 							/>
 						))}
 
-						{selectedCorners && (
+						{selectedCorners && !selectedElement?.positionLocked && (
 							<SelectionHandles
 								corners={selectedCorners}
 								onPointerDown={handleResizePointerDown}

@@ -9,9 +9,11 @@ import { Input } from '@/components/ui/input';
 export function QrFields({
 	element,
 	onChange,
+	sizeLocked = false,
 }: {
 	element: QrElement;
 	onChange: (changes: Partial<QrElement>) => void;
+	sizeLocked?: boolean;
 }) {
 	const label = element.label;
 
@@ -31,6 +33,7 @@ export function QrFields({
 				value={element.size}
 				min={EDITOR_LIMITS.qrSizeMm.min}
 				max={EDITOR_LIMITS.qrSizeMm.max}
+				disabled={sizeLocked}
 				onChange={(size) => {
 					if (size !== undefined) onChange({ size });
 				}}

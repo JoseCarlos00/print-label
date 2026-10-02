@@ -15,9 +15,11 @@ const SHAPES: { shape: ShapeType; label: string }[] = [
 export function ShapeFields({
 	element,
 	onChange,
+	sizeLocked = false,
 }: {
 	element: ShapeElement;
 	onChange: (changes: Partial<ShapeElement>) => void;
+	sizeLocked?: boolean;
 }) {
 	return (
 		<>
@@ -56,6 +58,7 @@ export function ShapeFields({
 					value={element.width}
 					min={1}
 					max={EDITOR_LIMITS.dimensionMm.max}
+					disabled={sizeLocked}
 					onChange={(width) => {
 						if (width !== undefined) onChange({ width });
 					}}
@@ -65,6 +68,7 @@ export function ShapeFields({
 					value={element.height}
 					min={1}
 					max={EDITOR_LIMITS.dimensionMm.max}
+					disabled={sizeLocked}
 					onChange={(height) => {
 						if (height !== undefined) onChange({ height });
 					}}

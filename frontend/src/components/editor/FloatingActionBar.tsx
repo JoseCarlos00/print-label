@@ -6,7 +6,6 @@ import { Separator } from '@/components/ui/separator';
 export function FloatingActionBar() {
 	const clearElements = useEditorStore((s) => s.clearElements);
 	const elementsCount = useEditorStore((s) => s.elements.length);
-	const positionLocked = useEditorStore((s) => s.positionLocked);
 
 	const pastStates = useStore(useEditorStore.temporal, (s) => s.pastStates);
 	const futureStates = useStore(useEditorStore.temporal, (s) => s.futureStates);
@@ -44,7 +43,7 @@ export function FloatingActionBar() {
 			<button
 				type='button'
 				title='Limpiar lienzo'
-				disabled={elementsCount === 0 || positionLocked}
+				disabled={elementsCount === 0}
 				onClick={clearElements}
 				className='flex size-8 items-center justify-center rounded-md text-app-text-muted enabled:cursor-pointer enabled:hover:bg-red-950 enabled:hover:text-red-400 disabled:opacity-40'
 			>

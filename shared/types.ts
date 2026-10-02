@@ -18,12 +18,7 @@ interface BaseElement {
 	x: number; // mm, desde la esquina superior izquierda del área
 	y: number; // mm, desde la esquina superior izquierda del área
 	rotation: Rotation;
-	/**
-	 * Congela el elemento por completo (ni siquiera "content" es editable).
-	 * Solo tiene efecto cuando la plantilla que lo contiene tiene
-	 * `positionLocked: true`. Se define desde el modal "Guardar plantilla",
-	 * no durante el diseño libre. Default: false.
-	 */
+	positionLocked?: boolean;
 	locked?: boolean;
 }
 
@@ -134,7 +129,6 @@ export interface Template {
 	state: StateTemplate;
 	public: boolean;
 	requestedBy?: string | null;
-	positionLocked: boolean; // true = el frontend no permite mover elementos (x,y fijos); el contenido sí se puede editar
 	createOn: string; // ISO 8601
 	updateOn: string; // ISO 8601
 }
@@ -150,7 +144,6 @@ export interface CreateTemplateInput {
 	elements: LabelElement[];
 	public: boolean;
 	requestedBy?: string;
-	positionLocked?: boolean; // opcional, default false si no se envía
 }
 
 export interface UpdateTemplateInput {
@@ -158,5 +151,4 @@ export interface UpdateTemplateInput {
 	profileId: string;
 	elements: LabelElement[];
 	public: boolean;
-	positionLocked: boolean;
 }

@@ -8,9 +8,11 @@ import { Label } from '@/components/ui/label';
 export function ImageFields({
 	element,
 	onChange,
+	sizeLocked = false,
 }: {
 	element: ImageElement;
 	onChange: (changes: Partial<ImageElement>) => void;
+	sizeLocked?: boolean;
 }) {
 	const aspectRatio = element.height > 0 ? element.width / element.height : 1;
 
@@ -47,6 +49,7 @@ export function ImageFields({
 					min={EDITOR_LIMITS.dimensionMm.min}
 					max={EDITOR_LIMITS.dimensionMm.max}
 					inputClassName={element.lockAspectRatio ? 'outline outline-1 outline-app-accent-500' : undefined}
+					disabled={sizeLocked}
 					onChange={updateWidth}
 				/>
 				<NumberField
@@ -55,6 +58,7 @@ export function ImageFields({
 					min={EDITOR_LIMITS.dimensionMm.min}
 					max={EDITOR_LIMITS.dimensionMm.max}
 					inputClassName={element.lockAspectRatio ? 'outline outline-1 outline-app-accent-500' : undefined}
+					disabled={sizeLocked}
 					onChange={updateHeight}
 				/>
 			</div>

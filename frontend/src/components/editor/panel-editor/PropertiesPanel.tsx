@@ -25,7 +25,6 @@ const TYPE_LABEL = {
 const ROTATIONS: Rotation[] = [0, 90, 180, 270];
 
 export function PropertiesPanel() {
-	const positionLocked = useEditorStore((s) => s.positionLocked);
 	const selectedElementId = useEditorStore((s) => s.selectedElementId);
 	const element = useEditorStore((s) => s.elements.find((el) => el.id === s.selectedElementId));
 	const updateElement = useEditorStore((s) => s.updateElement);
@@ -33,15 +32,13 @@ export function PropertiesPanel() {
 
 	const contentRef = useRef<HTMLTextAreaElement>(null);
 
-	const structureDisabled = positionLocked;
-	const contentDisabled = positionLocked && Boolean(element?.locked);
+	const positionDisabled = Boolean(element?.positionLocked);
 
 	useEffect(() => {
-		if (!element || contentDisabled || !focusContentRequest) return;
+		if (!focusContentRequest) return;
 		contentRef.current?.focus();
 		contentRef.current?.select();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [focusContentRequest, contentDisabled]);
+	}, [focusContentRequest]);
 
 	if (!selectedElementId || !element) {
 		return (
@@ -61,11 +58,9 @@ export function PropertiesPanel() {
 				<span className='text-sm font-medium text-app-text'>{TYPE_LABEL[element.type]}</span>
 			</div>
 
-			{positionLocked && (
+			{positionDisabled && (
 				<p className='rounded-md border border-app-border bg-app-surface p-2 text-xs text-app-text-muted'>
-					{contentDisabled
-						? 'Este elemento está completamente bloqueado en esta plantilla.'
-						: 'Las posiciones y propiedades estructurales están bloqueadas en esta plantilla.'}
+					La posición y el tamaño están bloqueados; puedes editar el contenido y el formato.
 				</p>
 			)}
 
@@ -74,7 +69,7 @@ export function PropertiesPanel() {
 				icon={<Move className='size-3.5' />}
 			>
 				<fieldset
-					disabled={structureDisabled}
+					disabled={positionDisabled}
 					className='grid grid-cols-2 gap-2 disabled:opacity-50'
 				>
 					<NumberField
@@ -89,32 +84,26 @@ export function PropertiesPanel() {
 					/>
 				</fieldset>
 
-				<fieldset
-					disabled={structureDisabled}
-					className='disabled:opacity-50'
-				>
-					<Field label='Rotación'>
-						<Select
-							value={String(element.rotation)}
-							onValueChange={(value) => update({ rotation: Number(value) as Rotation })}
-							disabled={structureDisabled}
-						>
-							<SelectTrigger className='mt-1 w-full'>
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								{ROTATIONS.map((rotation) => (
-									<SelectItem
-										key={rotation}
-										value={String(rotation)}
-									>
-										{rotation}°
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					</Field>
-				</fieldset>
+				<Field label='Rotación'>
+					<Select
+						value={String(element.rotation)}
+						onValueChange={(value) => update({ rotation: Number(value) as Rotation })}
+					>
+						<SelectTrigger className='mt-1 w-full'>
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							{ROTATIONS.map((rotation) => (
+								<SelectItem
+									key={rotation}
+									value={String(rotation)}
+								>
+									{rotation}°
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+				</Field>
 			</PanelSection>
 
 			{(element.type === 'text' || element.type === 'barcode' || element.type === 'qr') && (
@@ -122,19 +111,14 @@ export function PropertiesPanel() {
 					title='Contenido'
 					icon={<FileText className='size-3.5' />}
 				>
-					<fieldset
-						disabled={contentDisabled}
-						className='disabled:opacity-50'
-					>
-						<TextAreaField
-							ref={contentRef}
-							label='Contenido'
-							value={element.content}
-							onChange={(content) => update({ content })}
-							maxLength={EDITOR_LIMITS.contentLength[element.type]}
-							rows={2}
-						/>
-					</fieldset>
+					<TextAreaField
+						ref={contentRef}
+						label='Contenido'
+						value={element.content}
+						onChange={(content) => update({ content })}
+						maxLength={EDITOR_LIMITS.contentLength[element.type]}
+						rows={2}
+					/>
 				</PanelSection>
 			)}
 
@@ -142,10 +126,7 @@ export function PropertiesPanel() {
 				title='Propiedades'
 				icon={<Icon className='size-3.5' />}
 			>
-				<fieldset
-					disabled={structureDisabled}
-					className='space-y-2 disabled:opacity-50'
-				>
+				<div className='space-y-2'>
 					{element.type === 'text' && (
 						<TextFields
 							element={element}
@@ -156,27 +137,31 @@ export function PropertiesPanel() {
 						<BarcodeFields
 							element={element}
 							onChange={update}
+							sizeLocked={positionDisabled}
 						/>
 					)}
 					{element.type === 'qr' && (
 						<QrFields
 							element={element}
 							onChange={update}
+							sizeLocked={positionDisabled}
 						/>
 					)}
 					{element.type === 'image' && (
 						<ImageFields
 							element={element}
 							onChange={update}
+							sizeLocked={positionDisabled}
 						/>
 					)}
 					{element.type === 'shape' && (
 						<ShapeFields
 							element={element}
 							onChange={update}
+							sizeLocked={positionDisabled}
 						/>
 					)}
-				</fieldset>
+				</div>
 			</PanelSection>
 		</div>
 	);

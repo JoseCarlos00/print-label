@@ -87,10 +87,9 @@ export function SaveTemplateModal({ onClose, onSaved }: SaveTemplateModalProps) 
 	const profile = useEditorStore((s) => s.profile);
 	const templateName = useEditorStore((s) => s.templateName);
 	const isPublic = useEditorStore((s) => s.isPublic);
-	const positionLockedStore = useEditorStore((s) => s.positionLocked);
 	const loadedTemplateState = useEditorStore((s) => s.loadedTemplateState);
 	const setTemplateMeta = useEditorStore((s) => s.setTemplateMeta);
-	const toggleElementLock = useEditorStore((s) => s.toggleElementLock);
+	const updateElement = useEditorStore((s) => s.updateElement);
 
 	// Solo se sobrescribe si eres admin Y la plantilla cargada ya está
 	// aprobada (mismo criterio que TopBar). En cualquier otro caso se crea una nueva.
@@ -98,7 +97,6 @@ export function SaveTemplateModal({ onClose, onSaved }: SaveTemplateModalProps) 
 
 	const [name, setName] = useState(templateName);
 	const [isPub, setIsPub] = useState(isPublic);
-	const [isLocked, setIsLocked] = useState(positionLockedStore);
 	const [requestedBy, setRequestedBy] = useState('');
 	const [attempted, setAttempted] = useState(false);
 	const [submitting, setSubmitting] = useState(false);
@@ -127,7 +125,7 @@ export function SaveTemplateModal({ onClose, onSaved }: SaveTemplateModalProps) 
 				elements,
 				// Solo el admin puede crear plantillas privadas.
 				public: isAdmin ? isPub : true,
-				positionLocked: isLocked,
+				positionLocked: false,
 			};
 
 			if (isAdmin && mode === 'update' && templateId) {
@@ -150,7 +148,6 @@ export function SaveTemplateModal({ onClose, onSaved }: SaveTemplateModalProps) 
 					templateId: saved.id,
 					templateName: saved.name,
 					isPublic: saved.public,
-					positionLocked: saved.positionLocked,
 					loadedTemplateState: saved.state,
 				});
 			}
@@ -200,7 +197,7 @@ export function SaveTemplateModal({ onClose, onSaved }: SaveTemplateModalProps) 
 
 				<form
 					onSubmit={handleSubmit}
-					className='space-y-4'
+					className='space-y-4 overflow-hidden'
 					noValidate
 				>
 					<div className='space-y-2'>
@@ -263,59 +260,51 @@ export function SaveTemplateModal({ onClose, onSaved }: SaveTemplateModalProps) 
 						/>
 					)}
 
-					<OptionRow
-						id='template-position-locked'
-						label='Bloquear posiciones'
-						description='Quien la reutilice solo podrá editar el contenido; no podrá mover elementos ni cambiar su formato.'
-						checked={isLocked}
-						onCheckedChange={setIsLocked}
-						disabled={submitting}
-					/>
-
-					{isLocked && (
-						<div className='space-y-2 rounded-lg border border-app-border p-3'>
-							<div>
-								<p className='text-xs font-medium uppercase text-app-text-muted'>Contenido fijo</p>
-								<p className='mt-1 text-xs text-app-text-muted'>
-									Los elementos activados no se podrán editar en absoluto, ni siquiera su contenido.
-								</p>
-							</div>
-
-							<ul className='thin-scrollbar max-h-48 space-y-1 overflow-y-auto overflow-x-hidden pr-1'>
-								{elements.map((el) => {
-									const { icon: Icon, label } = describeElement(el);
-									const switchId = `lock-element-${el.id}`;
-
-									return (
-										<li
-											key={el.id}
-											className='flex items-center justify-between gap-3 rounded-md px-1 py-1.5'
-										>
-											<Label
-												htmlFor={switchId}
-												className='min-w-0 flex-1 cursor-pointer font-normal'
-											>
-												<Icon className='size-4 shrink-0 text-app-text-muted' />
-												<span
-													className='truncate'
-													title={label}
-												>
-													{label}
-												</span>
-											</Label>
-											<Switch
-												id={switchId}
-												size='sm'
-												checked={Boolean(el.locked)}
-												disabled={submitting}
-												onCheckedChange={() => toggleElementLock(el.id)}
-											/>
-										</li>
-									);
-								})}
-							</ul>
+					<div className='space-y-2 rounded-lg border border-app-border p-3'>
+						<div>
+							<p className='text-xs font-medium uppercase text-app-text-muted'>Bloqueo por elemento</p>
+							<p className='mt-1 text-xs text-app-text-muted'>
+								Los elementos marcados no se podrán mover ni redimensionar. Su contenido y formato seguirán editables.
+							</p>
 						</div>
-					)}
+
+						<ul className='thin-scrollbar max-h-48 space-y-1 overflow-y-auto overflow-x-hidden pr-1'>
+							{elements.map((el) => {
+								const { icon: Icon, label } = describeElement(el);
+								const switchId = `lock-element-${el.id}`;
+
+								return (
+									<li
+										key={el.id}
+										className='flex items-center justify-between gap-3 rounded-md px-1 py-1.5'
+									>
+										<Label
+											htmlFor={switchId}
+											className='min-w-0 flex-1 cursor-pointer font-normal'
+										>
+											<Icon className='size-4 shrink-0 text-app-text-muted' />
+											<span
+												className='truncate'
+												title={label}
+											>
+												{label}
+											</span>
+										</Label>
+										<Switch
+											id={switchId}
+											size='sm'
+											aria-label={`Bloquear posición y tamaño: ${label}`}
+											checked={Boolean(el.positionLocked)}
+											disabled={submitting}
+											onCheckedChange={(positionLocked) =>
+												updateElement(el.id, { positionLocked })
+											}
+										/>
+									</li>
+								);
+							})}
+						</ul>
+					</div>
 
 					{error && (
 						<p
