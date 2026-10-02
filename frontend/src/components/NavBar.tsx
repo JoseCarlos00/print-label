@@ -20,7 +20,7 @@ export function NavBar() {
 	return (
 		<nav className='flex h-14 w-full min-w-0 shrink-0 items-center justify-between gap-2 overflow-hidden border-b border-app-border px-2 sm:px-6'>
 			<div className='flex min-w-0 flex-1 items-center gap-2 sm:gap-4'>
-				<Logo />
+				<Logo titleClassName='hidden lg:inline' />
 
 				<div className='flex min-w-0 items-center gap-0.5 overflow-x-auto'>
 					<NavLink

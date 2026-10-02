@@ -22,21 +22,51 @@ export function LogoMark({ className }: { className?: string }) {
 				d='M50 38 38 50v-8a4 4 0 0 1 4-4Z'
 			/>
 			<g className='fill-app-accent-500'>
-				<rect x='20' y='20' width='3' height='24' />
-				<rect x='25' y='20' width='2' height='24' />
-				<rect x='29' y='20' width='4' height='24' />
-				<rect x='35' y='20' width='2' height='24' />
-				<rect x='39' y='20' width='3' height='14' />
+				<rect
+					x='20'
+					y='20'
+					width='3'
+					height='24'
+				/>
+				<rect
+					x='25'
+					y='20'
+					width='2'
+					height='24'
+				/>
+				<rect
+					x='29'
+					y='20'
+					width='4'
+					height='24'
+				/>
+				<rect
+					x='35'
+					y='20'
+					width='2'
+					height='24'
+				/>
+				<rect
+					x='39'
+					y='20'
+					width='3'
+					height='14'
+				/>
 			</g>
 		</svg>
 	);
 }
 
-export function Logo({ className }: { className?: string }) {
+interface LogoProps {
+	className?: string;
+	titleClassName?: string;
+}
+
+export function Logo({ className, titleClassName }: LogoProps) {
 	return (
 		<span className={cn('inline-flex items-center gap-2 text-sm font-semibold text-app-text', className)}>
 			<LogoMark />
-			PrintLabel
+			<span className={titleClassName}>PrintLabel</span>
 		</span>
 	);
 }
