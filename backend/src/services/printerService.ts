@@ -5,8 +5,8 @@ const CONNECTION_TIMEOUT_MS = 4000;
 
 /**
  * Abre un socket TCP crudo al puerto 9100 de la impresora y envía el ZPL
- * tal cual — la impresora lo interpreta directo, sin pasar por el navegador
- * (spec §8).
+ * tal cual — la impresora lo interpreta directamente, sin pasar por el
+ * navegador.
  */
 export function sendToPrinter(ip: string, zpl: string): Promise<void> {
 	return new Promise((resolve, reject) => {

@@ -16,7 +16,7 @@ import type { Font } from 'opentype.js'
 
 /**
  * Convierte el diseño de una etiqueta (LabelElement[]) al ZPL completo
- * (^XA...^XZ) listo para enviar por socket TCP a la impresora (spec §8).
+ * (^XA...^XZ) listo para enviar por socket TCP a la impresora.
  *
  * Las imágenes deben venir decodificadas en `images`, indexadas por el id
  * del elemento.

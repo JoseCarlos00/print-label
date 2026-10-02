@@ -121,8 +121,8 @@ async function startServer() {
 // Inicia el servidor
 startServer();
 
-// Cierre ordenado: el backend corre como servicio de Windows (spec §10),
-// y cada redeploy/reinicio lo mata con SIGTERM. Sin este handler, la DB
+// Cierre ordenado: el backend puede correr como servicio de Windows,
+// y cada reinicio lo detiene con SIGTERM. Sin este handler, la DB
 // en modo WAL y las conexiones HTTP activas se cortan de golpe.
 function shutdown(signal: string) {
 	console.log(`\n${signal} recibido. Cerrando servidor ordenadamente...`);

@@ -1,68 +1,46 @@
-# PrintLabel — Editor de etiquetas Zebra
+# PrintLabel
 
-Editor visual (WYSIWYG) para diseñar etiquetas que se imprimen directo en
-impresoras Zebra por ZPL, vía socket TCP (sin pasar por el motor de
-impresión del navegador).
+Editor web para diseñar etiquetas y enviarlas a impresoras Zebra. La aplicación genera ZPL en el backend y transmite los trabajos directamente a la impresora por TCP (puerto 9100); no usa el diálogo de impresión del navegador.
 
-La especificación funcional completa (flujos de usuario, modelo de datos,
-API, decisiones de arquitectura) vive en [`especificacion-proyecto.md`](./especificacion-proyecto.md).
-Este archivo es solo la puerta de entrada rápida.
+## Requisitos
 
-## Estructura (monorepo, npm workspaces)
+- Node.js 20 o superior
+- npm
+- Acceso desde el backend a la red de impresoras
 
-```
-frontend/   → Vite + React + TypeScript + Tailwind. Ver frontend/README.md
-backend/    → Express + TypeScript. Ver backend/README.md
-shared/     → Tipos TS compartidos + generador de ZPL (sin paso de build)
-```
+## Desarrollo local
 
-## Quick start (desarrollo)
-
-Requisitos: Node 20+, npm.
+Instala las dependencias desde la raíz del monorepo:
 
 ```bash
-npm install          # instala todo el monorepo (workspaces)
+npm install
 ```
 
-Necesitás dos terminales:
+Configura y ejecuta el backend desde una terminal:
 
 ```bash
-# Terminal 1 — backend
 cd backend
-cp .env.example .env   # completar ADMIN_USER / ADMIN_PASSWORD
-npm run dev
-
-# Terminal 2 — frontend
-cd frontend
+cp .env.example .env
+# Completa ADMIN_USER y ADMIN_PASSWORD en .env
 npm run dev
 ```
 
-Más detalle de cada lado (variables de entorno, scripts, deploy) en:
-- [`backend/README.md`](./backend/README.md)
-- [`frontend/README.md`](./frontend/README.md)
+Configura y ejecuta el frontend desde otra terminal:
 
-## Estado del proyecto
+```bash
+cd frontend
+cp .env.example .env.local
+npm run dev
+```
 
-**Funcionalidad core (spec completa) implementada:**
-editor de elementos (texto/barcode/QR), drag & drop, undo/redo, guías de
-alineación, flujo libre → staging, flujo admin → aprobado directo, panel
-de staging (aprobar/rechazar), generación de ZPL, impresión por socket TCP,
-sesión de admin por cookie.
+El frontend usa el proxy de Vite para enviar `/api` al backend. Si el backend no está en la dirección configurada, cambia `VITE_BACKEND_URL` en `frontend/.env.local`. Los detalles de configuración y comandos están en [frontend/README.md](./frontend/README.md) y [backend/README.md](./backend/README.md).
 
-**Pendiente:**
-- Resize de elementos con el mouse (hoy el tamaño se edita solo desde el
-  panel de propiedades, en mm).
-- Importación de imágenes al editor (en evaluación: qué formatos soportar
-  y cómo convertirlas a ZPL — probablemente como bitmap `^GFA`, igual que
-  texto/barcode/QR).
-- Primera prueba de despliegue a producción del backend: **en curso**.
+## Componentes
 
-## Notas de arquitectura a tener en cuenta
+| Carpeta | Responsabilidad |
+|---|---|
+| `frontend/` | Editor, galería de plantillas e interfaz de administración |
+| `backend/` | API, persistencia SQLite, generación ZPL y comunicación con impresoras |
+| `shared/` | Tipos compartidos y utilidades de generación de ZPL usadas por ambos lados |
 
-- El ZPL no se genera con comandos nativos simples (`^A`, `^BC`, `^BQ`).
-  Todo elemento (texto, barcode, QR) se **rasteriza a bitmap** con
-  `opentype.js` y se envía como gráfico `^GFA`. Es una decisión consciente
-  para tener control pixel-perfect de fuentes/kerning, no un desvío
-  accidental de la spec original. Ver `backend/README.md` para más detalle.
-- El frontend asume que corre en la misma red local que las impresoras
-  Zebra (spec §8, §10) — no está pensado para exponerse a internet.
+La aplicación está diseñada para una red local confiable. El uso general y la impresión no requieren inicio de sesión; no expongas el backend directamente a Internet. Para conocer las rutas de API, almacenamiento, límites y despliegue, consulta [backend/README.md](./backend/README.md).

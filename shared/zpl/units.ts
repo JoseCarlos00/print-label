@@ -1,6 +1,6 @@
 import type { BarcodeElement, Rotation } from '../types.js';
 
-/** Convierte mm a dots según el DPI del perfil. ZPL trabaja en dots (spec §8). */
+/** Convierte mm a dots según el DPI del perfil. ZPL trabaja en dots. */
 export function mmToDots(mm: number, dpi: number): number {
 	return Math.round(mm * (dpi / 25.4));
 }

@@ -1,122 +1,83 @@
-# Backend — PrintLabel
+# Backend
 
-Express + TypeScript. Sirve la API REST, genera el ZPL de las etiquetas y
-lo envía directo a las impresoras Zebra por socket TCP (puerto 9100).
+API REST de PrintLabel, implementada con Express y TypeScript. También genera ZPL, conserva las plantillas y perfiles en SQLite y envía trabajos a impresoras Zebra por TCP (puerto 9100).
 
-## Requisitos
+## Requisitos y configuración
 
-- Node 20+
-- Acceso de red a las impresoras Zebra (puerto 9100) para poder imprimir.
+- Node.js 20 o superior
+- Acceso de red desde el backend a las impresoras configuradas
 
-## Setup
+Desde esta carpeta, copia `.env.example` a `.env` y define las credenciales administrativas:
 
 ```bash
 cp .env.example .env
+npm run dev
 ```
 
-Completar `.env` con, como mínimo, `ADMIN_USER` y `ADMIN_PASSWORD` — el
-servidor **falla al arrancar** si faltan (a propósito, ver `src/config.ts`).
+El servidor no inicia si faltan `ADMIN_USER` o `ADMIN_PASSWORD`.
 
-### Variables de entorno
-
-| Variable | Requerida | Default | Descripción |
+| Variable | Requerida | Predeterminado | Descripción |
 |---|---|---|---|
-| `ADMIN_USER` | Sí | — | Usuario del único admin |
-| `ADMIN_PASSWORD` | Sí | — | Contraseña del admin (comparación con `timingSafeEqual`, no hash — ver spec §6) |
-| `PORT` | No | `8001` | Puerto HTTP del servidor |
-| `NODE_ENV` | No | `development` | `production` activa cookies `secure` y ajusta la ruta de `backend/data/` |
+| `ADMIN_USER` | Sí | — | Usuario administrativo |
+| `ADMIN_PASSWORD` | Sí | — | Contraseña administrativa |
+| `PORT` | No | `8001` | Puerto HTTP |
+| `NODE_ENV` | No | `development` | En `production` la cookie de sesión se marca `secure` |
 | `DB_FILENAME` | No | `label-printer.db` | Nombre del archivo SQLite |
 
-No hay tabla de usuarios ni roles: es un único admin fijo, pensado para
-red interna no expuesta a internet (spec §6).
+La ruta completa del archivo SQLite se imprime en el log al iniciar. En desarrollo queda en `backend/data/`; con el bundle de producción, la ruta se resuelve desde `backend/dist/` y queda en el directorio `data/` un nivel por encima de la carpeta `backend/`. Mantén y respalda la ruta que indique el servidor al actualizar o desplegar; `DB_FILENAME` cambia el nombre del archivo, no su ubicación.
 
-### Límites de solicitudes públicas
-
-- `POST /api/auth/login`: máximo 10 intentos fallidos por IP en una ventana
-  móvil de 15 minutos. Un login exitoso limpia los fallos previos. Al excederlo
-  responde `429` e incluye `Retry-After`.
-- `POST /api/templates/staging`: intervalo mínimo de 2 segundos entre envíos
-  desde la misma IP. Al excederlo responde `429` e incluye `Retry-After`.
-- `POST /api/print` sigue siendo público y permite imprimir a cualquier usuario,
-  con un intervalo mínimo de 1 segundo entre solicitudes desde la misma IP.
-  Al excederlo responde `429` e incluye `Retry-After`.
-
-Los límites se guardan en memoria y aplican por proceso; se reinician al
-reiniciar el backend. Usuarios detrás de la misma IP pública/local comparten
-el límite. El servidor actual se despliega como una sola instancia.
-
-## Scripts
+## Comandos
 
 ```bash
-npm run dev          # tsx watch, recarga en caliente
-npm run typecheck    # tsc, sin emitir (validación de tipos)
-npm run build        # typecheck + bundle a dist/server.js (esbuild)
-npm run start         # corre dist/server.js (NODE_ENV=production)
+npm run dev         # servidor con recarga automática
+npm run typecheck   # comprobación de tipos
+npm run build       # comprobación de tipos y bundle en dist/server.js
+npm run start       # inicia el bundle con NODE_ENV=production
+npm run db:clear-sessions  # elimina sesiones administrativas
 ```
 
-## Arquitectura
+## API
 
-### Generación de ZPL: rasterizado a bitmap, no comandos nativos
+Todas las rutas, salvo `/health`, están bajo `/api`.
 
-A diferencia de un generador ZPL "clásico" (`^A` para texto, `^BC` para
-barcode, `^BQ` para QR), acá **cada elemento se rasteriza a un bitmap**
-usando `opentype.js` para renderizar el glyph path, y se envía como un
-único comando gráfico `^GFA` por elemento (ver `shared/zpl/`).
+| Método | Ruta | Acceso | Descripción |
+|---|---|---|---|
+| `GET` | `/health` | Público | Estado del servicio |
+| `POST` | `/api/auth/login` | Público | Iniciar sesión administrativa |
+| `POST` | `/api/auth/logout` | Público | Cerrar sesión |
+| `GET` | `/api/auth/me` | Público | Consultar el estado de sesión |
+| `GET` | `/api/printers` | Público | Listar perfiles de impresora |
+| `GET` | `/api/printers/:id` | Público | Consultar perfil de impresora |
+| `POST` | `/api/print` | Público | Generar ZPL e imprimir |
+| `GET` | `/api/templates` | Público | Listar plantillas públicas aprobadas |
+| `GET` | `/api/templates/:id` | Público | Consultar una plantilla |
+| `POST` | `/api/templates/staging` | Público | Enviar una plantilla para revisión |
+| `GET` | `/api/templates/all` | Admin | Listar plantillas aprobadas, incluidas las privadas |
+| `POST` | `/api/templates` | Admin | Crear una plantilla aprobada |
+| `PUT` / `DELETE` | `/api/templates/:id` | Admin | Actualizar o eliminar una plantilla |
+| `GET` | `/api/staging` | Admin | Listar propuestas pendientes |
+| `GET` | `/api/staging/count` | Admin | Consultar el contador de propuestas pendientes |
+| `GET` | `/api/staging/rejected` | Admin | Listar propuestas rechazadas |
+| `POST` | `/api/staging/:id/approve` | Admin | Aprobar una propuesta |
+| `POST` | `/api/staging/:id/reject` | Admin | Rechazar una propuesta |
+| `POST` | `/api/staging/:id/restore` | Admin | Restaurar una propuesta rechazada |
+| `DELETE` | `/api/staging/:id` | Admin | Eliminar una propuesta rechazada |
 
-Es una decisión intencional, no un desvío:
-- Control pixel-perfect de la fuente (kerning, negrita emulada, wrap,
-  justificado) que los comandos nativos de la impresora no ofrecen.
-- El resultado es determinístico entre impresoras/firmwares distintos,
-  porque la impresora solo dibuja el bitmap que ya viene calculado —
-  no interpreta la fuente ella misma.
-- El costo es más CPU en el momento de generar el ZPL (rasterizado +
-  hex-encode del bitmap) y un ZPL más pesado en bytes que el de comandos
-  nativos.
+## Impresión y almacenamiento
 
-`shared/zpl/units.ts::ZplValidationError` es el único tipo de error que
-el controller (`print.controller.ts`) debe tratar como 400 (dato inválido
-del usuario); cualquier otro error en la generación es 500.
+Los elementos de etiqueta se rasterizan a gráficos monocromos y se codifican en ZPL como `^GFA`. Esto hace que el resultado visual no dependa de las fuentes instaladas en la impresora. Las posiciones y dimensiones se convierten de milímetros a puntos según el DPI del perfil. La impresora recibe el ZPL directamente por TCP, puerto 9100.
 
-### Persistencia
+Los perfiles y dispositivos se definen en `src/printerDevices.ts` y se sincronizan con SQLite al iniciar el servidor. La base guarda perfiles, plantillas y sesiones administrativas. Las sesiones expiran a los 7 días. Las plantillas rechazadas se eliminan automáticamente tras 90 días; la limpieza se ejecuta al iniciar y cada 24 horas.
 
-- SQLite (`better-sqlite3`), un solo archivo, vive en `backend/data/`
-  **fuera** de `dist/` (sobrevive a redeploys que reemplazan `dist/`).
-- Tablas: `templates`, `sessions`, `printer_profiles` (esta última se
-  sincroniza en cada arranque desde `src/printerDevices.ts` — el código
-  es la fuente de verdad, no se edita a mano en la DB).
+## Seguridad y red
 
-### Staging: rechazadas
+- El acceso administrativo usa una cookie `httpOnly`, `sameSite=lax` y, en producción, `secure`. Las credenciales se comparan en tiempo constante.
+- El uso normal y el endpoint de impresión son públicos. Ejecuta el servicio únicamente en una red confiable y no lo expongas directamente a Internet.
+- Hay límites por dirección IP: 10 intentos fallidos de login en 15 minutos, una solicitud de staging cada 2 segundos y una solicitud de impresión cada 0.5 segundos. Se almacenan en memoria y se reinician al reiniciar el proceso.
+- Las impresoras deben ser accesibles desde la máquina que ejecuta el backend; la conexión TCP a cada impresora usa el puerto 9100.
 
-- `GET /api/staging/rejected` lista las plantillas rechazadas.
-- `POST /api/staging/:id/restore` las devuelve a `pending`.
-- `DELETE /api/staging/:id` las elimina definitivamente.
-- Una limpieza automática al arrancar y cada 24 horas elimina las rechazadas
-  cuyo `update_on` tenga más de 90 días. El contador de staging sigue contando
-  únicamente las pendientes.
+## Build e integración con el frontend
 
-### Bundle de producción
+`npm run build` genera `backend/dist/server.js` y empaqueta el código de `shared`. Para servir la aplicación desde Express, coloca el contenido del build de `frontend/dist/` en `backend/dist/public/`; Express sirve esos archivos y devuelve `index.html` para las rutas del frontend.
 
-`esbuild.config.js` genera `dist/server.js` autocontenido:
-- `shared` se inlinea (es TS fuente sin compilar).
-- Las dependencias de npm reales (`express`, `dotenv`, etc.) quedan
-  `external` — en el servidor de destino hace falta `npm install` después
-  de copiar `dist/` + `package.json`.
-
-## Despliegue (servicio de Windows)
-
-Ver spec §10 para el detalle completo. Resumen:
-
-1. `npm run build` (backend y frontend).
-2. Copiar `backend/dist/` + `backend/package.json` a la máquina servidor.
-3. `npm install` en el servidor.
-4. Reiniciar el servicio (NSSM / `node-windows`).
-5. **`backend/data/` nunca se toca** en este proceso — ahí vive la DB.
-
-### Estado de la primera prueba en producción
-
-🚧 En curso. Cosas a validar en ese primer despliegue real:
-- Que el cierre ordenado (`SIGTERM`/`SIGINT` → `shutdown()` en `server.ts`)
-  funcione bien cuando el servicio de Windows reinicia/detiene el proceso.
-- Conectividad real a las IPs de `printerDevices.ts` desde la máquina
-  servidor (no solo desde la máquina de desarrollo).
-- Que `backend/data/` efectivamente persista entre redeploys.
+Al desplegar, instala las dependencias de producción requeridas por el backend y conserva la base de datos en la ruta indicada por el log de inicio. Configura `NODE_ENV=production`, `ADMIN_USER` y `ADMIN_PASSWORD` en el entorno del servicio. La configuración de impresoras y sus perfiles se mantiene en `src/printerDevices.ts`.

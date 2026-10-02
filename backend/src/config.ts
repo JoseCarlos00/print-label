@@ -23,8 +23,8 @@ export const config = {
 
 	// Credenciales del único usuario admin. Sin valores por defecto a propósito:
 	// el servidor debe fallar al arrancar si no están configuradas.
-	// Se comparan con timingSafeEqual (ver utils/credentials.ts), no con hash:
-	// es un solo usuario fijo en red interna, no expuesta a internet (spec §6).
+	// Se comparan en tiempo constante (ver utils/credentials.ts), no con hash:
+	// es un solo usuario fijo para una red interna confiable.
 	ADMIN_USER: getRequiredEnvVar('ADMIN_USER'),
 	ADMIN_PASSWORD: getRequiredEnvVar('ADMIN_PASSWORD'),
 
