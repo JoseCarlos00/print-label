@@ -31,11 +31,14 @@ export function PropertiesPanel() {
 	const focusContentRequest = useEditorStore((s) => s.focusContentRequest);
 
 	const contentRef = useRef<HTMLTextAreaElement>(null);
+	const previousFocusRequest = useRef(focusContentRequest);
 
 	const positionDisabled = Boolean(element?.positionLocked);
 
 	useEffect(() => {
-		if (!focusContentRequest) return;
+		if (previousFocusRequest.current === focusContentRequest) return;
+
+		previousFocusRequest.current = focusContentRequest;
 		contentRef.current?.focus();
 		contentRef.current?.select();
 	}, [focusContentRequest]);
