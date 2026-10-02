@@ -22,8 +22,7 @@ function isValidInput(body: unknown): body is CreateTemplateInput {
 		input.profileId.trim().length > 0 &&
 		Array.isArray(input.elements) &&
 		input.elements.length > 0 &&
-		typeof input.public === 'boolean' &&
-		(input.positionLocked === undefined || typeof input.positionLocked === 'boolean')
+		typeof input.public === 'boolean'
 	);
 }
 
@@ -39,8 +38,7 @@ function isValidUpdateInput(body: unknown): body is UpdateTemplateInput {
 		input.profileId.trim().length > 0 &&
 		Array.isArray(input.elements) &&
 		input.elements.length > 0 &&
-		typeof input.public === 'boolean' &&
-		(input.positionLocked === undefined || typeof input.positionLocked === 'boolean')
+		typeof input.public === 'boolean'
 	);
 }
 

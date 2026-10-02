@@ -12,7 +12,6 @@ interface RowTemplate {
 	public: number;
 	state: StateTemplate;
 	requested_by: string | null;
-	position_locked: number;
 	create_on: string;
 	update_on: string;
 }
@@ -26,7 +25,6 @@ function rowToTemplate(fila: RowTemplate): Template {
 		public: Boolean(fila.public),
 		state: fila.state,
 		requestedBy: fila.requested_by!,
-		positionLocked: Boolean(fila.position_locked),
 		createOn: fila.create_on,
 		updateOn: fila.update_on,
 	};
@@ -43,16 +41,15 @@ export function createTemplate(input: CreateTemplateInput, state: StateTemplate)
 		public: input.public,
 		state,
 		requestedBy: state === 'pending' ? (input.requestedBy ?? null) : null,
-		positionLocked: input.positionLocked ?? false,
 		createOn: now,
 		updateOn: now,
 	};
 
 	db.prepare(
 		`INSERT INTO templates
-      (id, name, profile_id, elements, public, state, requested_by, position_locked, create_on, update_on)
+      (id, name, profile_id, elements, public, state, requested_by, create_on, update_on)
      VALUES
-      (@id, @name, @profileId, @elements, @public, @state, @requestedBy, @positionLocked, @createOn, @updateOn)`,
+      (@id, @name, @profileId, @elements, @public, @state, @requestedBy, @createOn, @updateOn)`,
 	).run({
 		id: template.id,
 		name: template.name,
@@ -61,7 +58,6 @@ export function createTemplate(input: CreateTemplateInput, state: StateTemplate)
 		public: template.public ? 1 : 0,
 		state: template.state,
 		requestedBy: template.requestedBy,
-		positionLocked: template.positionLocked ? 1 : 0,
 		createOn: template.createOn,
 		updateOn: template.updateOn,
 	});
@@ -190,7 +186,6 @@ export function updateTemplate(id: string, input: UpdateTemplateInput): Template
 			profile_id = @profileId,
 			elements = @elements,
 			public = @public,
-			position_locked = @positionLocked,
 			update_on = @updateOn
 		WHERE id = @id
 	`,
@@ -201,7 +196,6 @@ export function updateTemplate(id: string, input: UpdateTemplateInput): Template
 			profileId: input.profileId,
 			elements: JSON.stringify(input.elements),
 			public: input.public ? 1 : 0,
-			positionLocked: input.positionLocked ? 1 : 0,
 			updateOn: now,
 		});
 
