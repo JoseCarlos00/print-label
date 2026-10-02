@@ -1,5 +1,5 @@
-// Escala fija por ahora (zoom queda para después). 4 px por mm da un tamaño
-// razonable en pantalla para una etiqueta de 4"x4" (101.6mm ≈ 406px).
+// Escala base fija. El zoom de pantalla se aplica visualmente al canvas, sin
+// alterar estas conversiones ni las medidas físicas guardadas.
 export const PX_PER_MM = 4;
 
 export function mmToPx(mm: number): number {

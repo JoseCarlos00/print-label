@@ -22,6 +22,7 @@ import { calculateResize, type ResizeHandle } from '@/utils/geometry/resize';
 import { applyResizeToElement } from '@/utils/geometry/applyResize';
 
 import { EDITOR_LIMITS } from '@/config/editorLimits';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 interface CanvasProps {
 	loadError?: string | null;
@@ -41,11 +42,16 @@ interface Guide {
 }
 
 const WORKSPACE_MARGIN_MM = 100;
+const LARGE_SCREEN_QUERY = '(min-width: 1280px)';
+const LARGE_SCREEN_CANVAS_ZOOM = 1.25;
 
 export function Canvas({ loadError, loadErrorActions, verticalCenterOffset, onRequestOpenPropertiesPanel }: CanvasProps) {
 	const canvasRef = useRef<HTMLDivElement>(null);
 	const viewportRef = useRef<HTMLDivElement>(null);
 	const hasInitialCentered = useRef(false);
+	const lastCenteredZoom = useRef<number | null>(null);
+	const isLargeScreen = useMediaQuery(LARGE_SCREEN_QUERY);
+	const canvasZoom = isLargeScreen ? LARGE_SCREEN_CANVAS_ZOOM : 1;
 
 	const [workspacePadding, setWorkspacePadding] = useState({
 		horizontal: mmToPx(WORKSPACE_MARGIN_MM),
@@ -217,8 +223,8 @@ export function Canvas({ loadError, loadErrorActions, verticalCenterOffset, onRe
 
 			const canvasRect = canvas.getBoundingClientRect();
 
-			const cursorX = pxToMm(event.clientX - canvasRect.left);
-			const cursorY = pxToMm(event.clientY - canvasRect.top);
+			const cursorX = pxToMm((event.clientX - canvasRect.left) / canvasZoom);
+			const cursorY = pxToMm((event.clientY - canvasRect.top) / canvasZoom);
 
 			const keepAspectRatio =
 				element.type === 'barcode' || element.type === 'image'
@@ -289,7 +295,7 @@ export function Canvas({ loadError, loadErrorActions, verticalCenterOffset, onRe
 		return () => {
 			window.removeEventListener('pointermove', handlePointerMove);
 		};
-	}, [resizeState, elements, updateElement]);
+	}, [resizeState, elements, updateElement, canvasZoom]);
 
 	useEffect(() => {
 		if (!resizeState) return;
@@ -327,11 +333,13 @@ export function Canvas({ loadError, loadErrorActions, verticalCenterOffset, onRe
 		const updateWorkspacePadding = () => {
 			const canvasWidth = mmToPx(profile.widthMm);
 			const canvasHeight = mmToPx(profile.heightMm);
+			const zoomedCanvasWidth = canvasWidth * canvasZoom;
+			const zoomedCanvasHeight = canvasHeight * canvasZoom;
 			const margin = mmToPx(WORKSPACE_MARGIN_MM);
 
 			setWorkspacePadding({
-				horizontal: Math.max(margin, (viewport.clientWidth - canvasWidth) / 2),
-				vertical: Math.max(margin, (viewport.clientHeight - canvasHeight) / 2),
+				horizontal: Math.max(margin, (viewport.clientWidth - zoomedCanvasWidth) / 2),
+				vertical: Math.max(margin, (viewport.clientHeight - zoomedCanvasHeight) / 2),
 			});
 		};
 
@@ -341,17 +349,22 @@ export function Canvas({ loadError, loadErrorActions, verticalCenterOffset, onRe
 		observer.observe(viewport);
 
 		return () => observer.disconnect();
-	}, [profile]);
+	}, [profile, canvasZoom]);
 
 	useLayoutEffect(() => {
-		if (!profile || hasInitialCentered.current) return;
+		if (
+			!profile ||
+			(hasInitialCentered.current && lastCenteredZoom.current === canvasZoom)
+		) {
+			return;
+		}
 
 		const viewport = viewportRef.current;
 
 		if (!viewport) return;
 
-		const canvasWidth = mmToPx(profile.widthMm);
-		const canvasHeight = mmToPx(profile.heightMm);
+		const canvasWidth = mmToPx(profile.widthMm) * canvasZoom;
+		const canvasHeight = mmToPx(profile.heightMm) * canvasZoom;
 		const margin = mmToPx(WORKSPACE_MARGIN_MM);
 
 		const horizontalPadding = Math.max(margin, (viewport.clientWidth - canvasWidth) / 2);
@@ -363,8 +376,9 @@ export function Canvas({ loadError, loadErrorActions, verticalCenterOffset, onRe
 				verticalPadding - (viewport.clientHeight - canvasHeight) / 2 + verticalCenterOffset;
 
 			hasInitialCentered.current = true;
+			lastCenteredZoom.current = canvasZoom;
 		});
-	}, [profile, verticalCenterOffset]);
+	}, [profile, verticalCenterOffset, canvasZoom]);
 
 	const handleViewportPointerDown = (event: PointerEvent<HTMLDivElement>) => {
 		const target = event.target as HTMLElement;
@@ -412,53 +426,64 @@ export function Canvas({ loadError, loadErrorActions, verticalCenterOffset, onRe
 				}}
 			>
 				<div
-					ref={canvasRef}
-					data-canvas-element
-					onPointerDown={handleCanvasPointerDown}
+					className='relative shrink-0'
 					style={{
-						width: mmToPx(profile.widthMm),
-						height: mmToPx(profile.heightMm),
-						backgroundImage: `
-						linear-gradient(to right, rgba(100, 100, 100, 0.12) 1px, transparent 1px),
-						linear-gradient(to bottom, rgba(100, 100, 100, 0.12) 1px, transparent 1px),
-						linear-gradient(to right, rgba(80, 80, 80, 0.28) 1px, transparent 1px),
-						linear-gradient(to bottom, rgba(80, 80, 80, 0.28) 1px, transparent 1px)
-					`,
-						backgroundSize: `
-							10px 10px,
-							10px 10px,
-							50px 50px,
-							50px 50px
-					`,
+						width: mmToPx(profile.widthMm) * canvasZoom,
+						height: mmToPx(profile.heightMm) * canvasZoom,
 					}}
-					className='relative overflow-visible border border-app-border bg-app-surface zebra-font-emulated'
 				>
-					<GuidesOverlay
-						guides={guides}
-						widthMm={profile.widthMm}
-						heightMm={profile.heightMm}
-					/>
-
-					{elements.map((el) => (
-						<CanvasElement
-							key={el.id}
-							element={el}
-							isSelected={el.id === selectedElementId}
-							canvasWidthMm={profile.widthMm}
-							canvasHeightMm={profile.heightMm}
-							onNaturalSizeChange={handleNaturalSizeChange}
-							onDragPositionChange={handleDragPositionChange}
-							onDragEnd={handleDragEnd}
-							onRequestOpenPropertiesPanel={onRequestOpenPropertiesPanel}
+					<div
+						ref={canvasRef}
+						data-canvas-element
+						onPointerDown={handleCanvasPointerDown}
+						style={{
+							width: mmToPx(profile.widthMm),
+							height: mmToPx(profile.heightMm),
+							transform: `scale(${canvasZoom})`,
+							transformOrigin: 'top left',
+							backgroundImage: `
+							linear-gradient(to right, rgba(100, 100, 100, 0.12) 1px, transparent 1px),
+							linear-gradient(to bottom, rgba(100, 100, 100, 0.12) 1px, transparent 1px),
+							linear-gradient(to right, rgba(80, 80, 80, 0.28) 1px, transparent 1px),
+							linear-gradient(to bottom, rgba(80, 80, 80, 0.28) 1px, transparent 1px)
+						`,
+							backgroundSize: `
+								10px 10px,
+								10px 10px,
+								50px 50px,
+								50px 50px
+						`,
+						}}
+						className='relative overflow-visible border border-app-border bg-app-surface zebra-font-emulated'
+					>
+						<GuidesOverlay
+							guides={guides}
+							widthMm={profile.widthMm}
+							heightMm={profile.heightMm}
 						/>
-					))}
 
-					{selectedCorners && (
-						<SelectionHandles
-							corners={selectedCorners}
-							onPointerDown={handleResizePointerDown}
-						/>
-					)}
+						{elements.map((el) => (
+							<CanvasElement
+								key={el.id}
+								element={el}
+								isSelected={el.id === selectedElementId}
+								canvasWidthMm={profile.widthMm}
+								canvasHeightMm={profile.heightMm}
+								zoomScale={canvasZoom}
+								onNaturalSizeChange={handleNaturalSizeChange}
+								onDragPositionChange={handleDragPositionChange}
+								onDragEnd={handleDragEnd}
+								onRequestOpenPropertiesPanel={onRequestOpenPropertiesPanel}
+							/>
+						))}
+
+						{selectedCorners && (
+							<SelectionHandles
+								corners={selectedCorners}
+								onPointerDown={handleResizePointerDown}
+							/>
+						)}
+					</div>
 				</div>
 			</div>
 		</div>

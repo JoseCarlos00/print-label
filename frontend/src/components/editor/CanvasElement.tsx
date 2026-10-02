@@ -20,6 +20,7 @@ interface CanvasElementProps {
 	isSelected: boolean;
 	canvasWidthMm: number;
 	canvasHeightMm: number;
+	zoomScale?: number;
 
 	onNaturalSizeChange: (
 		elementId: string,
@@ -47,6 +48,7 @@ export function CanvasElement({
 	isSelected,
 	canvasWidthMm,
 	canvasHeightMm,
+	zoomScale = 1,
 	onNaturalSizeChange,
 	onDragPositionChange,
 	onDragEnd,
@@ -77,7 +79,10 @@ export function CanvasElement({
 
 	const cursorToMm = (e: PointerEvent<HTMLDivElement>) => {
 		const canvasRect = e.currentTarget.parentElement!.getBoundingClientRect();
-		return { x: pxToMm(e.clientX - canvasRect.left), y: pxToMm(e.clientY - canvasRect.top) };
+		return {
+			x: pxToMm((e.clientX - canvasRect.left) / zoomScale),
+			y: pxToMm((e.clientY - canvasRect.top) / zoomScale),
+		};
 	};
 
 	const handlePointerDown = (e: PointerEvent<HTMLDivElement>) => {
