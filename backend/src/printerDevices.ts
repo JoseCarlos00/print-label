@@ -30,7 +30,7 @@ export const printerDevices: PrinterDevice[] = [
 	{ name: 'Empaque06', ip: '192.168.15.218', label: 'LabelPrinter218', labelSize: '4x4' },
 	{ name: 'Empaque07', ip: '192.168.15.222', label: 'LabelPrinter222', labelSize: '4x4' },
 	{ name: 'Empaque08', ip: '192.168.15.221', label: 'LabelPrinter221', labelSize: '4x4' },
-	{ name: 'Empaque09', ip: '192.168.15.220', label: 'LabelPrinter220', labelSize: '4x4' },
+	// { name: 'Empaque09', ip: '192.168.15.220', label: 'LabelPrinter220', labelSize: '4x4' },
 	{ name: 'Empaque10', ip: '192.168.15.216', label: 'LabelPrinter216', labelSize: '4x4' },
 	{ name: 'Empaque11', ip: '192.168.15.214', label: 'LabelPrinter214', labelSize: '4x4' },
 	{ name: 'Empaque12', ip: '192.168.15.211', label: 'LabelPrinter211', labelSize: '4x4' },
@@ -43,7 +43,7 @@ export const printerDevices: PrinterDevice[] = [
 	{ name: 'Empaque19', ip: '192.168.15.228', label: 'LabelPrinter228', labelSize: '4x4' },
 	{ name: 'Etiquetado01', ip: '192.168.15.227', label: 'LabelPrinter227', labelSize: '4x4' },
 	{ name: 'Etiquetado02', ip: '192.168.15.231', label: 'LabelPrinter231', labelSize: '4x4' },
-	{ name: 'Etiquetado03', ip: '192.168.15.229', label: 'LabelPrinter229', labelSize: '4x4' },
+	// { name: 'Etiquetado03', ip: '192.168.15.229', label: 'LabelPrinter229', labelSize: '4x4' },
 	{ name: 'Impresora246', ip: '192.168.15.230', label: 'LabelPrinter230', labelSize: '4x4' },
 
 
