@@ -9,7 +9,7 @@ export function createDefaultElement(type: ElementType, index: number): LabelEle
 		x: 10 + index * 3,
 		y: 10 + index * 3,
 		rotation: 0 as const,
-		locked: false,
+		positionLocked: false,
 	};
 
 	const baseQrLabel: QrLabel = {
@@ -47,7 +47,7 @@ export function createImageElement(src: string, widthPx: number, heightPx: numbe
 		x: 10 + index * 3,
 		y: 10 + index * 3,
 		rotation: 0,
-		locked: false,
+		positionLocked: false,
 		type: 'image',
 		src,
 		width,
@@ -62,7 +62,7 @@ export function createShapeElement(shape: ShapeType, index: number): ShapeElemen
 		x: 10 + index * 3,
 		y: 10 + index * 3,
 		rotation: 0 as const,
-		locked: false,
+		positionLocked: false,
 	};
 
 	switch (shape) {

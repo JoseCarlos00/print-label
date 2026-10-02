@@ -19,7 +19,6 @@ interface BaseElement {
 	y: number; // mm, desde la esquina superior izquierda del área
 	rotation: Rotation;
 	positionLocked?: boolean;
-	locked?: boolean;
 }
 
 export type TextAlign = 'Left' | 'Center' | 'Right' | 'Justify';

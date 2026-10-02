@@ -44,12 +44,11 @@ const SHAPES: ShapeButton[] = [
 export function Toolbar() {
 	const addElement = useEditorStore((s) => s.addElement);
 	const addShapeElement = useEditorStore((s) => s.addShapeElement);
-	const positionLocked = useEditorStore((s) => s.positionLocked);
 	const profile = useEditorStore((s) => s.profile);
 
 	const { inputRef, accept, openPicker, handleFileChange } = useImageImport();
 
-	const disabled = positionLocked || !profile;
+	const disabled = !profile;
 
 	return (
 		<div className='absolute z-30 left-3 top-2'>
@@ -186,13 +185,6 @@ export function Toolbar() {
 								))}
 							</DropdownMenuSubContent>
 						</DropdownMenuSub>
-
-						{positionLocked && (
-							<>
-								<DropdownMenuSeparator />
-								<div className='px-2 py-1.5 text-xs text-muted-foreground'>Las posiciones están bloqueadas.</div>
-							</>
-						)}
 					</DropdownMenuContent>
 				</DropdownMenu>
 			</div>

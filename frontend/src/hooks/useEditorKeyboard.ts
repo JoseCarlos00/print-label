@@ -21,7 +21,6 @@ export function useEditorKeyboard() {
 
 			const {
 				selectedElementId,
-				positionLocked,
 				elements,
 				selectElement,
 				updateElement,
@@ -87,7 +86,7 @@ export function useEditorKeyboard() {
 
 			// Si la posición está bloqueada, no permitimos
 			// mover, rotar, duplicar ni eliminar.
-			if (positionLocked) {
+			if (element.positionLocked) {
 				return;
 			}
 

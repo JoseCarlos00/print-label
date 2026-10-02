@@ -151,12 +151,7 @@ export const useEditorStore = create<EditorStore>()(
 					templateName: template.name,
 					isPublic: template.public,
 					loadedTemplateState: template.state,
-					elements: template.elements.map((element) => {
-						const currentElement = { ...element };
-						delete currentElement.locked;
-
-						return currentElement;
-					}),
+					elements: template.elements,
 					selectedElementId: null,
 				}),
 

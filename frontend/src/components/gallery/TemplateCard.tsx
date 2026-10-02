@@ -47,7 +47,6 @@ export function TemplateCard({ template, profile, onUse, onPreview, onDelete }: 
 				<p className='mt-1 text-xs text-app-text-muted'>
 					{template.elements.length} elemento(s) · Actualizada {formatDate(template.updateOn)}
 				</p>
-				{template.positionLocked && <p className='mt-1 text-xs text-amber-400'>Posiciones bloqueadas</p>}
 			</div>
 
 			<div className='grid grid-cols-2 gap-2'>
