@@ -360,14 +360,28 @@ function wrapLine(font: Font, text: string, fontSize: number, maxWidthDots: numb
 
 	for (const word of words) {
 		const candidate = currentLine ? `${currentLine} ${word}` : word;
-
 		const candidateWidth = Math.ceil(getTextWidth(font, candidate, scale));
 
-		if (currentLine && candidateWidth > maxWidthDots) {
-			lines.push(currentLine);
-			currentLine = word;
-		} else {
+		if (candidateWidth <= maxWidthDots) {
 			currentLine = candidate;
+			continue;
+		}
+
+		if (currentLine) {
+			lines.push(currentLine);
+			currentLine = '';
+		}
+
+		for (const char of word) {
+			const candidateChunk = currentLine + char;
+			const candidateChunkWidth = Math.ceil(getTextWidth(font, candidateChunk, scale));
+
+			if (currentLine && candidateChunkWidth > maxWidthDots) {
+				lines.push(currentLine);
+				currentLine = char;
+			} else {
+				currentLine = candidateChunk;
+			}
 		}
 	}
 
