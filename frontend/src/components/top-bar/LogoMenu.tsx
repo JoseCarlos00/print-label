@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { ChevronDown, FilePlus, LogIn, LogOut, BookImage, ClipboardClock } from 'lucide-react';
 import { useLoginDialog } from '@/hooks/useLoginDialog';
 import {
@@ -25,10 +26,11 @@ export function LogoMenu({ onNewDocument }: LogoMenuProps) {
 	const navigate = useNavigate();
 	const handleLogout = useLogout();
 	const pending = usePendingCount(isAdmin);
+	const [isMenuOpen, setIsMenuOpen] = useState(false);
 
 	return (
 		<div className='flex items-center gap-2'>
-			<DropdownMenu>
+			<DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
 				<DropdownMenuTrigger
 					render={
 						<Button
@@ -37,7 +39,7 @@ export function LogoMenu({ onNewDocument }: LogoMenuProps) {
 							className='gap-1 px-2 text-sm font-semibold text-app-text z-30 cursor-pointer relative'
 						>
 							PrintLabel
-							<PendingCount count={pending} className='absolute -top-2 right-2' />
+							{!isMenuOpen && <PendingCount count={pending} className='absolute -top-2 right-4.5' />}
 							<ChevronDown className='size-3.5 text-app-text-muted inline-block ml-0.5' />
 						</Button>
 					}
