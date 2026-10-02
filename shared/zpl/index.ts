@@ -81,5 +81,6 @@ export { createCode128Bitmap } from './barcode/code128.js';
 export { createEan13Bitmap } from './barcode/ean13.js';
 export { createQrBitmap } from './renderers/qr.js';
 export { createTextBitmap } from './renderers/text.js';
+export type { CreateTextBitmapOptions } from './renderers/text.js';
 export { createImageGraphicBitmap } from './renderers/image.js';
 export { buildShapeCommand, createShapeBitmap } from './renderers/shape.js';

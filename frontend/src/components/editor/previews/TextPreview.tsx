@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import type { TextElement } from 'shared';
+import type { CreateTextBitmapOptions } from 'shared/zpl';
 import type { Font, GraphicBitmap } from 'shared/zpl';
 import { createTextBitmap } from 'shared/zpl';
 import { loadSwiss721 } from 'shared/zpl/font';
@@ -23,7 +24,8 @@ export function TextPreview({ element, dpi }: { element: TextElement; dpi?: numb
 
 interface TextBitmapPreviewProps {
 	element: TextElement;
-	createBitmap: (element: TextElement, dpi: number, font: Font) => GraphicBitmap;
+
+	createBitmap: (element: TextElement, dpi: number, font: Font, options: CreateTextBitmapOptions) => GraphicBitmap;
 	dpi?: number;
 }
 
@@ -51,7 +53,7 @@ function TextBitmapPreview({ element, createBitmap, dpi: dpiOverride }: TextBitm
 		const canvas = canvasRef.current;
 		if (!canvas) return;
 
-		const bitmap = createBitmap(element, dpi, font);
+		const bitmap = createBitmap(element, dpi, font, { trimVerticalWhitespace: true });
 
 		setSize({
 			width: mmToPx(dotsToMm(bitmap.widthDots, dpi)),
