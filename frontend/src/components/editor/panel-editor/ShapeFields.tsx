@@ -26,7 +26,12 @@ export function ShapeFields({
 					value={element.shape}
 					onValueChange={(value) => {
 						const selectedShape = SHAPES.find(({ shape }) => shape === value)?.shape;
-						if (selectedShape) onChange({ shape: selectedShape });
+						if (!selectedShape) return;
+
+						onChange({
+							shape: selectedShape,
+							...(element.shape === 'line' && selectedShape !== 'line' ? { height: 25 } : {}),
+						});
 					}}
 				>
 					<SelectTrigger className='mt-1 w-full'>

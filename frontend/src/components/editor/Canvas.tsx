@@ -223,7 +223,9 @@ export function Canvas({ loadError, loadErrorActions, verticalCenterOffset, onRe
 			const keepAspectRatio =
 				element.type === 'barcode' || element.type === 'image'
 					? element.lockAspectRatio
-					: element.type !== 'shape';
+					: element.type === 'shape'
+						? event.shiftKey
+						: true;
 
 			let minWidth: number | undefined;
 			let minHeight: number | undefined;
