@@ -10,7 +10,9 @@
 		"start": "cross-env NODE_ENV=production node dist/server.js",
 		"dev": "cross-env NODE_ENV=development tsx watch server.ts",
 		"type-check": "npx tsc --noEmit",
-		"db:clear-sessions": "node scripts/clear-sessions.js"
+		"db:clear-sessions": "node scripts/clear-sessions.js",
+		"copy-font": "node scripts/copy-font.js",
+		"build:all": "npm run build && npm run copy-font"
 	},
 	"keywords": [],
 	"author": "",
