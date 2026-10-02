@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { TopBar } from '@/components/TopBar';
 import { Toolbar } from '@/components/Toolbar';
 import { Canvas } from '@/components/editor/Canvas';
-import { EditorPanelTabs } from '@/components/editor/EditorPanelTabs';
+import { EditorPanelTabs, type PanelTab } from '@/components/editor/EditorPanelTabs';
 import { FloatingActionBar } from '@/components/editor/FloatingActionBar';
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 
@@ -29,6 +29,7 @@ export function EditorRoute() {
 function EditorPage() {
 	const { id } = useParams<{ id: string }>();
 	const [mobilePanelOpen, setMobilePanelOpen] = useState(false);
+	const [mobilePanelTab, setMobilePanelTab] = useState<PanelTab>('templates');
 	const matches = useMediaQuery('(min-width: 64rem)');
 
 	const navigate = useNavigate();
@@ -44,9 +45,8 @@ function EditorPage() {
 	const newDocument = useEditorStore((s) => s.newDocument);
 
 	useEffect(() => {
-		if (!selectedElementId || matches) return;
-		setMobilePanelOpen(true);
-	}, [selectedElementId, matches]);
+		setMobilePanelTab(selectedElementId ? 'panel' : 'templates');
+	}, [selectedElementId]);
 
 	// Si cambia el :id (o pasamos de una plantilla a "nueva"), reseteamos
 	// el store antes de que los efectos de abajo vuelvan a poblarlo.
@@ -151,20 +151,23 @@ function EditorPage() {
 					<FloatingActionBar />
 
 					{!mobilePanelOpen && (
-						<button
+						<Button
 							type='button'
 							onClick={() => setMobilePanelOpen(true)}
-							aria-label='Abrir panel de propiedades'
-							className='absolute cursor-pointer top-1 right-4 z-30 flex size-9 items-center justify-center rounded-full bg-app-accent-500 text-app-accent-contrast shadow-lg active:bg-app-accent-700 lg:hidden'
+							aria-label={`Abrir ${mobilePanelTab === 'panel' ? 'panel de propiedades' : 'plantillas'}`}
+							className='absolute top-1 right-4 z-30 flex lg:hidden'
 						>
 							<PanelRight className='size-5' />
-						</button>
+							<span>{mobilePanelTab === 'panel' ? 'Editar' : 'Plantillas'}</span>
+						</Button>
 					)}
 				</main>
 
 				<EditorPanelTabs
 					mobileOpen={mobilePanelOpen}
 					onCloseMobile={() => setMobilePanelOpen(false)}
+					tab={mobilePanelTab}
+					onTabChange={setMobilePanelTab}
 				/>
 			</div>
 		</div>

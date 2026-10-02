@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState, type PointerEvent } from 'react';
+import { useLayoutEffect, useRef, useState, type MouseEvent, type PointerEvent } from 'react';
 import { BringToFront, SendToBack, RotateCw, Copy, Trash } from 'lucide-react';
 import type { LabelElement } from 'shared';
 import { useEditorStore } from '@/store/useEditorStore';
@@ -116,13 +116,18 @@ export function CanvasElement({
 		onDragEnd();
 	};
 
+	const handleClick = (e: MouseEvent<HTMLDivElement>) => {
+		if ((e.target as HTMLElement).closest('[data-element-toolbar]')) return;
+
+		onRequestOpenPropertiesPanel();
+	};
+
 	const handleDoubleClick = (e: PointerEvent<HTMLDivElement>) => {
 		e.stopPropagation();
 
 		if ((e.target as HTMLElement).closest('[data-element-toolbar]')) return;
 
 		selectElement(element.id);
-		onRequestOpenPropertiesPanel();
 		requestContentFocus();
 	};
 
@@ -168,6 +173,7 @@ export function CanvasElement({
 				onPointerMove={handlePointerMove}
 				onPointerUp={handlePointerUp}
 				onPointerCancel={handlePointerUp}
+				onClick={handleClick}
 				onDoubleClick={handleDoubleClick}
 				style={{
 					position: 'absolute',

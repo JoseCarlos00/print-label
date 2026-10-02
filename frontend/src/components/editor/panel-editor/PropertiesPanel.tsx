@@ -52,7 +52,7 @@ export function PropertiesPanel() {
 	const Icon = TYPE_ICON[element.type];
 
 	return (
-		<div className='flex flex-col gap-3 overflow-y-auto p-3 thin-scrollbar'>
+		<div className='flex flex-col gap-3 p-3'>
 			<div className='flex items-center gap-2 rounded-md border border-app-border bg-app-surface px-3 py-2'>
 				<Icon className='size-4 text-app-accent-500' />
 				<span className='text-sm font-medium text-app-text'>{TYPE_LABEL[element.type]}</span>

@@ -1,46 +1,32 @@
-import { useState } from 'react';
 import { List, Settings2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useEditorStore } from '@/store/useEditorStore';
 import { PropertiesPanel } from './panel-editor/PropertiesPanel';
 import { QuickTemplatesPanel } from './QuickTemplatesPanel';
 
-type PanelTab = 'panel' | 'templates';
+export type PanelTab = 'panel' | 'templates';
 
 interface EditorPanelTabsProps {
 	mobileOpen: boolean;
 	onCloseMobile: () => void;
+	tab: PanelTab;
+	onTabChange: (tab: PanelTab) => void;
 }
 
 // En desktop (lg+) es un panel fijo, siempre visible, sin forma de
 // ocultarlo. En mobile es un drawer: fixed + translate-x, con fondo
 // oscurecido detrás. El breakpoint "lg" separa ambos modos — por debajo
 // de eso, lg:* nunca aplica y se comporta 100% como drawer.
-export function EditorPanelTabs({ mobileOpen, onCloseMobile }: EditorPanelTabsProps) {
-	const selectedElementId = useEditorStore((s) => s.selectedElementId);
-
-	// Tab inicial siempre en 'templates'
-	const [tab, setTab] = useState<PanelTab>('templates');
-	const [prevSelectedId, setPrevSelectedId] = useState(selectedElementId);
-
-	// Sincronización en render: solo cambia a 'panel' cuando se SELECCIONA un nuevo elemento
-	if (prevSelectedId !== selectedElementId) {
-		setPrevSelectedId(selectedElementId);
-		
-		if (selectedElementId) {
-			setTab('panel');
-		} else {
-			setTab('templates')
-		}
-	}
-
+export function EditorPanelTabs({ mobileOpen, onCloseMobile, tab, onTabChange }: EditorPanelTabsProps) {
 	return (
 		<>
 			{mobileOpen && (
 				<div
 					className='fixed inset-0 z-40 bg-black/50 lg:hidden'
-					onClick={onCloseMobile}
+					onClick={(event) => {
+						event.stopPropagation();
+						onCloseMobile();
+					}}
 				/>
 			)}
 
@@ -65,10 +51,14 @@ export function EditorPanelTabs({ mobileOpen, onCloseMobile }: EditorPanelTabsPr
 
 				<Tabs
 					value={tab}
-					onValueChange={(value) => setTab(value as PanelTab)}
-					className='flex h-full flex-col gap-0'
+					onValueChange={(value) => {
+						if (value === 'panel' || value === 'templates') {
+							onTabChange(value);
+						}
+					}}
+					className='flex min-h-0 flex-1 flex-col gap-0'
 				>
-					<TabsList className='m-0 grid h-16 w-full grid-cols-2 gap-0 rounded-none border-b border-app-border bg-transparent p-0'>
+					<TabsList className='m-0 grid h-16 shrink-0 w-full grid-cols-2 gap-0 rounded-none border-b border-app-border bg-transparent p-0'>
 						<TabsTrigger
 							value='templates'
 							className='
@@ -116,14 +106,14 @@ export function EditorPanelTabs({ mobileOpen, onCloseMobile }: EditorPanelTabsPr
 
 					<TabsContent
 						value='panel'
-						className='flex-1 overflow-y-auto thin-scrollbar'
+						className='min-h-0 flex-1 overflow-y-auto thin-scrollbar'
 					>
 						<PropertiesPanel />
 					</TabsContent>
 
 					<TabsContent
 						value='templates'
-						className='flex-1 overflow-y-auto thin-scrollbar'
+						className='min-h-0 flex-1 overflow-y-auto thin-scrollbar'
 					>
 						<QuickTemplatesPanel />
 					</TabsContent>
