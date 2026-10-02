@@ -24,7 +24,7 @@ function AppShell() {
 	const showNavBar = !isEditorPath(location.pathname);
 
 	return (
-		<div className='flex h-screen flex-col'>
+		<div className='flex h-screen supports-[height:100dvh]:h-dvh flex-col'>
 			{showNavBar && <NavBar />}
 			<div className='flex-1 overflow-hidden'>
 				<Routes>

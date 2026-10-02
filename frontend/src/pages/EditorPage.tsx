@@ -129,7 +129,7 @@ function EditorPage() {
 	);
 
 	return (
-		<div className='flex h-full flex-col'>
+		<div className='flex h-full min-h-0 flex-col'>
 			<TopBar
 				profiles={profiles}
 				profilesLoading={loadingProfiles}
@@ -137,8 +137,8 @@ function EditorPage() {
 				onRetryProfiles={reloadProfiles}
 			/>
 
-			<div className='flex flex-1 overflow-hidden'>
-				<main className='relative min-w-0 flex flex-1 flex-col overflow-hidden'>
+			<div className='flex min-h-0 flex-1 overflow-hidden'>
+				<main className='relative min-h-0 min-w-0 flex flex-1 flex-col overflow-hidden'>
 					<Toolbar />
 					<Canvas
 						loadError={loadError}
