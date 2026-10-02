@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { usePendingCount } from '@/hooks/usePendingCount';
 import { AdminControls } from '@/components/AdminControls';
 import { PendingCount } from '@/components/PendingCount';
+import { Logo } from '@/components/Logo';
 import { cn } from '@/lib/utils';
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
@@ -19,7 +20,7 @@ export function NavBar() {
 	return (
 		<nav className='flex h-14 w-full min-w-0 shrink-0 items-center justify-between gap-2 overflow-hidden border-b border-app-border px-2 sm:px-6'>
 			<div className='flex min-w-0 flex-1 items-center gap-2 sm:gap-4'>
-				<span className='hidden shrink-0 text-sm font-semibold text-app-text sm:inline'>PrintLabel</span>
+				<Logo />
 
 				<div className='flex min-w-0 items-center gap-0.5 overflow-x-auto'>
 					<NavLink
