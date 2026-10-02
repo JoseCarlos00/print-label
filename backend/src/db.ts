@@ -7,9 +7,8 @@ import { config, __dirname } from './config.js';
 // backend/src en desarrollo y backend/dist en el bundle de producción.
 // Por eso el nivel relativo cambia para mantener los datos fuera de dist/.
 
-const relativePath = config.NODE_ENV === 'production' ? '../../' : '../';
 
-const dataDir = path.resolve(__dirname, relativePath, 'data');
+const dataDir = path.resolve(__dirname, '../', 'data');
 mkdirSync(dataDir, { recursive: true });
 
 const dbPath = path.join(dataDir, config.DB_FILENAME);
