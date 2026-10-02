@@ -42,9 +42,9 @@ function cleanupExpiredRejectedTemplates() {
 cleanupExpiredRejectedTemplates();
 setInterval(cleanupExpiredRejectedTemplates, REJECTED_CLEANUP_INTERVAL_MS).unref();
 
-// Definir la ruta de estáticos una sola vez para evitar inconsistencias
-// const relativePath = config.NODE_ENV === 'production' ? '../..' : '..';
-const frontendPath = path.join(__dirname, '/', 'public');
+// Definir la ruta de estáticos
+const relativePath = config.NODE_ENV === 'production' ? '../..' : '..';
+const frontendPath = path.join(__dirname, relativePath, 'public');
 
 /**
  * Configura y devuelve una instancia de la aplicación Express.
