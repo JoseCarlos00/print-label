@@ -10,11 +10,8 @@ export function createTextBitmap(el: TextElement, dpi: number, font: Font): Grap
 	}
 
 	const fontSize = fontSizeMmToOpenType(font, el.fontSize, dpi);
-
 	const wrapWidthDots = el.wrapWidth != null ? mmToDots(el.wrapWidth, dpi) : undefined;
-
 	const lineSpacingDots = mmToDots(el.lineSpacing ?? 0, dpi);
-
 	const align = el.textAlign != null ? el.textAlign : 'Left';
 
 	const renderOptions: RenderTextOptions = {

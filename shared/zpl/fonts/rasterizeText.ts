@@ -42,12 +42,10 @@ export function renderText(
 	const { align, fit, wrapWidth, bold = false } = options;
 
 	const lineHeightDots = Math.ceil((font.ascender - font.descender) * scale);
-
 	const lineSpacingDots = options.lineSpacingDots ?? 0;
 	const lineAdvanceDots = lineHeightDots + lineSpacingDots;
 
 	const baseline = Math.ceil(font.ascender * scale);
-
 	const explicitLines = text.split(/\r?\n/);
 
 	const lines: RenderLine[] = [];
@@ -73,16 +71,13 @@ export function renderText(
 	}
 
 	const lineWidthsDots = lines.map((line) => Math.ceil(getTextWidth(font, line.text, scale)));
-
 	const naturalWidthDots = Math.max(0, ...lineWidthsDots);
 
 	const naturalHeightDots =
 		lines.length === 0 ? 0 : lines.length * lineHeightDots + (lines.length - 1) * lineSpacingDots;
 
 	const availableWidthDots = widthDots ?? naturalWidthDots;
-
 	const overflows = widthDots != null && lineWidthsDots.some((lineWidth) => lineWidth > widthDots);
-
 	const isCompressing = fit === 'compress';
 
 	if (isCompressing && widthDots == null) {
@@ -101,9 +96,7 @@ export function renderText(
 	for (const [lineIndex, renderLine] of lines.entries()) {
 		const line = renderLine.text;
 		const lineNaturalWidth = lineWidthsDots[lineIndex]!;
-
 		const shouldCompress = fit === 'compress' && lineNaturalWidth > widthDots!;
-
 		const horizontalScale = shouldCompress ? widthDots! / lineNaturalWidth : 1;
 
 		const shouldJustify =
@@ -360,7 +353,6 @@ function wrapLine(font: Font, text: string, fontSize: number, maxWidthDots: numb
 	}
 
 	const scale = fontSize / font.unitsPerEm;
-
 	const words = trimmedText.split(' ');
 
 	const lines: string[] = [];
