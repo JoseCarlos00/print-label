@@ -4,7 +4,11 @@ import { safeCompare } from '../utils/credentials.js';
 import { createSession, deleteSession } from '../sessionRepo.js';
 import { clearFailedLoginAttempts, recordFailedLoginAttempt } from '../middleware/rateLimit.middleware.js';
 
-const isProduction = config.NODE_ENV === 'production';
+// const isProduction = config.NODE_ENV === 'production';
+
+// Se ejecutara en una rec local, por lo que no es necesario habilitar la cookie secure. 
+// En producción, se debe cambiar a true para que solo se envíe la cookie a través de HTTPS.
+const isProduction = false;
 
 export const login = async (req: Request, res: Response) => {
 	if (!req.body) {
